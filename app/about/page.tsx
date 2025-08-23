@@ -333,7 +333,7 @@ export default function AboutPage() {
                 <img
                   src="/president-choi-yong-hwan.png"
                   alt="천상 최용환 회장"
-                  className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-blue-200"
+                  className="w-40 h-40 rounded-full mx-auto object-cover border-4 border-blue-200"
                 />
               </div>
               <h2 className="text-2xl font-bold mb-4 text-blue-900">회장 인사말</h2>
