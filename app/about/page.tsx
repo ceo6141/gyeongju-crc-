@@ -197,11 +197,20 @@ export default function AboutPage() {
         date: newImage.date,
         location: newImage.location.trim(),
       }
+
       const updatedImages = [...galleryImages, newGalleryImage]
-      saveGalleryData(updatedImages)
+      setGalleryImages(updatedImages)
+      localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
+
       setNewImage({ title: "", description: "", date: "", location: "", file: null })
       setIsAddDialogOpen(false)
+
+      console.log("[v0] Image added successfully, total images:", updatedImages.length)
       alert("사진이 성공적으로 추가되었습니다.")
+
+      setTimeout(() => {
+        setGalleryImages([...updatedImages])
+      }, 100)
     } catch (error) {
       console.error("[v0] Error adding image:", error)
       alert(`사진 추가 중 오류가 발생했습니다: ${error.message}`)
@@ -240,9 +249,14 @@ export default function AboutPage() {
             }
           : img,
       )
-      saveGalleryData(updatedImages)
+
+      setGalleryImages(updatedImages)
+      localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
+
       setEditingImage(null)
       setIsEditDialogOpen(false)
+
+      console.log("[v0] Image edited successfully")
       alert("사진이 성공적으로 수정되었습니다.")
     } catch (error) {
       console.error("[v0] Error editing image:", error)
@@ -255,7 +269,11 @@ export default function AboutPage() {
       try {
         console.log("[v0] Deleting image:", id)
         const updatedImages = galleryImages.filter((img) => img.id !== id)
-        saveGalleryData(updatedImages)
+
+        setGalleryImages(updatedImages)
+        localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
+
+        console.log("[v0] Image deleted successfully, remaining images:", updatedImages.length)
         alert("사진이 성공적으로 삭제되었습니다.")
       } catch (error) {
         console.error("[v0] Error deleting image:", error)
