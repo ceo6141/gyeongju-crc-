@@ -1,0 +1,26 @@
+{
+  "name": "경주중앙로타리클럽",
+  "short_name": "경주중앙RC",
+  "description": "경주중앙로타리클럽 공식 웹사이트 - 봉사를 통한 지역사회 발전",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/rotary-international-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/rotary-international-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["business", "social"],
+  "lang": "ko"
+}

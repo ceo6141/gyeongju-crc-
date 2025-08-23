@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { AdminPanel } from "@/components/admin-panel"
+import { InstallPrompt } from "@/components/install-prompt"
 
 const latestNotices = [
   {
@@ -697,6 +698,7 @@ export default function HomePage() {
 
       <Footer />
       <AdminPanel />
+      <InstallPrompt />
     </div>
   )
 }
