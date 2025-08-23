@@ -103,11 +103,12 @@ export default function HomePage() {
   useEffect(() => {
     const loadMemberCount = () => {
       try {
-        const savedMembers = localStorage.getItem("members")
+        const savedMembers = localStorage.getItem("rotary-members")
         if (savedMembers) {
           const members = JSON.parse(savedMembers)
           if (Array.isArray(members) && members.length > 0) {
             setMemberCount(members.length)
+            console.log("[v0] Home page loaded members:", members.length)
             const currentYear = new Date().getFullYear()
             const totalExperience = members.reduce((sum, member) => {
               const joinYear = Number.parseInt(member.joinDate.split(".")[0]) || currentYear
