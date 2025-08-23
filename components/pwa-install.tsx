@@ -2,18 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { X, Download } from "lucide-react"
+import { Download, X } from "lucide-react"
 
 interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: string[]
-  readonly userChoice: Promise<{
-    outcome: "accepted" | "dismissed"
-    platform: string
-  }>
   prompt(): Promise<void>
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
 }
 
-export function InstallPrompt() {
+export default function PWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
 
@@ -26,10 +22,12 @@ export function InstallPrompt() {
 
     window.addEventListener("beforeinstallprompt", handler)
 
-    return () => window.removeEventListener("beforeinstallprompt", handler)
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler)
+    }
   }, [])
 
-  const handleInstallClick = async () => {
+  const handleInstall = async () => {
     if (!deferredPrompt) return
 
     deferredPrompt.prompt()
@@ -43,7 +41,6 @@ export function InstallPrompt() {
 
   const handleDismiss = () => {
     setShowInstallPrompt(false)
-    setDeferredPrompt(null)
   }
 
   if (!showInstallPrompt) return null
@@ -58,15 +55,10 @@ export function InstallPrompt() {
         </div>
       </div>
       <div className="flex gap-2">
-        <Button
-          onClick={handleInstallClick}
-          variant="secondary"
-          size="sm"
-          className="bg-white text-blue-600 hover:bg-gray-100"
-        >
+        <Button onClick={handleInstall} variant="secondary" size="sm">
           설치
         </Button>
-        <Button onClick={handleDismiss} variant="ghost" size="sm" className="text-white hover:bg-blue-700">
+        <Button onClick={handleDismiss} variant="ghost" size="sm" className="text-white hover:bg-white/20">
           <X className="h-4 w-4" />
         </Button>
       </div>

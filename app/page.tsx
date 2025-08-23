@@ -10,7 +10,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { AdminPanel } from "@/components/admin-panel"
-import { InstallPrompt } from "@/components/install-prompt"
+import PWAInstall from "@/components/pwa-install"
 
 const latestNotices = [
   {
@@ -342,6 +342,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
+      <PWAInstall />
 
       <div className="md:ml-48">
         <section className="relative min-h-[60vh] flex items-center bg-white">
@@ -698,7 +699,6 @@ export default function HomePage() {
 
       <Footer />
       <AdminPanel />
-      <InstallPrompt />
     </div>
   )
 }
