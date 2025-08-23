@@ -92,32 +92,70 @@ export default function AboutPage() {
   const saveGalleryData = (images: GalleryImage[]) => {
     try {
       console.log("[v0] Saving gallery data:", images.length, "images")
+
+      const dataToSave = JSON.stringify(images)
+
+      // localStorage 용량 체크 (대략 5MB 제한)
+      if (dataToSave.length > 5 * 1024 * 1024) {
+        throw new Error("저장할 데이터가 너무 큽니다. 일부 이미지를 삭제해주세요.")
+      }
+
+      localStorage.setItem("clubGallery", dataToSave)
       setGalleryImages(images)
-      localStorage.setItem("clubGallery", JSON.stringify(images))
-      console.log("[v0] Gallery data saved successfully")
 
       // 저장 후 즉시 검증
       const saved = localStorage.getItem("clubGallery")
       if (saved) {
         const parsed = JSON.parse(saved)
-        console.log("[v0] Verification: saved", parsed.length, "images")
+        console.log("[v0] Verification: saved", parsed.length, "images successfully")
+
+        // 강제 리렌더링을 위한 상태 업데이트
+        setTimeout(() => {
+          setGalleryImages([...images])
+        }, 100)
+      } else {
+        throw new Error("저장 검증 실패")
       }
     } catch (error) {
       console.error("[v0] Error saving gallery data:", error)
-      alert("사진 저장 중 오류가 발생했습니다. 파일 크기가 너무 클 수 있습니다.")
+      alert(`사진 저장 중 오류가 발생했습니다: ${error.message}`)
     }
   }
 
   const handleImageUpload = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      if (file.size > 5 * 1024 * 1024) {
-        reject(new Error("파일 크기가 5MB를 초과합니다."))
-        return
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
+      const img = new Image()
+
+      img.onload = () => {
+        // 최대 크기 설정 (너무 크면 압축)
+        const maxWidth = 1200
+        const maxHeight = 800
+        let { width, height } = img
+
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height)
+          width *= ratio
+          height *= ratio
+        }
+
+        canvas.width = width
+        canvas.height = height
+        ctx?.drawImage(img, 0, 0, width, height)
+
+        // 압축된 이미지를 base64로 변환 (품질 0.8)
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8)
+        resolve(compressedDataUrl)
+      }
+
+      img.onerror = () => {
+        reject(new Error("이미지 처리 중 오류가 발생했습니다."))
       }
 
       const reader = new FileReader()
       reader.onload = (e) => {
-        resolve(e.target?.result as string)
+        img.src = e.target?.result as string
       }
       reader.onerror = () => {
         reject(new Error("파일 읽기 중 오류가 발생했습니다."))
