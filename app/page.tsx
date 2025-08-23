@@ -127,7 +127,7 @@ export default function HomePage() {
       <Navigation />
       <PWAInstall />
 
-      <div className="md:ml-48">
+      <div className="pt-16">
         <section className="relative min-h-[60vh] flex items-center bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
