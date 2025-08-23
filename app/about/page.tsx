@@ -164,30 +164,32 @@ export default function AboutPage() {
   }
 
   const handleAddImage = async () => {
-    if (!newImage.title.trim()) {
-      alert("사진 제목을 입력해주세요.")
-      return
-    }
-    if (!newImage.description.trim()) {
-      alert("사진 설명을 입력해주세요.")
-      return
-    }
-    if (!newImage.date) {
-      alert("날짜를 선택해주세요.")
-      return
-    }
-    if (!newImage.location.trim()) {
-      alert("장소를 입력해주세요.")
-      return
-    }
-    if (!newImage.file) {
-      alert("사진 파일을 선택해주세요.")
-      return
-    }
-
     try {
+      if (!newImage.title.trim()) {
+        alert("사진 제목을 입력해주세요.")
+        return
+      }
+      if (!newImage.description.trim()) {
+        alert("사진 설명을 입력해주세요.")
+        return
+      }
+      if (!newImage.date) {
+        alert("날짜를 선택해주세요.")
+        return
+      }
+      if (!newImage.location.trim()) {
+        alert("장소를 입력해주세요.")
+        return
+      }
+      if (!newImage.file) {
+        alert("사진 파일을 선택해주세요.")
+        return
+      }
+
       console.log("[v0] Adding new image:", newImage.title)
+
       const imageSrc = await handleImageUpload(newImage.file)
+
       const newGalleryImage: GalleryImage = {
         id: Date.now().toString(),
         src: imageSrc,
@@ -198,7 +200,11 @@ export default function AboutPage() {
       }
 
       const updatedImages = [...galleryImages, newGalleryImage]
+
+      // localStorage 저장
       localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
+
+      // 상태 업데이트
       setGalleryImages(updatedImages)
 
       setNewImage({ title: "", description: "", date: "", location: "", file: null })
@@ -212,7 +218,7 @@ export default function AboutPage() {
       }, 100)
     } catch (error) {
       console.error("[v0] Error adding image:", error)
-      alert(`사진 추가 중 오류가 발생했습니다: ${error.message}`)
+      alert(`사진 추가 중 오류가 발생했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`)
     }
   }
 
