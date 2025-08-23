@@ -90,15 +90,37 @@ export default function AboutPage() {
   }
 
   const saveGalleryData = (images: GalleryImage[]) => {
-    setGalleryImages(images)
-    localStorage.setItem("clubGallery", JSON.stringify(images))
+    try {
+      console.log("[v0] Saving gallery data:", images.length, "images")
+      setGalleryImages(images)
+      localStorage.setItem("clubGallery", JSON.stringify(images))
+      console.log("[v0] Gallery data saved successfully")
+
+      // 저장 후 즉시 검증
+      const saved = localStorage.getItem("clubGallery")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        console.log("[v0] Verification: saved", parsed.length, "images")
+      }
+    } catch (error) {
+      console.error("[v0] Error saving gallery data:", error)
+      alert("사진 저장 중 오류가 발생했습니다. 파일 크기가 너무 클 수 있습니다.")
+    }
   }
 
   const handleImageUpload = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (file.size > 5 * 1024 * 1024) {
+        reject(new Error("파일 크기가 5MB를 초과합니다."))
+        return
+      }
+
       const reader = new FileReader()
       reader.onload = (e) => {
         resolve(e.target?.result as string)
+      }
+      reader.onerror = () => {
+        reject(new Error("파일 읽기 중 오류가 발생했습니다."))
       }
       reader.readAsDataURL(file)
     })
@@ -127,6 +149,7 @@ export default function AboutPage() {
     }
 
     try {
+      console.log("[v0] Adding new image:", newImage.title)
       const imageSrc = await handleImageUpload(newImage.file)
       const newGalleryImage: GalleryImage = {
         id: Date.now().toString(),
@@ -142,8 +165,8 @@ export default function AboutPage() {
       setIsAddDialogOpen(false)
       alert("사진이 성공적으로 추가되었습니다.")
     } catch (error) {
-      console.error("사진 추가 중 오류:", error)
-      alert("사진 추가 중 오류가 발생했습니다.")
+      console.error("[v0] Error adding image:", error)
+      alert(`사진 추가 중 오류가 발생했습니다: ${error.message}`)
     }
   }
 
@@ -168,6 +191,7 @@ export default function AboutPage() {
     }
 
     try {
+      console.log("[v0] Editing image:", id, editingImage.title)
       const updatedImages = galleryImages.map((img) =>
         img.id === id
           ? {
@@ -183,16 +207,22 @@ export default function AboutPage() {
       setIsEditDialogOpen(false)
       alert("사진이 성공적으로 수정되었습니다.")
     } catch (error) {
-      console.error("사진 수정 중 오류:", error)
+      console.error("[v0] Error editing image:", error)
       alert("사진 수정 중 오류가 발생했습니다.")
     }
   }
 
   const handleDeleteImage = (id: string) => {
     if (confirm("정말로 이 사진을 삭제하시겠습니까?")) {
-      const updatedImages = galleryImages.filter((img) => img.id !== id)
-      saveGalleryData(updatedImages)
-      alert("사진이 성공적으로 삭제되었습니다.")
+      try {
+        console.log("[v0] Deleting image:", id)
+        const updatedImages = galleryImages.filter((img) => img.id !== id)
+        saveGalleryData(updatedImages)
+        alert("사진이 성공적으로 삭제되었습니다.")
+      } catch (error) {
+        console.error("[v0] Error deleting image:", error)
+        alert("사진 삭제 중 오류가 발생했습니다.")
+      }
     }
   }
 
@@ -769,7 +799,7 @@ export default function AboutPage() {
             <div className="bg-gray-50 rounded-lg p-6">
               <h3 className="text-xl font-bold text-primary mb-3">2016-2017년</h3>
               <ul className="space-y-2 text-sm">
-                <li>• 2016년 6월: 제12·13대 회장 및 임원, 이·취임식 (월드컵경기장)</li>
+                <li>• 2016년 6월: 제12·13대 회장 및 임원, 이취임식 (월드컵경기장)</li>
                 <li>
                   • 2016년 6월: 지내클럽인 국제로타리 3670지구 이리중앙로타리클럽과 이·취임식 참석 (익산 갤러리아펜션)
                 </li>
