@@ -165,11 +165,13 @@ export default function AboutPage() {
 
   const handleAddImage = async () => {
     try {
-      if (!newImage.title.trim()) {
+      console.log("[v0] Starting handleAddImage function")
+
+      if (!newImage.title?.trim()) {
         alert("사진 제목을 입력해주세요.")
         return
       }
-      if (!newImage.description.trim()) {
+      if (!newImage.description?.trim()) {
         alert("사진 설명을 입력해주세요.")
         return
       }
@@ -177,7 +179,7 @@ export default function AboutPage() {
         alert("날짜를 선택해주세요.")
         return
       }
-      if (!newImage.location.trim()) {
+      if (!newImage.location?.trim()) {
         alert("장소를 입력해주세요.")
         return
       }
@@ -188,7 +190,17 @@ export default function AboutPage() {
 
       console.log("[v0] Adding new image:", newImage.title)
 
-      const imageSrc = await handleImageUpload(newImage.file)
+      let imageSrc: string
+      try {
+        imageSrc = await handleImageUpload(newImage.file)
+        console.log("[v0] Image upload successful")
+      } catch (uploadError) {
+        console.error("[v0] Image upload failed:", uploadError)
+        alert(
+          `이미지 업로드 중 오류가 발생했습니다: ${uploadError instanceof Error ? uploadError.message : "알 수 없는 오류"}`,
+        )
+        return
+      }
 
       const newGalleryImage: GalleryImage = {
         id: Date.now().toString(),
@@ -199,26 +211,50 @@ export default function AboutPage() {
         location: newImage.location.trim(),
       }
 
-      const updatedImages = [...galleryImages, newGalleryImage]
+      console.log("[v0] Created new gallery image object:", newGalleryImage.id)
 
-      // localStorage 저장
-      localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
+      const currentImages = [...galleryImages]
+      const updatedImages = [...currentImages, newGalleryImage]
 
-      // 상태 업데이트
+      console.log("[v0] Updating images array, total:", updatedImages.length)
+
+      try {
+        const dataToSave = JSON.stringify(updatedImages)
+        localStorage.setItem("clubGallery", dataToSave)
+        console.log("[v0] Successfully saved to localStorage")
+      } catch (storageError) {
+        console.error("[v0] localStorage save failed:", storageError)
+        alert("사진 저장 중 오류가 발생했습니다. 브라우저 저장 공간을 확인해주세요.")
+        return
+      }
+
       setGalleryImages(updatedImages)
 
-      setNewImage({ title: "", description: "", date: "", location: "", file: null })
+      setNewImage({
+        title: "",
+        description: "",
+        date: "",
+        location: "",
+        file: null,
+      })
+
       setIsAddDialogOpen(false)
 
       console.log("[v0] Image added successfully, total images:", updatedImages.length)
       alert("사진이 성공적으로 추가되었습니다.")
 
       setTimeout(() => {
-        setGalleryImages([...updatedImages])
+        try {
+          setGalleryImages([...updatedImages])
+          console.log("[v0] Force re-render completed")
+        } catch (rerenderError) {
+          console.error("[v0] Force re-render failed:", rerenderError)
+        }
       }, 100)
     } catch (error) {
-      console.error("[v0] Error adding image:", error)
-      alert(`사진 추가 중 오류가 발생했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`)
+      console.error("[v0] Error in handleAddImage:", error)
+      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"
+      alert(`사진 추가 중 오류가 발생했습니다: ${errorMessage}`)
     }
   }
 
