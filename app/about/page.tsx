@@ -109,7 +109,6 @@ export default function AboutPage() {
         const parsed = JSON.parse(saved)
         console.log("[v0] Verification: saved", parsed.length, "images successfully")
 
-        // 강제 리렌더링을 위한 상태 업데이트
         setTimeout(() => {
           setGalleryImages([...images])
         }, 100)
@@ -199,8 +198,8 @@ export default function AboutPage() {
       }
 
       const updatedImages = [...galleryImages, newGalleryImage]
-      setGalleryImages(updatedImages)
       localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
+      setGalleryImages(updatedImages)
 
       setNewImage({ title: "", description: "", date: "", location: "", file: null })
       setIsAddDialogOpen(false)
