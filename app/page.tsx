@@ -5,7 +5,8 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Heart, Award, BookOpen, History } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Heart, Award, BookOpen, History, Edit2, Check, X } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import Image from "next/image"
@@ -37,6 +38,8 @@ export default function HomePage() {
   const [memberCount, setMemberCount] = useState(68)
   const [averageExperience, setAverageExperience] = useState(0)
   const [foundingYears, setFoundingYears] = useState(0)
+  const [isEditingMemberCount, setIsEditingMemberCount] = useState(false)
+  const [editMemberCount, setEditMemberCount] = useState(68)
 
   const [activities, setActivities] = useState([
     {
@@ -103,11 +106,21 @@ export default function HomePage() {
   useEffect(() => {
     const loadMemberCount = () => {
       try {
+        const savedCustomMemberCount = localStorage.getItem("custom-member-count")
+        if (savedCustomMemberCount) {
+          const customCount = Number.parseInt(savedCustomMemberCount)
+          setMemberCount(customCount)
+          setEditMemberCount(customCount)
+          console.log("[v0] Using custom member count:", customCount)
+          return
+        }
+
         const savedMembers = localStorage.getItem("rotary-members")
         if (savedMembers) {
           const members = JSON.parse(savedMembers)
           if (Array.isArray(members) && members.length > 0) {
             setMemberCount(members.length)
+            setEditMemberCount(members.length)
             console.log("[v0] Home page loaded members:", members.length)
             const currentYear = new Date().getFullYear()
             const totalExperience = members.reduce((sum, member) => {
@@ -189,6 +202,7 @@ export default function HomePage() {
             { joinDate: "2024.12.02" },
           ]
           setMemberCount(initialMembers.length)
+          setEditMemberCount(initialMembers.length)
           const currentYear = new Date().getFullYear()
           const totalExperience = initialMembers.reduce((sum, member) => {
             const joinYear = Number.parseInt(member.joinDate.split(".")[0]) || currentYear
@@ -199,6 +213,7 @@ export default function HomePage() {
       } catch (error) {
         console.error("회원수 로딩 오류:", error)
         setMemberCount(68)
+        setEditMemberCount(68)
         setAverageExperience(15)
       }
     }
@@ -331,6 +346,42 @@ export default function HomePage() {
     }
   }
 
+  const handleEditMemberCount = () => {
+    setIsEditingMemberCount(true)
+  }
+
+  const handleSaveMemberCount = () => {
+    const newCount = Number.parseInt(editMemberCount.toString())
+    if (newCount > 0) {
+      setMemberCount(newCount)
+      localStorage.setItem("custom-member-count", newCount.toString())
+      setIsEditingMemberCount(false)
+      console.log("[v0] Custom member count saved:", newCount)
+    }
+  }
+
+  const handleCancelEditMemberCount = () => {
+    setEditMemberCount(memberCount)
+    setIsEditingMemberCount(false)
+  }
+
+  const handleSyncWithMemberList = () => {
+    try {
+      const savedMembers = localStorage.getItem("rotary-members")
+      if (savedMembers) {
+        const members = JSON.parse(savedMembers)
+        if (Array.isArray(members)) {
+          setMemberCount(members.length)
+          setEditMemberCount(members.length)
+          localStorage.removeItem("custom-member-count")
+          console.log("[v0] Synced with member list:", members.length)
+        }
+      }
+    } catch (error) {
+      console.error("회원명부 동기화 오류:", error)
+    }
+  }
+
   const formatDate = (dateString) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("ko-KR", {
@@ -449,10 +500,55 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
               <div className="text-center">
-                <div className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4 leading-none">
-                  {memberCount}
+                <div className="relative group">
+                  {isEditingMemberCount ? (
+                    <div className="flex flex-col items-center space-y-2">
+                      <Input
+                        type="number"
+                        value={editMemberCount}
+                        onChange={(e) => setEditMemberCount(Number.parseInt(e.target.value) || 0)}
+                        className="w-24 text-center text-2xl font-bold"
+                        min="1"
+                      />
+                      <div className="flex space-x-2">
+                        <Button size="sm" onClick={handleSaveMemberCount} className="p-1">
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCancelEditMemberCount}
+                          className="p-1 bg-transparent"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4 leading-none">
+                        {memberCount}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleEditMemberCount}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-2 -right-2 p-1"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                 </div>
                 <div className="text-lg text-gray-700 font-semibold">회원 수</div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSyncWithMemberList}
+                  className="mt-2 text-xs px-2 py-1 bg-transparent"
+                >
+                  회원명부와 동기화
+                </Button>
               </div>
               <div className="text-center">
                 <div className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4 leading-none">
