@@ -453,28 +453,61 @@ export default function AboutPage() {
                       <Input
                         placeholder="사진 제목 *"
                         value={newImage.title}
-                        onChange={(e) => setNewImage({ ...newImage, title: e.target.value })}
+                        onChange={(e) => {
+                          try {
+                            setNewImage({ ...newImage, title: e?.target?.value || "" })
+                          } catch (error) {
+                            console.error("[v0] Error in title onChange:", error)
+                          }
+                        }}
                       />
                       <Textarea
                         placeholder="사진 설명 *"
                         value={newImage.description}
-                        onChange={(e) => setNewImage({ ...newImage, description: e.target.value })}
+                        onChange={(e) => {
+                          try {
+                            setNewImage({ ...newImage, description: e?.target?.value || "" })
+                          } catch (error) {
+                            console.error("[v0] Error in description onChange:", error)
+                          }
+                        }}
                       />
                       <Input
                         type="date"
                         value={newImage.date}
-                        onChange={(e) => setNewImage({ ...newImage, date: e.target.value })}
+                        onChange={(e) => {
+                          try {
+                            setNewImage({ ...newImage, date: e?.target?.value || "" })
+                          } catch (error) {
+                            console.error("[v0] Error in date onChange:", error)
+                          }
+                        }}
                         required
                       />
                       <Input
                         placeholder="장소 *"
                         value={newImage.location}
-                        onChange={(e) => setNewImage({ ...newImage, location: e.target.value })}
+                        onChange={(e) => {
+                          try {
+                            setNewImage({ ...newImage, location: e?.target?.value || "" })
+                          } catch (error) {
+                            console.error("[v0] Error in location onChange:", error)
+                          }
+                        }}
                       />
                       <Input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => setNewImage({ ...newImage, file: e.target.files?.[0] || null })}
+                        onChange={(e) => {
+                          try {
+                            const file = e?.target?.files?.[0] || null
+                            console.log("[v0] File selected:", file?.name || "none")
+                            setNewImage({ ...newImage, file })
+                          } catch (error) {
+                            console.error("[v0] Error in file onChange:", error)
+                            setNewImage({ ...newImage, file: null })
+                          }
+                        }}
                         required
                       />
                       <Button onClick={handleAddImage} className="w-full">
