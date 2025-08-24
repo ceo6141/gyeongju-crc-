@@ -311,6 +311,103 @@ export default function AboutPage() {
                 </p>
               </div>
 
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h4 className="text-xl font-semibold mb-6 text-primary">년도별 연혁</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-primary pl-4">
+                      <div className="font-bold text-primary">2005년</div>
+                      <div className="text-sm">• 1월 20일: 경주중앙로타리클럽 창립</div>
+                      <div className="text-sm">• 초대 회장: 최병준 (崔炳俊) 취임</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2006-2007년</div>
+                      <div className="text-sm">• 3대 회장: 최희상 (崔熙相)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2007-2008년</div>
+                      <div className="text-sm">• 4대 회장: 이상익 (李相益)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2008-2009년</div>
+                      <div className="text-sm">• 5대 회장: 김병수 (金炳洙)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2009-2010년</div>
+                      <div className="text-sm">• 6대 회장: 윤태조 (尹泰祚)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2010-2011년</div>
+                      <div className="text-sm">• 7대 회장: 이승협 (李承協)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2011-2012년</div>
+                      <div className="text-sm">• 8대 회장: 이창희 (李昌熙)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2012-2013년</div>
+                      <div className="text-sm">• 9대 회장: 서상호 (徐相浩)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2013-2014년</div>
+                      <div className="text-sm">• 10대 회장: 박문상 (朴文相)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2014-2015년</div>
+                      <div className="text-sm">• 11대 회장: 황병욱 (黃炳旭)</div>
+                    </div>
+                    <div className="border-l-4 border-blue-400 pl-4">
+                      <div className="font-bold text-blue-600">2015-2016년</div>
+                      <div className="text-sm">• 12대 회장: 권오석 (權五碩)</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2016-2017년</div>
+                      <div className="text-sm">• 13대 회장: 박임관 (朴林寬)</div>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2017-2018년</div>
+                      <div className="text-sm">• 14대 회장: 윤태열 (尹泰烈)</div>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2018-2019년</div>
+                      <div className="text-sm">• 15대 회장: 이정환 (李正奐)</div>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2019-2020년</div>
+                      <div className="text-sm">• 16대 회장: 남정악 (南禎岳)</div>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2020-2021년</div>
+                      <div className="text-sm">• 17대 회장: 김동한 (金東漢)</div>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2021-2022년</div>
+                      <div className="text-sm">• 18대 회장: 오승연 (吳承燕)</div>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2022-2023년</div>
+                      <div className="text-sm">• 19대 회장: 임성일 (林成一)</div>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2023-2024년</div>
+                      <div className="text-sm">• 20대 회장: 이재술 (李在述)</div>
+                    </div>
+                    <div className="border-l-4 border-green-400 pl-4">
+                      <div className="font-bold text-green-600">2024-2025년</div>
+                      <div className="text-sm">• 21대 회장: 김용현 (金龍賢)</div>
+                    </div>
+                    <div className="border-l-4 border-red-400 pl-4">
+                      <div className="font-bold text-red-600">2025-2026년</div>
+                      <div className="text-sm">• 22대 회장: 최용환 (崔龍煥) - 현재</div>
+                      <div className="text-sm">• 창립 20주년 기념</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-white p-6 rounded-lg shadow-sm">
                   <h4 className="text-xl font-semibold mb-4 text-primary">창립 정보</h4>
@@ -335,47 +432,22 @@ export default function AboutPage() {
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h4 className="text-xl font-semibold mb-4 text-primary">주요 연혁</h4>
+                  <h4 className="text-xl font-semibold mb-4 text-primary">클럽 발전사</h4>
                   <div className="space-y-3">
-                    <div className="border-l-2 border-primary pl-4">
-                      <div className="font-medium">2005년</div>
-                      <div className="text-sm text-muted-foreground">경주중앙로타리클럽 창립</div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary mb-1">20년</div>
+                      <div className="text-sm text-muted-foreground">창립 이래 지속적인 봉사활동</div>
                     </div>
-                    <div className="border-l-2 border-primary pl-4">
-                      <div className="font-medium">2005-2025년</div>
-                      <div className="text-sm text-muted-foreground">22대에 걸친 회장단 운영</div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary mb-1">22대</div>
+                      <div className="text-sm text-muted-foreground">역대 회장단의 헌신적인 리더십</div>
                     </div>
-                    <div className="border-l-2 border-primary pl-4">
-                      <div className="font-medium">2025년</div>
-                      <div className="text-sm text-muted-foreground">창립 20주년, 제22대 천상 최용환 회장 취임</div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary mb-1">68명</div>
+                      <div className="text-sm text-muted-foreground">다양한 직업군의 회원들</div>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h4 className="text-xl font-semibold mb-4 text-primary">클럽 발전사</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary mb-2">20년</div>
-                    <div className="text-sm text-muted-foreground">창립 이래 지속적인 봉사활동</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary mb-2">22대</div>
-                    <div className="text-sm text-muted-foreground">역대 회장단의 헌신적인 리더십</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary mb-2">68명</div>
-                    <div className="text-sm text-muted-foreground">다양한 직업군의 회원들</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <p className="text-muted-foreground leading-relaxed">
-                  경주중앙로타리클럽은 창립 이래 '봉사하는 마음'으로 지역사회 발전과 국제친선을 위해 꾸준히
-                  노력해왔습니다. 앞으로도 로타리의 이상을 실현하며 더 나은 세상을 만들어가겠습니다.
-                </p>
               </div>
             </div>
           </div>
