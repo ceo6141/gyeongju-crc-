@@ -1,7 +1,4 @@
 "use client"
-
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,7 +30,6 @@ export default function GalleryPage() {
     location: "",
   })
 
-  // localStorage에서 갤러리 이미지 로드
   useEffect(() => {
     const savedImages = localStorage.getItem("gallery-images")
     if (savedImages) {
@@ -45,7 +41,6 @@ export default function GalleryPage() {
     }
   }, [])
 
-  // localStorage에 갤러리 이미지 저장
   const saveImages = (newImages: GalleryImage[]) => {
     try {
       localStorage.setItem("gallery-images", JSON.stringify(newImages))
@@ -55,68 +50,70 @@ export default function GalleryPage() {
     }
   }
 
-  // 이미지 압축 함수
-  const compressImage = (file: File): Promise<string> => {
+  const processImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const canvas = document.createElement("canvas")
-      const ctx = canvas.getContext("2d")
-      const img = new Image()
+      const reader = new FileReader()
 
-      img.onload = () => {
-        try {
-          // 최대 크기 설정
-          const maxWidth = 600
-          const maxHeight = 400
-          let width = img.width || 800
-          let height = img.height || 600
+      reader.onload = () => {
+        const result = reader.result as string
 
-          // 비율 유지하면서 크기 조정
-          if (width > height) {
-            if (width > maxWidth) {
-              height = (height * maxWidth) / width
-              width = maxWidth
+        // 간단한 크기 체크 (2MB 이하만 허용)
+        if (result.length > 2 * 1024 * 1024) {
+          // 큰 파일의 경우 Canvas로 압축
+          const img = document.createElement("img")
+          img.onload = () => {
+            const canvas = document.createElement("canvas")
+            const ctx = canvas.getContext("2d")
+
+            // 최대 크기 400x300으로 제한
+            const maxWidth = 400
+            const maxHeight = 300
+            let { width, height } = img
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = (height * maxWidth) / width
+                width = maxWidth
+              }
+            } else {
+              if (height > maxHeight) {
+                width = (width * maxHeight) / height
+                height = maxHeight
+              }
             }
-          } else {
-            if (height > maxHeight) {
-              width = (width * maxHeight) / height
-              height = maxHeight
+
+            canvas.width = width
+            canvas.height = height
+
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height)
+              const compressedResult = canvas.toDataURL("image/jpeg", 0.5)
+              resolve(compressedResult)
+            } else {
+              resolve(result)
             }
           }
-
-          canvas.width = width
-          canvas.height = height
-
-          // 고품질 렌더링 설정
-          if (ctx) {
-            ctx.imageSmoothingEnabled = true
-            ctx.imageSmoothingQuality = "high"
-            ctx.drawImage(img, 0, 0, width, height)
-
-            // JPEG 품질 0.6으로 압축
-            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.6)
-            resolve(compressedDataUrl)
-          } else {
-            reject(new Error("Canvas context를 가져올 수 없습니다"))
-          }
-        } catch (error) {
-          console.error("이미지 압축 중 오류:", error)
-          reject(error)
+          img.src = result
+        } else {
+          resolve(result)
         }
       }
 
-      img.onerror = () => reject(new Error("이미지 로드 실패"))
-      img.src = URL.createObjectURL(file)
+      reader.onerror = () => reject(new Error("파일 읽기 실패"))
+      reader.readAsDataURL(file)
     })
   }
 
-  const handleAddImage = async (e?: React.MouseEvent) => {
+  const handleAddImage = async () => {
     if (!selectedFile || !formData.title.trim()) {
       alert("사진과 제목을 입력해주세요.")
       return
     }
 
     try {
-      const compressedImageUrl = await compressImage(selectedFile)
+      console.log("[v0] 사진 추가 시작:", selectedFile.name)
+
+      const imageUrl = await processImage(selectedFile)
 
       const newImage: GalleryImage = {
         id: Date.now().toString(),
@@ -124,23 +121,27 @@ export default function GalleryPage() {
         description: formData.description,
         date: formData.date,
         location: formData.location,
-        imageUrl: compressedImageUrl,
+        imageUrl,
       }
 
       const updatedImages = [...images, newImage]
       saveImages(updatedImages)
 
+      console.log("[v0] 사진 추가 완료")
+
       // 폼 초기화
       setFormData({ title: "", description: "", date: "", location: "" })
       setSelectedFile(null)
       setIsAddDialogOpen(false)
+
+      alert("사진이 성공적으로 추가되었습니다!")
     } catch (error) {
-      console.error("사진 추가 오류:", error)
+      console.error("[v0] 사진 추가 오류:", error)
       alert("사진 추가 중 오류가 발생했습니다.")
     }
   }
 
-  const handleEditImage = async (e?: React.MouseEvent) => {
+  const handleEditImage = async () => {
     if (!editingImage || !formData.title.trim()) {
       alert("제목을 입력해주세요.")
       return
@@ -149,9 +150,9 @@ export default function GalleryPage() {
     try {
       let imageUrl = editingImage.imageUrl
 
-      // 새 파일이 선택된 경우 압축
+      // 새 파일이 선택된 경우만 처리
       if (selectedFile) {
-        imageUrl = await compressImage(selectedFile)
+        imageUrl = await processImage(selectedFile)
       }
 
       const updatedImage: GalleryImage = {
@@ -171,6 +172,8 @@ export default function GalleryPage() {
       setSelectedFile(null)
       setEditingImage(null)
       setIsEditDialogOpen(false)
+
+      alert("사진이 성공적으로 수정되었습니다!")
     } catch (error) {
       console.error("사진 수정 오류:", error)
       alert("사진 수정 중 오류가 발생했습니다.")
@@ -261,7 +264,7 @@ export default function GalleryPage() {
                   />
                 </div>
                 <div className="flex gap-2 pt-4">
-                  <Button onClick={() => handleAddImage()} className="flex-1">
+                  <Button onClick={handleAddImage} className="flex-1">
                     추가
                   </Button>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="flex-1">
@@ -361,7 +364,7 @@ export default function GalleryPage() {
                 />
               </div>
               <div className="flex gap-2 pt-4">
-                <Button onClick={() => handleEditImage()} className="flex-1">
+                <Button onClick={handleEditImage} className="flex-1">
                   수정
                 </Button>
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="flex-1">
