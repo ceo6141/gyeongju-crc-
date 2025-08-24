@@ -121,105 +121,68 @@ export default function AboutPage() {
     }
   }
 
-  const handleImageUpload = async (file: File): Promise<string> => {
+  const compressImageToTarget = async (file: File, targetSizeKB = 100): Promise<string> => {
     return new Promise((resolve, reject) => {
-      try {
-        console.log("[v0] Starting safe image upload for file:", file.name, "Size:", file.size)
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
 
-        // 파일 크기에 따른 압축 설정
-        let maxWidth = 800
-        let maxHeight = 600
-        let quality = 0.8
+      if (!ctx) {
+        reject(new Error("Canvas not supported"))
+        return
+      }
+
+      const img = new Image()
+
+      img.onload = () => {
+        // 목표 크기에 따른 동적 압축 설정
+        let maxDimension = 400
+        let quality = 0.3
 
         if (file.size > 10 * 1024 * 1024) {
-          // 10MB 이상
-          maxWidth = 400
-          maxHeight = 300
-          quality = 0.3
-          console.log("[v0] Very large file, applying maximum compression")
+          maxDimension = 300
+          quality = 0.2
         } else if (file.size > 5 * 1024 * 1024) {
-          // 5MB 이상
-          maxWidth = 500
-          maxHeight = 400
-          quality = 0.5
-          console.log("[v0] Large file, applying high compression")
-        } else if (file.size > 2 * 1024 * 1024) {
-          // 2MB 이상
-          maxWidth = 600
-          maxHeight = 450
-          quality = 0.6
-          console.log("[v0] Medium file, applying moderate compression")
+          maxDimension = 350
+          quality = 0.25
         }
 
-        const canvas = document.createElement("canvas")
-        const ctx = canvas.getContext("2d")
+        // 비율 유지하면서 크기 조정
+        const scale = Math.min(maxDimension / img.width, maxDimension / img.height)
+        const newWidth = Math.floor(img.width * scale)
+        const newHeight = Math.floor(img.height * scale)
 
-        if (!ctx) {
-          reject(new Error("Canvas context not available"))
-          return
+        canvas.width = newWidth
+        canvas.height = newHeight
+
+        // 고품질 렌더링 설정
+        ctx.imageSmoothingEnabled = true
+        ctx.imageSmoothingQuality = "high"
+
+        // 이미지 그리기
+        ctx.drawImage(img, 0, 0, newWidth, newHeight)
+
+        // 반복적 압축으로 목표 크기 달성
+        let currentQuality = quality
+        let result = canvas.toDataURL("image/jpeg", currentQuality)
+
+        // 목표 크기보다 크면 품질을 더 낮춤
+        while (result.length > targetSizeKB * 1024 * 1.33 && currentQuality > 0.1) {
+          currentQuality -= 0.05
+          result = canvas.toDataURL("image/jpeg", currentQuality)
         }
 
-        const img = new Image()
-
-        img.onload = () => {
-          try {
-            console.log("[v0] Image loaded successfully, original dimensions:", img.width, "x", img.height)
-
-            // 안전한 크기 계산
-            const originalWidth = img.width || 800
-            const originalHeight = img.height || 600
-
-            // 비율 유지하면서 크기 조정
-            const ratio = Math.min(maxWidth / originalWidth, maxHeight / originalHeight)
-            const newWidth = Math.floor(originalWidth * ratio)
-            const newHeight = Math.floor(originalHeight * ratio)
-
-            console.log("[v0] Resizing to:", newWidth, "x", newHeight, "with quality:", quality)
-
-            canvas.width = newWidth
-            canvas.height = newHeight
-
-            // 이미지 그리기
-            ctx.drawImage(img, 0, 0, newWidth, newHeight)
-
-            // Base64로 변환
-            const compressedDataUrl = canvas.toDataURL("image/jpeg", quality)
-            console.log(
-              "[v0] Image compressed successfully, new size:",
-              Math.round(compressedDataUrl.length * 0.75),
-              "bytes",
-            )
-
-            resolve(compressedDataUrl)
-          } catch (error) {
-            console.error("[v0] Error during image processing:", error)
-            reject(error)
-          }
-        }
-
-        img.onerror = (error) => {
-          console.error("[v0] Image load error:", error)
-          reject(new Error("Failed to load image"))
-        }
-
-        // 이미지 로드 시작
-        const objectUrl = URL.createObjectURL(file)
-        img.src = objectUrl
-
-        // 메모리 정리를 위한 타이머 설정
-        setTimeout(() => {
-          URL.revokeObjectURL(objectUrl)
-        }, 10000)
-      } catch (error) {
-        console.error("[v0] Error in handleImageUpload:", error)
-        reject(error)
+        console.log(`[v0] 압축 완료: ${Math.round((result.length * 0.75) / 1024)}KB (품질: ${currentQuality})`)
+        resolve(result)
       }
+
+      img.onerror = () => reject(new Error("이미지 로드 실패"))
+      img.src = URL.createObjectURL(file)
     })
   }
 
   const handleAddImage = async () => {
     try {
-      console.log("[v0] Starting handleAddImage function")
+      console.log("[v0] 사진 추가 시작")
 
       // 입력 검증
       if (!newImage.title?.trim()) {
@@ -243,61 +206,26 @@ export default function AboutPage() {
         return
       }
 
-      console.log("[v0] Adding new image:", newImage.title)
-      console.log("[v0] Original file size:", newImage.file.size, "bytes")
+      console.log(`[v0] 원본 파일: ${newImage.file.name}, 크기: ${Math.round(newImage.file.size / 1024)}KB`)
 
-      if (newImage.file.size > 5 * 1024 * 1024) {
-        console.log("[v0] Large file detected, applying aggressive compression")
-      }
-
-      // 이미지 업로드 및 압축
-      let imageSrc: string
-      try {
-        imageSrc = await handleImageUpload(newImage.file)
-        console.log("[v0] Image upload and compression successful")
-      } catch (uploadError) {
-        console.error("[v0] Image upload failed:", uploadError)
-        alert(
-          `이미지 업로드 중 오류가 발생했습니다: ${uploadError instanceof Error ? uploadError.message : "알 수 없는 오류"}`,
-        )
-        return
-      }
+      // 이미지 압축 (목표: 100KB 이하)
+      const compressedImage = await compressImageToTarget(newImage.file, 100)
 
       // 새 갤러리 이미지 객체 생성
       const newGalleryImage: GalleryImage = {
         id: Date.now().toString(),
-        src: imageSrc,
+        src: compressedImage,
         title: newImage.title.trim(),
         description: newImage.description.trim(),
         date: newImage.date,
         location: newImage.location.trim(),
       }
 
-      console.log("[v0] Created new gallery image object:", newGalleryImage.id)
-
       // 이미지 배열 업데이트
       const updatedImages = [...galleryImages, newGalleryImage]
-      console.log("[v0] Updating images array, total:", updatedImages.length)
 
       // localStorage에 저장
-      try {
-        const dataToSave = JSON.stringify(updatedImages)
-        localStorage.setItem("clubGallery", dataToSave)
-        console.log("[v0] Successfully saved to localStorage")
-
-        // 저장 검증
-        const savedData = localStorage.getItem("clubGallery")
-        if (savedData) {
-          const parsedData = JSON.parse(savedData)
-          console.log("[v0] Verification: saved", parsedData.length, "images")
-        }
-      } catch (storageError) {
-        console.error("[v0] localStorage save failed:", storageError)
-        alert("사진 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
-        return
-      }
-
-      // 상태 업데이트
+      localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
       setGalleryImages(updatedImages)
 
       // 폼 초기화
@@ -310,13 +238,10 @@ export default function AboutPage() {
       })
 
       setIsAddDialogOpen(false)
-
-      console.log("[v0] Image added successfully, total images:", updatedImages.length)
       alert("사진이 성공적으로 추가되었습니다!")
     } catch (error) {
-      console.error("[v0] Error in handleAddImage:", error)
-      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"
-      alert(`사진 추가 중 오류가 발생했습니다: ${errorMessage}`)
+      console.error("[v0] 사진 추가 오류:", error)
+      alert("사진 추가 중 오류가 발생했습니다. 다시 시도해주세요.")
     }
   }
 
