@@ -2,12 +2,13 @@
 
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, MapPin, Edit } from "lucide-react"
+import { Calendar, MapPin, Edit, Plus, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface GalleryImage {
   id: string
@@ -46,13 +47,18 @@ export default function AboutPage() {
     postalCode: "38090",
   })
   const [isEditingContact, setIsEditingContact] = useState(false)
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isGalleryDialogOpen, setIsGalleryDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   useEffect(() => {
-    const savedImages = localStorage.getItem("simpleGallery")
+    const savedImages = localStorage.getItem("clubGallery")
     if (savedImages) {
-      setGalleryImages(JSON.parse(savedImages))
+      try {
+        setGalleryImages(JSON.parse(savedImages))
+      } catch (error) {
+        console.error("갤러리 데이터 로드 오류:", error)
+        setGalleryImages([])
+      }
     } else {
       const initialImages: GalleryImage[] = [
         {
@@ -65,7 +71,7 @@ export default function AboutPage() {
         },
       ]
       setGalleryImages(initialImages)
-      localStorage.setItem("simpleGallery", JSON.stringify(initialImages))
+      localStorage.setItem("clubGallery", JSON.stringify(initialImages))
     }
 
     const savedContact = localStorage.getItem("clubContact")
@@ -99,13 +105,13 @@ export default function AboutPage() {
     }
     const updatedImages = [...galleryImages, newImage]
     setGalleryImages(updatedImages)
-    localStorage.setItem("simpleGallery", JSON.stringify(updatedImages))
+    localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
   }
 
   const deleteGalleryItem = (id: string) => {
     const updatedImages = galleryImages.filter((img) => img.id !== id)
     setGalleryImages(updatedImages)
-    localStorage.setItem("simpleGallery", JSON.stringify(updatedImages))
+    localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
   }
 
   const handleEditImage = async (id: string) => {
@@ -142,7 +148,7 @@ export default function AboutPage() {
       )
 
       setGalleryImages(updatedImages)
-      localStorage.setItem("simpleGallery", JSON.stringify(updatedImages))
+      localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
 
       setEditingImage(null)
       setIsEditDialogOpen(false)
@@ -162,7 +168,7 @@ export default function AboutPage() {
         const updatedImages = galleryImages.filter((img) => img.id !== id)
 
         setGalleryImages(updatedImages)
-        localStorage.setItem("simpleGallery", JSON.stringify(updatedImages))
+        localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
 
         console.log("[v0] Image deleted successfully, remaining images:", updatedImages.length)
         alert("사진이 성공적으로 삭제되었습니다.")
@@ -229,7 +235,49 @@ export default function AboutPage() {
     })
   }
 
-  const addGalleryWithPhoto = async () => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
+      const img = new Image()
+
+      img.onload = () => {
+        // 최대 크기 설정 (800x600)
+        const maxWidth = 800
+        const maxHeight = 600
+        let { width, height } = img
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width
+            width = maxWidth
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height
+            height = maxHeight
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height)
+          // JPEG 품질 0.7로 압축
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7)
+          resolve(compressedDataUrl)
+        } else {
+          reject(new Error("Canvas context를 가져올 수 없습니다"))
+        }
+      }
+
+      img.onerror = () => reject(new Error("이미지 로드 실패"))
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleAddGalleryImage = async () => {
     if (!newImage.title.trim() || !newImage.description.trim() || !newImage.date || !newImage.location.trim()) {
       alert("모든 필드를 입력해주세요.")
       return
@@ -239,7 +287,9 @@ export default function AboutPage() {
       let imageSrc = "/placeholder.svg?height=300&width=400"
 
       if (newImage.file) {
-        imageSrc = await handleFileUpload(newImage.file)
+        console.log("[v0] 이미지 압축 시작:", newImage.file.name, "크기:", Math.round(newImage.file.size / 1024), "KB")
+        imageSrc = await compressImage(newImage.file)
+        console.log("[v0] 이미지 압축 완료")
       }
 
       const newGalleryImage: GalleryImage = {
@@ -253,7 +303,7 @@ export default function AboutPage() {
 
       const updatedImages = [...galleryImages, newGalleryImage]
       setGalleryImages(updatedImages)
-      localStorage.setItem("simpleGallery", JSON.stringify(updatedImages))
+      localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
 
       // 폼 초기화
       setNewImage({
@@ -264,10 +314,62 @@ export default function AboutPage() {
         file: null,
       })
 
+      setIsGalleryDialogOpen(false)
       alert("갤러리에 사진이 성공적으로 추가되었습니다.")
     } catch (error) {
       console.error("사진 추가 오류:", error)
       alert("사진 추가 중 오류가 발생했습니다.")
+    }
+  }
+
+  const handleEditGalleryImage = async () => {
+    if (!editingImage) return
+
+    if (
+      !editingImage.title.trim() ||
+      !editingImage.description.trim() ||
+      !editingImage.date ||
+      !editingImage.location.trim()
+    ) {
+      alert("모든 필드를 입력해주세요.")
+      return
+    }
+
+    try {
+      const updatedImages = galleryImages.map((img) =>
+        img.id === editingImage.id
+          ? {
+              ...editingImage,
+              title: editingImage.title.trim(),
+              description: editingImage.description.trim(),
+              location: editingImage.location.trim(),
+            }
+          : img,
+      )
+
+      setGalleryImages(updatedImages)
+      localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
+
+      setEditingImage(null)
+      setIsEditDialogOpen(false)
+      alert("사진이 성공적으로 수정되었습니다.")
+    } catch (error) {
+      console.error("사진 수정 오류:", error)
+      alert("사진 수정 중 오류가 발생했습니다.")
+    }
+  }
+
+  const handleDeleteGalleryImage = (id: string) => {
+    if (confirm("정말로 이 사진을 삭제하시겠습니까?")) {
+      try {
+        const updatedImages = galleryImages.filter((img) => img.id !== id)
+        setGalleryImages(updatedImages)
+        localStorage.setItem("clubGallery", JSON.stringify(updatedImages))
+        alert("사진이 성공적으로 삭제되었습니다.")
+      } catch (error) {
+        console.error("사진 삭제 오류:", error)
+        alert("사진 삭제 중 오류가 발생했습니다.")
+      }
     }
   }
 
@@ -324,12 +426,16 @@ export default function AboutPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">클럽 갤러리</h2>
             <p className="text-lg text-muted-foreground">우리 클럽의 소중한 순간들을 함께 나누어요.</p>
+            <Button onClick={() => setIsGalleryDialogOpen(true)} className="mt-4">
+              <Plus className="h-4 w-4 mr-2" />
+              사진 추가
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {galleryImages.map((image) => (
               <Card key={image.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="relative">
+                <div className="relative group">
                   <Image
                     src={image.src || "/placeholder.svg?height=300&width=400&query=rotary club event"}
                     alt={image.title}
@@ -337,6 +443,23 @@ export default function AboutPage() {
                     height={300}
                     className="w-full h-48 object-cover"
                   />
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          setEditingImage(image)
+                          setIsEditDialogOpen(true)
+                        }}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDeleteGalleryImage(image.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-lg mb-2">{image.title}</h3>
@@ -352,50 +475,6 @@ export default function AboutPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
-
-          <div className="mt-12 max-w-2xl mx-auto">
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-4">갤러리 항목 추가</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">사진 선택</label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target?.files?.[0] || null
-                        setNewImage({ ...newImage, file })
-                      }}
-                    />
-                  </div>
-                  <Input
-                    placeholder="행사 제목"
-                    value={newImage.title}
-                    onChange={(e) => setNewImage({ ...newImage, title: e.target?.value || "" })}
-                  />
-                  <Textarea
-                    placeholder="행사 설명"
-                    value={newImage.description}
-                    onChange={(e) => setNewImage({ ...newImage, description: e.target?.value || "" })}
-                  />
-                  <Input
-                    type="date"
-                    value={newImage.date}
-                    onChange={(e) => setNewImage({ ...newImage, date: e.target?.value || "" })}
-                  />
-                  <Input
-                    placeholder="장소"
-                    value={newImage.location}
-                    onChange={(e) => setNewImage({ ...newImage, location: e.target?.value || "" })}
-                  />
-                  <Button onClick={addGalleryWithPhoto} className="w-full">
-                    갤러리에 사진 추가
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
@@ -867,6 +946,95 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <Dialog open={isGalleryDialogOpen} onOpenChange={setIsGalleryDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>갤러리 사진 추가</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">사진 선택</label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target?.files?.[0] || null
+                  setNewImage({ ...newImage, file })
+                }}
+              />
+            </div>
+            <Input
+              placeholder="행사 제목"
+              value={newImage.title}
+              onChange={(e) => setNewImage({ ...newImage, title: e.target?.value || "" })}
+            />
+            <Textarea
+              placeholder="행사 설명"
+              value={newImage.description}
+              onChange={(e) => setNewImage({ ...newImage, description: e.target?.value || "" })}
+            />
+            <Input
+              type="date"
+              value={newImage.date}
+              onChange={(e) => setNewImage({ ...newImage, date: e.target?.value || "" })}
+            />
+            <Input
+              placeholder="장소"
+              value={newImage.location}
+              onChange={(e) => setNewImage({ ...newImage, location: e.target?.value || "" })}
+            />
+            <div className="flex gap-2">
+              <Button onClick={handleAddGalleryImage} className="flex-1">
+                추가
+              </Button>
+              <Button variant="outline" onClick={() => setIsGalleryDialogOpen(false)}>
+                취소
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>갤러리 사진 수정</DialogTitle>
+          </DialogHeader>
+          {editingImage && (
+            <div className="space-y-4">
+              <Input
+                placeholder="행사 제목"
+                value={editingImage.title}
+                onChange={(e) => setEditingImage({ ...editingImage, title: e.target?.value || "" })}
+              />
+              <Textarea
+                placeholder="행사 설명"
+                value={editingImage.description}
+                onChange={(e) => setEditingImage({ ...editingImage, description: e.target?.value || "" })}
+              />
+              <Input
+                type="date"
+                value={editingImage.date}
+                onChange={(e) => setEditingImage({ ...editingImage, date: e.target?.value || "" })}
+              />
+              <Input
+                placeholder="장소"
+                value={editingImage.location}
+                onChange={(e) => setEditingImage({ ...editingImage, location: e.target?.value || "" })}
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleEditGalleryImage} className="flex-1">
+                  수정
+                </Button>
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  취소
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
