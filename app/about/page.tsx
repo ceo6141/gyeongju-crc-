@@ -301,7 +301,7 @@ export default function AboutPage() {
 
         {/* Club History Section */}
         <section className="py-16 bg-gray-50 rounded-lg">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">클럽 연혁</h2>
             <div className="space-y-8">
               <div className="text-center mb-8">
@@ -312,97 +312,345 @@ export default function AboutPage() {
               </div>
 
               <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h4 className="text-xl font-semibold mb-6 text-primary">년도별 연혁</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="border-l-4 border-primary pl-4">
-                      <div className="font-bold text-primary">2005년</div>
-                      <div className="text-sm">• 1월 20일: 경주중앙로타리클럽 창립</div>
-                      <div className="text-sm">• 초대 회장: 최병준 (崔炳俊) 취임</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2006-2007년</div>
-                      <div className="text-sm">• 3대 회장: 최희상 (崔熙相)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2007-2008년</div>
-                      <div className="text-sm">• 4대 회장: 이상익 (李相益)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2008-2009년</div>
-                      <div className="text-sm">• 5대 회장: 김병수 (金炳洙)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2009-2010년</div>
-                      <div className="text-sm">• 6대 회장: 윤태조 (尹泰祚)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2010-2011년</div>
-                      <div className="text-sm">• 7대 회장: 이승협 (李承協)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2011-2012년</div>
-                      <div className="text-sm">• 8대 회장: 이창희 (李昌熙)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2012-2013년</div>
-                      <div className="text-sm">• 9대 회장: 서상호 (徐相浩)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2013-2014년</div>
-                      <div className="text-sm">• 10대 회장: 박문상 (朴文相)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2014-2015년</div>
-                      <div className="text-sm">• 11대 회장: 황병욱 (黃炳旭)</div>
-                    </div>
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <div className="font-bold text-blue-600">2015-2016년</div>
-                      <div className="text-sm">• 12대 회장: 권오석 (權五碩)</div>
+                <h4 className="text-xl font-semibold mb-6 text-primary">상세 연혁</h4>
+                <div className="space-y-6">
+                  {/* 2005년 */}
+                  <div className="border-l-4 border-primary pl-6">
+                    <h5 className="text-lg font-bold text-primary mb-3">2005년 (창립년도)</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 20일: 창립총회 (경주선덕로타리클럽 스폰서, 경주황룡호텔)</div>
+                      <div>• 2월 25일: 국제로타리 100주년 기념상징물 제막식 참여</div>
+                      <div>• 5월 09일: 전동차 기증식 (용강동 동사무소)</div>
+                      <div>• 7월 06일: 국제로타리 3670지구 이리중앙로타리클럽과 자매결연</div>
+                      <div>• 8월 10일: 국제로타리 3300지구 말레이시아 Banda-sunway 로타리클럽과의 자매결연</div>
+                      <div>• 9월 23일: 여승인 인증서 전달식 (월드웰컴뷔페)</div>
+                      <div>• 10월 05일: 경주정보고등학교 인터랙트클럽 창립 (회원 20명)</div>
+                      <div>• 10월 18일: 경주용강초등학교 리틀랙트클럽 창립 (회원 34명)</div>
+                      <div>• 10월 26일: 골프회 발족</div>
+                      <div>• 12월 09일: 부인회 발족</div>
+                      <div>• 12월 11일: 동산회 발족</div>
+                      <div>• 12월 28일: 연말 불우이웃돕기 행사</div>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2016-2017년</div>
-                      <div className="text-sm">• 13대 회장: 박임관 (朴林寬)</div>
+                  {/* 2006년 */}
+                  <div className="border-l-4 border-blue-500 pl-6">
+                    <h5 className="text-lg font-bold text-blue-600 mb-3">2006년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 20일: 창립 1주년 기념식 (회원 101명)</div>
+                      <div>• 2월 18일: 자매마을 결연 (경주시 건천읍 신평2리 가천마을)</div>
+                      <div>• 3월 25일: "사랑의 김치기" 준공 (건천읍 신평2리)</div>
+                      <div>• 4월 23일: 3630지구 최우수클럽상 수상 (지구대회)</div>
+                      <div>• 5월 03일: 자매마을 쌀포살치 (신평2리 가천마을)</div>
+                      <div>• 5월 20일: 3630지구 지구협의회 참가 (회원 21명, 포항1대회)</div>
+                      <div>• 6월 16일: 제3대 명덕 최회상 회장 취임 (경주황룡호텔)</div>
+                      <div>• 8월 10일: 교환학생 파견 (국제로타리 3300지구 말레이시아)</div>
+                      <div>• 11월 05일: 자매마을 영정사진 제작 및 한방진료, 이미용 봉사활동</div>
+                      <div>• 12월 11일: 축구회 발족 (회원25명)</div>
+                      <div>• 12월 28일: 교환학생 방한 (국제로타리3300지구 말레이시아)</div>
                     </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2017-2018년</div>
-                      <div className="text-sm">• 14대 회장: 윤태열 (尹泰烈)</div>
+                  </div>
+
+                  {/* 2007년 */}
+                  <div className="border-l-4 border-green-500 pl-6">
+                    <h5 className="text-lg font-bold text-green-600 mb-3">2007년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 3월 01일~04일: 국제로타리 3300지구 말레이시아 반다썬웨이로타리클럽 초청 방문</div>
+                      <div>• 6월 19일: 제4대 양정 이상익 회장 취임 (월드웰컴뷔페)</div>
+                      <div>• 7월 28일: 용강리틀랙트클럽 지식연수회 및 활성화지원 발전소 견학</div>
+                      <div>• 10월 21일~28일: 나눔의 손길로 삼척을 위한 대장정 참가</div>
+                      <div>• 11월 04일: 자매클럽과 부부합동 중반 주회 (무주 덕유산)</div>
                     </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2018-2019년</div>
-                      <div className="text-sm">• 15대 회장: 이정환 (李正奐)</div>
+                  </div>
+
+                  {/* 2008년 */}
+                  <div className="border-l-4 border-yellow-500 pl-6">
+                    <h5 className="text-lg font-bold text-yellow-600 mb-3">2008년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 3월 23일: 건천읍 신평리 자매마을 봉사활동 (한방진료, 이미용 봉사, 독거노인 지원 등)</div>
+                      <div>• 4월 27일: GSE단원 본클럽 방문 (라트비아 시범 및 간담회)</div>
+                      <div>• 6월 27일: 제5대 수수 김병수 회장 취임 (월드웰컴뷔페)</div>
+                      <div>• 9월 03일: 한국로타리의 날 행사 참가</div>
+                      <div>• 9월 27일: 자매클럽과 부부합동 중반 주회 (경주 남산)</div>
                     </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2019-2020년</div>
-                      <div className="text-sm">• 16대 회장: 남정악 (南禎岳)</div>
+                  </div>
+
+                  {/* 2009년 */}
+                  <div className="border-l-4 border-purple-500 pl-6">
+                    <h5 className="text-lg font-bold text-purple-600 mb-3">2009년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 04일: 연차총회 개최</div>
+                      <div>• 1월 22일: 스폰서 클럽과 합동주회 (경주선덕RC)</div>
+                      <div>• 6월 26일: 제6대 금파 윤태조 회장 취임 (포시즌 유스호스텔)</div>
+                      <div>• 8월 07일: 나눔의 봉사활동 (안양지 연령단지 작은 음악회 개최)</div>
+                      <div>• 8월 14일: 신평창성주회활동</div>
+                      <div>• 9월 17일: 경주 중앙기반건 개최 성명회 개최</div>
+                      <div>• 10월 01일: 강동면 양남면 해안 정어 (국도7호 외동-용산 경계)</div>
+                      <div>• 11월 01일: 간전 5주년 기념식, 강남구 전명, 아르리카 게나 코인 무료 급식사업 및 우간다</div>
+                      <div>• 11월 21일: 포항시 기계면 하이미 물창치 운전 수상 (서울구 하이미)</div>
+                      <div>• 11월 29일: 사회복지시설 에티컴터 화목용 장작 1톤과 물품전달, 김장김치 봉사</div>
                     </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2020-2021년</div>
-                      <div className="text-sm">• 17대 회장: 김동한 (金東漢)</div>
+                  </div>
+
+                  {/* 2010년 */}
+                  <div className="border-l-4 border-red-500 pl-6">
+                    <h5 className="text-lg font-bold text-red-600 mb-3">2010년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 05일: 자매결연지 에티컴터 화목용 장작 1톤 지원 및 봉사활동 전달</div>
+                      <div>• 1월 21일: 창립 5주년 기념식, 강남구 전명, 아르리카 게나 코인 무료 급식사업 및 우간다</div>
+                      <div>• 2월 05일: 자매결연지 에티컴터 화목용 장작 1톤 지원 및 봉사활동</div>
+                      <div>• 2월 12일: 건천 신평2리 자매마을 다문화 37명과 불우이웃 27명 성전전달 및 봉사활동</div>
+                      <div>• 3월 08일: 자매마을 신평2에 전동휠체어 전달 (건천 신평2리)</div>
+                      <div>• 3월 10일: 자매결연지 에티컴터 시력 기증 및 화목용 장작 1톤 전달</div>
+                      <div>• 3월 12일: 제21회 전국 주보로타리스 편집부로 은상 수상</div>
+                      <div>• 3월 20일: 자매클럽과 이리중앙로타리클럽과 부부합동 중반주회 및 자연정화 활동</div>
+                      <div>• 3월 26일: 자매결연 에티컴터 화목용 장작 1톤 전달 및 봉사활동</div>
+                      <div>• 3월 30일: 사회복지시설 나재원 자매결연 및 봉사활동 전달</div>
+                      <div>• 4월 13일: 사회복지에 대한 방안과 역할 특강 개최 (최성대 박사, 조선 교수)</div>
+                      <div>• 5월 01일: 3630지구대회 수상 (모범 클럽상, 회원증강 이름다운 세상만들기 공로상,</div>
+                      <div>• 7월 02일: 제7대 자유 이승협 회장 취임 (경주현대호텔)</div>
+                      <div>• 7월 16일: 사회복지시설 에티컴터에 화목용 장작전달</div>
+                      <div>• 8월 06일: 사랑의 집짓기 참여 (경주시 동방동 다문화 가정)</div>
+                      <div>• 10월 13일: 인터랙트클럽 조기 전달 (경주정보고등학교)</div>
+                      <div>• 10월 23일: 다문화 가정에서 봉사 아우주회 (경주시 동방동)</div>
+                      <div>• 10월 24일: 신라역사체험 사전대회에 인터랙트, 회원 환경정화활동 및 안내</div>
+                      <div>• 11월 11일: 다문화 가정 중국 (경주시 동방동)</div>
+                      <div>• 11월 20일: 자매클럽과 이리중앙로타리클럽과 부부합동주회 (옥산서원 새산마을)</div>
+                      <div>• 11월 29일: 사회복지시설 에티컴터 자매결연 (재해결)</div>
+                      <div>• 12월 10일: 사회복지시설 에티컴터에 김장 400포기 및 화목용 장작, 봉사금 전달</div>
                     </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2021-2022년</div>
-                      <div className="text-sm">• 18대 회장: 오승연 (吳承燕)</div>
+                  </div>
+
+                  {/* 2011년 */}
+                  <div className="border-l-4 border-indigo-500 pl-6">
+                    <h5 className="text-lg font-bold text-indigo-600 mb-3">2011년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 21일: 사회복지시설 에티컴터에 화목용 장작 전달</div>
+                      <div>• 1월 30일: 동한산 사산제 및 자연정화 활동</div>
+                      <div>• 2월 18일: 스폰서 클럽인 경주선덕로타리클럽과 합동 및 직장주회 (간신원우)</div>
+                      <div>• 2월 23일: 3630지구 총재 소아마비 박멸 홍보 특별 참석</div>
+                      <div>• 2월 28일: 사회복지시설 에티컴터 화목용 장작 전달(보호)</div>
+                      <div>• 3월 15일: 자매마을 건천 신평리 자매마을 의료보조기 10대 전달</div>
+                      <div>• 3월 27일: 남산산행 후 자연정화 활동</div>
+                      <div>
+                        • 4월 30일: 3630지구 로타리재단 기여 우수클럽상, 홍보상, 모범클럽상 수상 (김천실내체육관)
+                      </div>
+                      <div>• 6월 14일: 인터랙트클럽 조기 전달 (경주정보고등학교)</div>
+                      <div>• 6월 16일: 제8대 동연 이창희 회장 취임 (월드웰컴뷔페)</div>
+                      <div>• 6월 30일: 불우이웃돕기 쌀 전달 (경주시장애인협회, 에티컴터)</div>
                     </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2022-2023년</div>
-                      <div className="text-sm">• 19대 회장: 임성일 (林成一)</div>
+                  </div>
+
+                  {/* 2012년 */}
+                  <div className="border-l-4 border-pink-500 pl-6">
+                    <h5 className="text-lg font-bold text-pink-600 mb-3">2012년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 18일: 사회복지시설 에티컴터 자매결연지 및 화목용 장작 전달</div>
+                      <div>• 2월 02일: 스폰서 클럽 경주선덕로타리클럽과 합동주회 (간신원우)</div>
+                      <div>• 2월 16일: 현명 봉사활동 (경주역 광장)</div>
+                      <div>• 3월 06일: 경주시 자원봉사단체장 워크숍 참석 (경주교육청회의실)</div>
+                      <div>• 3월 18일: 자매마을 건천읍 신평리 한방진료 및 이미용, 무료급식 봉사활동</div>
+                      <div>• 4월 28일: 3630지구 우수클럽상, 홍보상, 한국로타리감사원 기여 표창,</div>
+                      <div>• 5월 5일~9일: 제103차 2012 한국 국제대회 참가 (2011~12 제인지메이어 RI 표창 수상)</div>
+                      <div>• 6월 21일: 제9대 운재 서상호 회장 취임 (월드웰컴뷔페)</div>
+                      <div>• 6월 30일: 2011~12년도 R년차 표창 수상</div>
+                      <div>• 7월 04일: 신내면 (사)남경자연이 사랑의 생필품 전달</div>
+                      <div>• 7월 05일: 부부합동 간친중회 개최 (경주시 주민건강지원센터)</div>
+                      <div>• 8월 10일: 2012 화랑대기 전국초등학교 유소년 축구대회 지원 (자매결연 경남 남해</div>
+                      <div>• 8월 16일: 울산 적십자 혈액원과 합께 부부합동 헌혈주회 (경주역 광장)</div>
+                      <div>• 10월 10일: 인터랙트클럽 지원금 전달 (경주정보고등학교)</div>
+                      <div>• 11월 17일: 국내자매클럽과 이리중앙로타리클럽과 합동부부주회</div>
                     </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2023-2024년</div>
-                      <div className="text-sm">• 20대 회장: 이재술 (李在述)</div>
+                  </div>
+
+                  {/* 2013년 */}
+                  <div className="border-l-4 border-teal-500 pl-6">
+                    <h5 className="text-lg font-bold text-teal-600 mb-3">2013년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 17일: 창립 8주년 기념식 및 부부합동 선물교환 주회 (월드웰컴뷔페)</div>
+                      <div>• 1월 22일: 국제로타리 3630지구 필리핀 세부레스로타리클럽과 자매결연 (필리핀)</div>
+                      <div>• 2월 13일: 경주한국로타리클럽, 경주한국로타리클럽과 합동주회 (강신원우)</div>
+                      <div>• 2월 13일: 리틀랙트클럽 장학금 전달 (용강초등학교 졸업식)</div>
+                      <div>• 2월 23일: 물리요 기금마련 걸기대회 참가 (동악산)</div>
+                      <div>• 3월 17일: 자매마을 가천마을 한방진료, 이·미용 봉사, 마을 환경정화와</div>
+                      <div>
+                        • 3월 23일~28일: 국제자매클럽과 국제로타리 3630지구 필리핀 세부레스로타리클럽과 자매결연
+                      </div>
+                      <div>• 4월 27일: 3630지구 회원증강 표창, 로타리재단 기여 표창, 제24회 전국클럽주보콘테스트</div>
+                      <div>• 5월 21일: 스폰서 클럽인 경주선덕로타리클럽과 천성프로젝트 (경주신라펜션로타리클럽)</div>
+                      <div>• 6월 20일: 제10대 심원 박문상 회장 취임 (월드웰컴뷔페)</div>
+                      <div>• 6월 20일: 사랑의 쌀 나누기 (에티컴터 12포 전달)</div>
+                      <div>• 6월 25일: 사랑의 쌀 나누기 (건천읍, 충효동, 황남동 독거노인 및 기초생활수급자</div>
+                      <div>• 6월 30일: 2012~13년도 RI 회장 표창 수상</div>
+                      <div>• 7월 03일: 사랑의 쌀 나누기 (장전동 다문화가정 및 기초생활수급자 47명 각 2포씩 전달)</div>
                     </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <div className="font-bold text-green-600">2024-2025년</div>
-                      <div className="text-sm">• 21대 회장: 김용현 (金龍賢)</div>
+                  </div>
+
+                  {/* 2014년 */}
+                  <div className="border-l-4 border-orange-500 pl-6">
+                    <h5 className="text-lg font-bold text-orange-600 mb-3">2014년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 15일: 경주시로부터 봉사활동유공 표창 수상</div>
+                      <div>• 1월 17일: 에티컴터 생필품 전달 및 화목 만들기 봉사</div>
+                      <div>• 2월 15일: 글로벌 보조금 사업 승인(GG1414012)</div>
+                      <div>• 2월 20일: 리틀랙트클럽 장학금 전달 (용강초등학교)</div>
+                      <div>• 2월 21일: 스폰서 클럽 경주선덕로타리클럽과 합동주회 (보문한우)</div>
+                      <div>• 3월 01일: 3월 정기총회 (보문한우)</div>
+                      <div>• 3월 06일: 제25회 전국 클럽 주보 콘테스트 대상 수상(로타리 코리아)</div>
+                      <div>• 3월 16일: 자매마을 건천읍 신평2리(가천마을) 한방진료, 이·미용봉사, 기념식</div>
+                      <div>• 4월 01일: 로타리코리아 표 4월호 - 주보콘테스트 대상 수상 소감문 및 클럽활동 게재</div>
+                      <div>• 4월 26일: 에티컴터 화목용 장작 - 물리핀 세부지역 클럽활동 및 자연봉사 지원</div>
+                      <div>• 5월 10일: 3630지구 우수 클럽상, 로타리재단 기여 우수 표창, 봉사파트너 확대 표창</div>
+                      <div>• 5월 15일: 2013-14년 지구보조금사업(6.7지역 시리아봉사시설 김장봉사 400포기 지원)</div>
+                      <div>
+                        • 6월 8일~13일: 글로벌 보조금 (GG1414012) 프로젝트 실시 - 필리핀 세부지역 클럽활동 설치사업
+                      </div>
+                      <div>• 6월 19일: 제11대 중원 황병욱 회장 취임 (월드웰컴뷔페)</div>
+                      <div>• 6월 24일: 사랑의 쌀 나누기 (성건동 다문화가정 - 30Kg, 급식봉)</div>
+                      <div>• 6월 30일: 2013-14 RI 회장 표창(매년 패널 매치기 - 30Kg, 급식봉)</div>
+                      <div>• 7월 01일: 사랑의 쌀 나누기 (성건동 소재 경주시 종합사회복지관 250Kg)</div>
+                      <div>• 7월 12일: 존 9, 10A 로타리협의회 참가 (경북대 대강당)</div>
+                      <div>• 8월 06일: 경주정보고등학교 인터랙트 클럽 RI 승인</div>
+                      <div>• 8월 28일: 사랑의 쌀 나누기 (자매결연 사회복지시설 에티컴터 300kg,</div>
+                      <div>• 10월 16일: 인터랙트클럽 지원금 전달 (경주정보고등학교)</div>
+                      <div>• 11월 15일: 자매클럽과 이리중앙로타리클럽과 부부합동주회 (누리마루)</div>
+                      <div>• 12월 22일: 옥교 제50사단 한방대와 자매결연 (옥교 옥교 제50사단)</div>
+                      <div>• 12월 28일: 창립 10주년 기념 조정물(파고라) 준공 (노서공원)</div>
                     </div>
-                    <div className="border-l-4 border-red-400 pl-4">
-                      <div className="font-bold text-red-600">2025-2026년</div>
-                      <div className="text-sm">• 22대 회장: 최용환 (崔龍煥) - 현재</div>
-                      <div className="text-sm">• 창립 20주년 기념</div>
+                  </div>
+
+                  {/* 2015년 */}
+                  <div className="border-l-4 border-cyan-500 pl-6">
+                    <h5 className="text-lg font-bold text-cyan-600 mb-3">2015년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 20일: 창립 10주년 기념식 (월드웰컴뷔페)</div>
+                      <div>
+                        • 1월 20일: 자매결연지 사회복지시설 에티컴터 봉사 (생필품 50만원 상당, 화목용 장작 전달)
+                      </div>
+                      <div>• 2월 7일~10일: 3630지구 7지역의 필리핀 컴퓨터 지원 사업 참가</div>
+                      <div>• 2월 12일: 로타랙트클럽 지원금 전달 (위덕대학교)</div>
+                      <div>• 2월 16일: 리틀랙트클럽 장학금 전달 (용강초등학교)</div>
+                      <div>• 4월 25일: 3630지구 로타리재단, 로타리재단 기여 표창 (구미 박정희체육관)</div>
+                      <div>• 6월 18일: 제12대 회장 승강 권오석 회장 취임 (월드웰컴뷔페)</div>
+                      <div>• 7월 27일: 자매결연 사회복지시설 에티컴터 생필품 나눔 봉사 (쌀, 휴지 등)</div>
+                      <div>• 8월 07일: 유소년 축구대회 서포터즈 용품 및 격려</div>
+                      <div>• 8월 20일: 부부합동 아이영양음악회 (천북 물성소가든)</div>
+                      <div>• 8월 22일: 로타리재단 및 보조금 관리 세미나 (천북 물성소가든)</div>
+                      <div>• 9월 13일: 지구총회 한마당(황성공원 타임캡슐 공원)</div>
+                      <div>• 9월 17일: 경주정보고등학교 인터랙트클럽 장학금 전달</div>
+                      <div>• 9월 19일: 신입회원 연수회 (간천읍 대관리)</div>
+                      <div>• 10월 07일: 위덕대학교 경주중앙로타랙트클럽 지원금 전달(위덕대학교)</div>
+                      <div>• 10월 15일: 충재상실문주회 (영양 한솔촌 총재)</div>
+                      <div>• 10월 31일: 6.7지역 로타리세미나 및 체육대회 (축구공원청구장)</div>
+                      <div>• 11월 12일: 사랑의 연탄나눔 (지체장애인 57가구, 2,000장)</div>
+                      <div>• 11월 14일: 자매클럽과 국제로타리 3670지구 이리중앙로타리클럽과 부부합동 주회</div>
+                    </div>
+                  </div>
+
+                  {/* 2016년 */}
+                  <div className="border-l-4 border-lime-500 pl-6">
+                    <h5 className="text-lg font-bold text-lime-600 mb-3">2016년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 07일: 연차총회</div>
+                      <div>• 1월 13일: 6.7지역 합동 사랑의 생필품 헌혈봉사 (경주역)</div>
+                      <div>• 2월 15일~19일: 7지역 지구보조금 사업 (필리핀 상상 어린이 수술 지원 참가)</div>
+                      <div>• 2월 15일: 국제로타리 3670지구 이리중앙로타리클럽 RI 가입인증 및 창립 40주년</div>
+                      <div>• 3월 06일: 안강읍 감산리 자매마을 봉사 (식사대접, 무료한방진료,</div>
+                      <div>• 3월 26일: 국제로타리 3670지구 2015-16 지구대회 참가 (영천실내체육관)</div>
+                      <div>• 3월 30일: 한병창성 68주년 기념식 창석 (옥교 제50사단 한방대)</div>
+                      <div>• 4월 30일: 차기회장, 차기총무 연수회 (디케이호텔경주)</div>
+                      <div>• 5월 21일: 국제로타리 3630지구 2016-17 지구협의회 참가 (포항대학교)</div>
+                      <div>• 6월 02일: 부부합동 아이영양 (대종연어상사)</div>
+                      <div>
+                        • 6월 10일~14일: 자매클럽과 국제로타리 3860지구 필리핀 세부레스로타리클럽 이·취임식 참석
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2017년 */}
+                  <div className="border-l-4 border-rose-500 pl-6">
+                    <h5 className="text-lg font-bold text-rose-600 mb-3">2017년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 05일: 연차총회</div>
+                      <div>• 1월 20일: 창립 12주년 기념 주회(자연에 곤드레 창립반상)</div>
+                      <div>• 2월 08일: 50사단 헌병대에 전광판 기증</div>
+                      <div>• 2월 13일: 경주선덕RC와 합동주회 옥토이</div>
+                      <div>• 3월 02일: 부부합동 영화주회 (메가박스)</div>
+                      <div>• 3월 19일: 안강읍 감산리 자매마을 봉사 (식사대접, 무료한방진료,</div>
+                      <div>• 4월 05일: 경주정보고등학교 인터랙트클럽 지원금 전달</div>
+                      <div>• 4월 22일: 2016-17년 지구대회(모범클럽상, 로타리 재단기여 표창,</div>
+                      <div>• 5월 11일: 사업회원 지식연수회(세계셀러드 뷔페)</div>
+                      <div>• 5월 20일: 2017-18년 지구연수협의회 참석(경주 동국대학교)</div>
+                      <div>• 6월 03일: 2017-18년도 임원 · 이사 워크샵 개최 (센터셀러드뷔페)</div>
+                      <div>• 6월 7일~11일: 자매클럽과 국제로타리 3860지구 필리핀 세부레스로타리클럽 이·취임식 참석</div>
+                      <div>• 6월 15일: 제13·14대 회장 및 임원 이사 이·취임식 (The-k호텔 경주)</div>
+                    </div>
+                  </div>
+
+                  {/* 2018년 */}
+                  <div className="border-l-4 border-violet-500 pl-6">
+                    <h5 className="text-lg font-bold text-violet-600 mb-3">2018년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 04일: 연차총회</div>
+                      <div>• 1월 08일: 불우이웃 전기매트, 이불 지원사업 (경주선덕RC와 합동봉사)</div>
+                      <div>• 1월 18일: 부부합동 영화주회 (한국전쟁 수련회, 에티컴터)</div>
+                      <div>• 1월 24일: 인터랙트클럽 장학금 전달 (용강초등학교)</div>
+                      <div>
+                        • 1월 25일~30일: 지구보조금 해외봉사 프로젝트 사업 참가 (인도 뉴델리, 남경 윤태열 외 8명)
+                      </div>
+                      <div>• 2월 02일: 성심 직장 장기모임 (경주선덕RC와 합동)</div>
+                      <div>• 2월 07일: 로타리의 날 행사(포항 효자아들)</div>
+                      <div>• 2월 08일: 사랑의 헌혈운동(7지역 3개클럽 합동 - 장소: 경주 광장)</div>
+                      <div>• 2월 25일: 사랑의 헌혈운동(7지역 3개클럽 합동 - 경주역 광장)</div>
+                      <div>• 3월 11일: 경주선덕RC 합동주회 (농봄)</div>
+                      <div>• 3월 14일: 사랑의 쌀 나누기 (은혜원 온혜원)</div>
+                      <div>• 3월 15일: 카자흐스탄 고려인 병원건지원(청소년보건관)</div>
+                      <div>• 3월 24일: 감산마을 봉사활동(이·미용봉사, 식사대접, 환경정화활동 등)</div>
+                      <div>• 4월 27일: 2019-20년도 지구대회 표창패, 우수클럽상 수상</div>
+                      <div>• 5월 11일: 2019-20년도 지구연수협의회 (동국대학교 문무관)</div>
+                      <div>• 5월 16일: 성심 직장 장기모임 (보문한우)</div>
+                      <div>• 5월 18일: 2019-20년도 임원 워크샵 (마실리)</div>
+                      <div>• 6월 20일: 제15·16대 회장 및 임원 이사 이·취임식 (경주 황룡호텔)</div>
+                      <div>• 7월 04일: 클럽회관 장기모임</div>
+                      <div>• 7월 06일: 에티컴터 쌀나눔 봉사</div>
+                      <div>• 7월 10일~12일: 리일과 수련회(더케이호텔)</div>
+                      <div>• 7월 11일: 존11,12로타리 협의회</div>
+                      <div>• 7월 13일: 스크린산신 정착 활동</div>
+                      <div>• 7월 17일: 모아초등학교 리틀랙트 창단식</div>
+                      <div>• 7월 18일: 로타랙트, 인터랙트 지원금 전달</div>
+                      <div>• 7월 19일: 부인회 개최 (보문한우)</div>
+                      <div>• 7월 25일: 김인준회원 입재발문 (청광도애)</div>
+                    </div>
+                  </div>
+
+                  {/* 2019년 */}
+                  <div className="border-l-4 border-emerald-500 pl-6">
+                    <h5 className="text-lg font-bold text-emerald-600 mb-3">2019년</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div>• 1월 03일: 연차총회 (클럽회관)</div>
+                      <div>• 1월 17일: 창립14주년 기념 장기모임 (한식뷔페 경마장)</div>
+                      <div>• 1월 21일~24일: 지구보조금 프로젝트봉사(컴퓨터 전달 - 필리핀 마닐라)</div>
+                      <div>• 2월 21일: 성심 직장 장기모임(에코클럽센터)</div>
+                      <div>• 2월 23일: 로타리의 날 행사(포항 효자아들)</div>
+                      <div>• 2월 25일: 사랑의 헌혈운동(7지역 3개클럽 합동 - 경주역 광장)</div>
+                      <div>• 3월 11일: 경주선덕RC 합동주회 (농봄)</div>
+                      <div>• 3월 14일: 사랑의 쌀 나누기 (은혜원온혜원)</div>
+                      <div>• 3월 15일: 카자흐스탄 고려인 병원건지원(청소년보건관)</div>
+                      <div>• 3월 24일: 감산마을 봉사활동(이·미용봉사, 식사대접, 환경정화활동 등)</div>
+                      <div>• 4월 27일: 2019-20년도 지구대회 (표창패 우수클럽상 수상)</div>
+                      <div>• 5월 11일: 2019-20년도 지구연수협의회 (동국대학교 문무관)</div>
+                      <div>• 5월 16일: 성심 직장 장기모임 (보문한우)</div>
+                      <div>• 5월 18일: 2019-20년도 임원 워크샵 (마실리)</div>
+                      <div>• 6월 20일: 제15·16대 회장 및 임원 이사 이·취임식 (경주 황룡호텔)</div>
+                      <div>• 7월 04일: 클럽회관 장기모임</div>
+                      <div>• 7월 06일: 에티컴터 쌀나눔 봉사</div>
+                      <div>• 7월 10일~12일: 리일과 수련회(더케이호텔)</div>
+                      <div>• 7월 11일: 존11,12로타리 협의회</div>
+                      <div>• 7월 13일: 스크린산신 정착 활동</div>
+                      <div>• 7월 17일: 모아초등학교 리틀랙트 창단식</div>
+                      <div>• 7월 18일: 로타랙트, 인터랙트 지원금 전달</div>
+                      <div>• 7월 19일: 부인회 개최 (보문한우)</div>
+                      <div>• 7월 25일: 김인준회원 입재발문 (청광도애)</div>
                     </div>
                   </div>
                 </div>
