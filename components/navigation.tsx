@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu, X, ExternalLink, Youtube } from "lucide-react"
+import { Menu, X, ExternalLink, Youtube, Camera } from "lucide-react"
 import Image from "next/image"
 import { NaverBandLink } from "@/components/naver-band-link"
 
@@ -15,6 +15,7 @@ export function Navigation() {
     { href: "/about", label: "클럽소개" },
     { href: "/members", label: "회원명부" },
     { href: "/presidents", label: "역대회장" },
+    { href: "/gallery", label: "갤러리", icon: Camera },
     { href: "/activities", label: "봉사활동" },
     { href: "/notices", label: "공지사항" },
     { href: "/rotary-news", label: "로타리 소식" },
@@ -72,9 +73,10 @@ export function Navigation() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
+                    className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
                   >
-                    {item.label}
+                    {item.icon && <item.icon className="h-4 w-4" />}
+                    <span>{item.label}</span>
                   </Link>
                 ),
               )}
@@ -119,10 +121,11 @@ export function Navigation() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="block px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
-                    {item.label}
+                    {item.icon && <item.icon className="h-4 w-4" />}
+                    <span className="flex-1 text-left">{item.label}</span>
                   </Link>
                 ),
               )}
