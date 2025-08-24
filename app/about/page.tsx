@@ -135,9 +135,9 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Club Information */}
             <div className="lg:col-span-1">
-              <Card className="p-6">
+              <Card className="p-6 h-full flex flex-col">
                 <h3 className="text-2xl font-bold mb-6 text-center">클럽 정보</h3>
-                <div className="space-y-4">
+                <div className="space-y-3 flex-1">
                   <div className="flex justify-between">
                     <span className="font-medium">현 회장:</span>
                     <span>천상 최용환 (제22대)</span>
@@ -191,9 +191,9 @@ export default function AboutPage() {
                     <span>경주중앙로타리클럽 회관</span>
                   </div>
 
-                  <hr className="my-4" />
+                  <hr className="my-3" />
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <div>
                       <span className="font-medium">ADDRESS:</span>
                       <div className="text-sm mt-1">
@@ -216,7 +216,7 @@ export default function AboutPage() {
                     </div>
                   </div>
 
-                  <Button variant="outline" size="sm" onClick={() => setIsEditingContact(true)} className="w-full mt-4">
+                  <Button variant="outline" size="sm" onClick={() => setIsEditingContact(true)} className="w-full mt-3">
                     <Edit className="h-4 w-4 mr-2" />
                     연락처 수정
                   </Button>
@@ -226,13 +226,13 @@ export default function AboutPage() {
 
             {/* Club Photo */}
             <div className="lg:col-span-2">
-              <div className="relative">
+              <div className="relative h-full">
                 <Image
                   src="/images/club-photo.png"
                   alt="제 21대 22대 회장단 이취임식"
                   width={800}
                   height={500}
-                  className="w-full h-auto rounded-lg shadow-lg"
+                  className="w-full h-full object-cover rounded-lg shadow-lg"
                 />
               </div>
             </div>
