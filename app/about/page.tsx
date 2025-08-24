@@ -217,6 +217,60 @@ export default function AboutPage() {
     return `${year}년 ${month}월 ${day}일(목) 오후 7시`
   }
 
+  const handleFileUpload = async (file: File) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = function () {
+        const result = this.result as string
+        resolve(result)
+      }
+      reader.onerror = () => reject(new Error("파일 읽기 실패"))
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const addGalleryWithPhoto = async () => {
+    if (!newImage.title.trim() || !newImage.description.trim() || !newImage.date || !newImage.location.trim()) {
+      alert("모든 필드를 입력해주세요.")
+      return
+    }
+
+    try {
+      let imageSrc = "/placeholder.svg?height=300&width=400"
+
+      if (newImage.file) {
+        imageSrc = await handleFileUpload(newImage.file)
+      }
+
+      const newGalleryImage: GalleryImage = {
+        id: Date.now().toString(),
+        src: imageSrc,
+        title: newImage.title.trim(),
+        description: newImage.description.trim(),
+        date: newImage.date,
+        location: newImage.location.trim(),
+      }
+
+      const updatedImages = [...galleryImages, newGalleryImage]
+      setGalleryImages(updatedImages)
+      localStorage.setItem("simpleGallery", JSON.stringify(updatedImages))
+
+      // 폼 초기화
+      setNewImage({
+        title: "",
+        description: "",
+        date: "",
+        location: "",
+        file: null,
+      })
+
+      alert("갤러리에 사진이 성공적으로 추가되었습니다.")
+    } catch (error) {
+      console.error("사진 추가 오류:", error)
+      alert("사진 추가 중 오류가 발생했습니다.")
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
@@ -305,30 +359,39 @@ export default function AboutPage() {
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold mb-4">갤러리 항목 추가</h3>
                 <div className="space-y-4">
-                  <Input placeholder="행사 제목" id="gallery-title" />
-                  <Textarea placeholder="행사 설명" id="gallery-description" />
-                  <Input type="date" id="gallery-date" />
-                  <Input placeholder="장소" id="gallery-location" />
-                  <Button
-                    onClick={() => {
-                      const title = (document.getElementById("gallery-title") as HTMLInputElement)?.value || ""
-                      const description =
-                        (document.getElementById("gallery-description") as HTMLTextAreaElement)?.value || ""
-                      const date = (document.getElementById("gallery-date") as HTMLInputElement)?.value || ""
-                      const location = (document.getElementById("gallery-location") as HTMLInputElement)?.value || ""
-
-                      if (title && description && date && location) {
-                        addSimpleGalleryItem(title, description, date, location)
-                        // Clear form
-                        ;(document.getElementById("gallery-title") as HTMLInputElement).value = ""
-                        ;(document.getElementById("gallery-description") as HTMLTextAreaElement).value = ""
-                        ;(document.getElementById("gallery-date") as HTMLInputElement).value = ""
-                        ;(document.getElementById("gallery-location") as HTMLInputElement).value = ""
-                      }
-                    }}
-                    className="w-full"
-                  >
-                    갤러리 항목 추가
+                  <div>
+                    <label className="block text-sm font-medium mb-2">사진 선택</label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target?.files?.[0] || null
+                        setNewImage({ ...newImage, file })
+                      }}
+                    />
+                  </div>
+                  <Input
+                    placeholder="행사 제목"
+                    value={newImage.title}
+                    onChange={(e) => setNewImage({ ...newImage, title: e.target?.value || "" })}
+                  />
+                  <Textarea
+                    placeholder="행사 설명"
+                    value={newImage.description}
+                    onChange={(e) => setNewImage({ ...newImage, description: e.target?.value || "" })}
+                  />
+                  <Input
+                    type="date"
+                    value={newImage.date}
+                    onChange={(e) => setNewImage({ ...newImage, date: e.target?.value || "" })}
+                  />
+                  <Input
+                    placeholder="장소"
+                    value={newImage.location}
+                    onChange={(e) => setNewImage({ ...newImage, location: e.target?.value || "" })}
+                  />
+                  <Button onClick={addGalleryWithPhoto} className="w-full">
+                    갤러리에 사진 추가
                   </Button>
                 </div>
               </CardContent>
