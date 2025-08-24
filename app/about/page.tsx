@@ -153,8 +153,16 @@ export default function AboutPage() {
       }
 
       const reader = new FileReader()
-      reader.onload = (e) => {
-        img.src = e.target?.result as string
+      reader.onload = function () {
+        try {
+          if (this.result && typeof this.result === "string") {
+            img.src = this.result
+          } else {
+            reject(new Error("파일 읽기 결과가 올바르지 않습니다."))
+          }
+        } catch (error) {
+          reject(new Error("파일 처리 중 오류가 발생했습니다."))
+        }
       }
       reader.onerror = () => {
         reject(new Error("파일 읽기 중 오류가 발생했습니다."))
