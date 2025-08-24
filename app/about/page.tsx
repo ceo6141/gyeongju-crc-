@@ -139,25 +139,21 @@ export default function AboutPage() {
 
           // 파일 크기에 따른 적응적 압축
           if (file.size > 10 * 1024 * 1024) {
-            // 10MB 이상 - 매우 작게
+            maxWidth = 300
+            maxHeight = 200
+            quality = 0.2
+          } else if (file.size > 5 * 1024 * 1024) {
             maxWidth = 400
             maxHeight = 300
             quality = 0.3
-          } else if (file.size > 5 * 1024 * 1024) {
-            // 5MB 이상 - 작게
+          } else if (file.size > 2 * 1024 * 1024) {
             maxWidth = 500
             maxHeight = 350
             quality = 0.4
-          } else if (file.size > 2 * 1024 * 1024) {
-            // 2MB 이상 - 중간
+          } else {
             maxWidth = 600
             maxHeight = 400
-            quality = 0.5
-          } else {
-            // 2MB 미만 - 덜 압축
-            maxWidth = 800
-            maxHeight = 600
-            quality = 0.7
+            quality = 0.6
           }
 
           let { width, height } = img
@@ -177,52 +173,40 @@ export default function AboutPage() {
             return
           }
 
-          // 이미지 품질 향상을 위한 설정
           ctx.imageSmoothingEnabled = true
           ctx.imageSmoothingQuality = "high"
           ctx.drawImage(img, 0, 0, width, height)
 
-          // 적응적 품질로 압축
           const compressedDataUrl = canvas.toDataURL("image/jpeg", quality)
 
           console.log("[v0] Image compressed, new size:", Math.round(compressedDataUrl.length * 0.75), "bytes")
           console.log("[v0] Final dimensions:", width, "x", height, "Quality:", quality)
 
+          // URL 객체 정리
+          URL.revokeObjectURL(img.src)
           resolve(compressedDataUrl)
         } catch (error) {
           console.error("[v0] Error during image processing:", error)
+          URL.revokeObjectURL(img.src)
           reject(new Error("이미지 처리 중 오류가 발생했습니다."))
         }
       }
 
       img.onerror = () => {
         console.error("[v0] Image load error")
+        URL.revokeObjectURL(img.src)
         reject(new Error("이미지를 불러올 수 없습니다."))
       }
 
-      const reader = new FileReader()
-      reader.onload = function (event) {
-        try {
-          const result = event?.target?.result || this.result
-          if (result && typeof result === "string") {
-            console.log("[v0] File read successfully, setting image source")
-            img.src = result
-          } else {
-            console.error("[v0] Invalid file read result")
-            reject(new Error("파일 읽기 결과가 올바르지 않습니다."))
-          }
-        } catch (error) {
-          console.error("[v0] Error setting image source:", error)
-          reject(new Error("파일 처리 중 오류가 발생했습니다."))
-        }
+      // FileReader 대신 URL.createObjectURL 사용
+      try {
+        const objectUrl = URL.createObjectURL(file)
+        console.log("[v0] Object URL created successfully")
+        img.src = objectUrl
+      } catch (error) {
+        console.error("[v0] Error creating object URL:", error)
+        reject(new Error("파일 처리 중 오류가 발생했습니다."))
       }
-
-      reader.onerror = () => {
-        console.error("[v0] FileReader error")
-        reject(new Error("파일 읽기 중 오류가 발생했습니다."))
-      }
-
-      reader.readAsDataURL(file)
     })
   }
 
