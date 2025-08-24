@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -61,38 +63,44 @@ export default function GalleryPage() {
       const img = new Image()
 
       img.onload = () => {
-        // 최대 크기 설정
-        const maxWidth = 600
-        const maxHeight = 400
-        let { width, height } = img
+        try {
+          // 최대 크기 설정
+          const maxWidth = 600
+          const maxHeight = 400
+          let width = img.width || 800
+          let height = img.height || 600
 
-        // 비율 유지하면서 크기 조정
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width
-            width = maxWidth
+          // 비율 유지하면서 크기 조정
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width
+              width = maxWidth
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height
+              height = maxHeight
+            }
           }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height
-            height = maxHeight
+
+          canvas.width = width
+          canvas.height = height
+
+          // 고품질 렌더링 설정
+          if (ctx) {
+            ctx.imageSmoothingEnabled = true
+            ctx.imageSmoothingQuality = "high"
+            ctx.drawImage(img, 0, 0, width, height)
+
+            // JPEG 품질 0.6으로 압축
+            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.6)
+            resolve(compressedDataUrl)
+          } else {
+            reject(new Error("Canvas context를 가져올 수 없습니다"))
           }
-        }
-
-        canvas.width = width
-        canvas.height = height
-
-        // 고품질 렌더링 설정
-        if (ctx) {
-          ctx.imageSmoothingEnabled = true
-          ctx.imageSmoothingQuality = "high"
-          ctx.drawImage(img, 0, 0, width, height)
-
-          // JPEG 품질 0.6으로 압축
-          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.6)
-          resolve(compressedDataUrl)
-        } else {
-          reject(new Error("Canvas context를 가져올 수 없습니다"))
+        } catch (error) {
+          console.error("이미지 압축 중 오류:", error)
+          reject(error)
         }
       }
 
@@ -101,8 +109,7 @@ export default function GalleryPage() {
     })
   }
 
-  // 사진 추가
-  const handleAddImage = async () => {
+  const handleAddImage = async (e?: React.MouseEvent) => {
     if (!selectedFile || !formData.title.trim()) {
       alert("사진과 제목을 입력해주세요.")
       return
@@ -133,8 +140,7 @@ export default function GalleryPage() {
     }
   }
 
-  // 사진 수정
-  const handleEditImage = async () => {
+  const handleEditImage = async (e?: React.MouseEvent) => {
     if (!editingImage || !formData.title.trim()) {
       alert("제목을 입력해주세요.")
       return
@@ -255,7 +261,7 @@ export default function GalleryPage() {
                   />
                 </div>
                 <div className="flex gap-2 pt-4">
-                  <Button onClick={handleAddImage} className="flex-1">
+                  <Button onClick={() => handleAddImage()} className="flex-1">
                     추가
                   </Button>
                   <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="flex-1">
@@ -355,7 +361,7 @@ export default function GalleryPage() {
                 />
               </div>
               <div className="flex gap-2 pt-4">
-                <Button onClick={handleEditImage} className="flex-1">
+                <Button onClick={() => handleEditImage()} className="flex-1">
                   수정
                 </Button>
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="flex-1">
