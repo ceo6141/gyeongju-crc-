@@ -231,7 +231,7 @@ export default function AboutPage() {
 
             {/* Club Photo */}
             <div className="lg:col-span-2">
-              <div className="relative h-[300px]">
+              <div className="relative h-[350px]">
                 <Image
                   src="/images/club-photo.png"
                   alt="제 21대 22대 회장단 이취임식"
