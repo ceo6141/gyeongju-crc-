@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, MapPin, Edit, Plus, Trash2 } from "lucide-react"
@@ -292,7 +294,13 @@ export default function AboutPage() {
     })
   }
 
-  const handleAddGalleryImage = async () => {
+  const handleAddGalleryImage = async (e?: React.MouseEvent) => {
+    // 이벤트 기본 동작 방지
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
     if (!newImage.title.trim() || !newImage.description.trim() || !newImage.date || !newImage.location.trim()) {
       alert("모든 필드를 입력해주세요.")
       return
@@ -1000,7 +1008,7 @@ export default function AboutPage() {
               onChange={(e) => setNewImage({ ...newImage, location: e.target?.value || "" })}
             />
             <div className="flex gap-2">
-              <Button onClick={handleAddGalleryImage} className="flex-1">
+              <Button onClick={() => handleAddGalleryImage()} className="flex-1">
                 추가
               </Button>
               <Button variant="outline" onClick={() => setIsGalleryDialogOpen(false)}>
