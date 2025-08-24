@@ -165,7 +165,7 @@ export default function HomePage() {
                     <Button
                       size="lg"
                       variant="outline"
-                      className="font-semibold px-6 py-3 rounded-full bg-transparent border-2 border-purple-200 hover:bg-purple-50 text-purple-700"
+                      className="font-semibold px-6 py-3 rounded-full bg-blue-50 border-2 border-blue-200 hover:bg-blue-100 text-blue-700"
                       asChild
                     >
                       <Link href="/gallery">클럽갤러리</Link>

@@ -135,89 +135,94 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             {/* Club Information */}
             <div className="lg:col-span-1">
-              <Card className="p-6 h-full flex flex-col">
-                <h3 className="text-2xl font-bold mb-6 text-center">클럽 정보</h3>
-                <div className="space-y-3 flex-1">
-                  <div className="flex justify-between">
+              <Card className="p-4 h-full flex flex-col">
+                <h3 className="text-xl font-bold mb-4 text-center">클럽 정보</h3>
+                <div className="space-y-2 flex-1">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">현 회장:</span>
                     <span>천상 최용환 (제22대)</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">직전회장:</span>
                     <span>천관 김용현</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">차기회장:</span>
                     <span>미정</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">부회장:</span>
                     <span>허동욱, 최태복</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">총무:</span>
                     <span>호헌 박재열</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">재무:</span>
                     <span>우함 손인익</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">부총무:</span>
                     <span>문시영, 김원기</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">창립:</span>
                     <span>2005년 1월 20일</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">회원:</span>
                     <span>68명</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">지구:</span>
                     <span>국제로타리3630지구</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">지역:</span>
                     <span>경주시</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">정기모임:</span>
-                    <span>{nextMeetingDate}</span>
+                    <span className="text-xs">{nextMeetingDate}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="font-medium">클럽회관:</span>
-                    <span>경주중앙로타리클럽 회관</span>
+                    <span className="text-xs">경주중앙로타리클럽 회관</span>
                   </div>
 
-                  <hr className="my-3" />
+                  <hr className="my-2" />
 
-                  <div className="space-y-1.5">
-                    <div>
+                  <div className="space-y-1">
+                    <div className="text-xs">
                       <span className="font-medium">ADDRESS:</span>
-                      <div className="text-sm mt-1">
+                      <div className="mt-0.5">
                         경주시 승삼1길 5-5, 4층(용강동)
                         <br />
-                        EN) 5-5, Seungsam 1-gil, Gyeongju-si, Gyeongsangbuk-do, Republic of Korea
+                        EN) 5-5, Seungsam 1-gil, Gyeongju-si
                       </div>
                     </div>
-                    <div>
+                    <div className="text-xs">
                       <span className="font-medium">TEL:</span> {clubContact.phone}
                     </div>
-                    <div>
+                    <div className="text-xs">
                       <span className="font-medium">FAX:</span> {clubContact.fax}
                     </div>
-                    <div>
+                    <div className="text-xs">
                       <span className="font-medium">E-MAIL:</span> 입력 예정
                     </div>
-                    <div>
+                    <div className="text-xs">
                       <span className="font-medium">ZIP CODE:</span> {clubContact.postalCode}
                     </div>
                   </div>
 
-                  <Button variant="outline" size="sm" onClick={() => setIsEditingContact(true)} className="w-full mt-3">
-                    <Edit className="h-4 w-4 mr-2" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingContact(true)}
+                    className="w-full mt-2 text-xs"
+                  >
+                    <Edit className="h-3 w-3 mr-1" />
                     연락처 수정
                   </Button>
                 </div>
@@ -226,13 +231,12 @@ export default function AboutPage() {
 
             {/* Club Photo */}
             <div className="lg:col-span-2">
-              <div className="relative h-full">
+              <div className="relative h-[400px]">
                 <Image
                   src="/images/club-photo.png"
                   alt="제 21대 22대 회장단 이취임식"
-                  width={800}
-                  height={500}
-                  className="w-full h-full object-cover rounded-lg shadow-lg"
+                  fill
+                  className="object-cover rounded-lg shadow-lg"
                 />
               </div>
             </div>
