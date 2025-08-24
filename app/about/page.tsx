@@ -298,6 +298,88 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
+
+        {/* Club History Section */}
+        <section className="py-16 bg-gray-50 rounded-lg">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-12">클럽 연혁</h2>
+            <div className="space-y-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-semibold mb-4 text-primary">경주중앙로타리클럽</h3>
+                <p className="text-lg text-muted-foreground">
+                  2005년 창립 이래 지역사회 발전과 국제친선을 위해 꾸준히 활동해온 우리 클럽의 발자취입니다.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h4 className="text-xl font-semibold mb-4 text-primary">창립 정보</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="font-medium">창립일:</span>
+                      <span>2005년 1월 20일</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">초대 회장:</span>
+                      <span>최병준 (崔炳俊)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">소속 지구:</span>
+                      <span>국제로타리 3630지구</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">현재 회원수:</span>
+                      <span>68명 (2025년 기준)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h4 className="text-xl font-semibold mb-4 text-primary">주요 연혁</h4>
+                  <div className="space-y-3">
+                    <div className="border-l-2 border-primary pl-4">
+                      <div className="font-medium">2005년</div>
+                      <div className="text-sm text-muted-foreground">경주중앙로타리클럽 창립</div>
+                    </div>
+                    <div className="border-l-2 border-primary pl-4">
+                      <div className="font-medium">2005-2025년</div>
+                      <div className="text-sm text-muted-foreground">22대에 걸친 회장단 운영</div>
+                    </div>
+                    <div className="border-l-2 border-primary pl-4">
+                      <div className="font-medium">2025년</div>
+                      <div className="text-sm text-muted-foreground">창립 20주년, 제22대 천상 최용환 회장 취임</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h4 className="text-xl font-semibold mb-4 text-primary">클럽 발전사</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-2">20년</div>
+                    <div className="text-sm text-muted-foreground">창립 이래 지속적인 봉사활동</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-2">22대</div>
+                    <div className="text-sm text-muted-foreground">역대 회장단의 헌신적인 리더십</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary mb-2">68명</div>
+                    <div className="text-sm text-muted-foreground">다양한 직업군의 회원들</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <p className="text-muted-foreground leading-relaxed">
+                  경주중앙로타리클럽은 창립 이래 '봉사하는 마음'으로 지역사회 발전과 국제친선을 위해 꾸준히
+                  노력해왔습니다. 앞으로도 로타리의 이상을 실현하며 더 나은 세상을 만들어가겠습니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
       {/* Contact Edit Dialog */}
