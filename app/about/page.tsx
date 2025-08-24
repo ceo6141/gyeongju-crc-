@@ -231,12 +231,23 @@ export default function AboutPage() {
               </Card>
             </div>
 
-            {/* Club Photo */}
-            <div className="lg:col-span-2">
-              <div className="relative h-[350px]">
+            {/* Club Photos */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Group Photo */}
+              <div className="relative h-[300px]">
                 <Image
                   src="/images/club-photo.png"
                   alt="제 21대 22대 회장단 이취임식"
+                  fill
+                  className="object-cover rounded-lg shadow-lg"
+                />
+              </div>
+
+              {/* Club Building Photo */}
+              <div className="relative h-[300px]">
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/KakaoTalk_20250823_174449340.jpg-puIILbLwSWvbEvXvsSuGAJoBAYO08v.jpeg"
+                  alt="경주중앙로타리클럽 회관"
                   fill
                   className="object-cover rounded-lg shadow-lg"
                 />
