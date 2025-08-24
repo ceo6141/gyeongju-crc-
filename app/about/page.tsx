@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { Navigation } from "@/components/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, MapPin, Plus, Edit, Trash2 } from "lucide-react"
@@ -180,7 +182,7 @@ export default function AboutPage() {
     })
   }
 
-  const handleAddImage = async () => {
+  const handleAddImage = async (e?: React.MouseEvent) => {
     try {
       console.log("[v0] 사진 추가 시작")
 
@@ -487,7 +489,7 @@ export default function AboutPage() {
                         }}
                         required
                       />
-                      <Button onClick={handleAddImage} className="w-full">
+                      <Button onClick={() => handleAddImage()} className="w-full">
                         사진 추가
                       </Button>
                     </div>
