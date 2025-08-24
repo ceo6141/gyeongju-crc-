@@ -162,6 +162,14 @@ export default function HomePage() {
                     >
                       <Link href="/activities">봉사활동 보기</Link>
                     </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="font-semibold px-6 py-3 rounded-full bg-transparent border-2 border-purple-200 hover:bg-purple-50 text-purple-700"
+                      asChild
+                    >
+                      <Link href="/gallery">클럽갤러리</Link>
+                    </Button>
                   </div>
                 </div>
               </div>
