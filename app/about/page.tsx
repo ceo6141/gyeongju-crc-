@@ -242,38 +242,53 @@ export default function AboutPage() {
       const img = new Image()
 
       img.onload = () => {
-        // 최대 크기 설정 (800x600)
-        const maxWidth = 800
-        const maxHeight = 600
-        let { width, height } = img
+        try {
+          const maxWidth = 800
+          const maxHeight = 600
+          let width = img.width || img.naturalWidth || 800
+          let height = img.height || img.naturalHeight || 600
 
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width
-            width = maxWidth
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width
+              width = maxWidth
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height
+              height = maxHeight
+            }
           }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height
-            height = maxHeight
+
+          canvas.width = width
+          canvas.height = height
+
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height)
+            // JPEG 품질 0.7로 압축
+            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7)
+            console.log("[v0] 압축 완료 - 원본:", Math.round(file.size / 1024), "KB")
+            resolve(compressedDataUrl)
+          } else {
+            reject(new Error("Canvas context를 가져올 수 없습니다"))
           }
-        }
-
-        canvas.width = width
-        canvas.height = height
-
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height)
-          // JPEG 품질 0.7로 압축
-          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7)
-          resolve(compressedDataUrl)
-        } else {
-          reject(new Error("Canvas context를 가져올 수 없습니다"))
+        } catch (error) {
+          console.error("[v0] 이미지 압축 중 오류:", error)
+          reject(error)
         }
       }
 
-      img.onerror = () => reject(new Error("이미지 로드 실패"))
-      img.src = URL.createObjectURL(file)
+      img.onerror = (error) => {
+        console.error("[v0] 이미지 로드 실패:", error)
+        reject(new Error("이미지 로드 실패"))
+      }
+
+      try {
+        img.src = URL.createObjectURL(file)
+      } catch (error) {
+        console.error("[v0] URL 생성 실패:", error)
+        reject(new Error("파일 URL 생성 실패"))
+      }
     })
   }
 
