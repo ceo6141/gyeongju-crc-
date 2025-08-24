@@ -95,22 +95,44 @@ export default function AboutPage() {
           </p>
         </section>
 
+        {/* President's Message */}
+        <section className="py-16 bg-gray-50 rounded-lg">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-8">회장 인사말</h2>
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-shrink-0">
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/KakaoTalk_20250604_152409666.jpg-ifeMFXyH5GS3y4HqwvH5ED17TXkHQf.jpeg"
+                  alt="경주중앙로타리클럽 회장"
+                  width={160}
+                  height={160}
+                  className="rounded-full shadow-lg"
+                />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-lg leading-relaxed mb-4">
+                  안녕하십니까. 경주중앙로타리클럽 제22대 회장 최용환입니다.
+                </p>
+                <p className="text-lg leading-relaxed mb-4">
+                  로타리는 '봉사하는 마음'으로 시작되어 전 세계적으로 확산된 인류애 실천 단체입니다. 우리
+                  경주중앙로타리클럽은 2005년 창립 이래 지역사회 발전과 국제친선을 위해 꾸준히 노력해왔습니다.
+                </p>
+                <p className="text-lg leading-relaxed">
+                  앞으로도 '봉사하는 삶'의 가치를 실현하며, 더 나은 세상을 만들어가는 데 최선을 다하겠습니다. 많은
+                  관심과 성원 부탁드립니다.
+                </p>
+                <div className="mt-6">
+                  <p className="font-semibold">경주중앙로타리클럽 제22대 회장</p>
+                  <p className="text-xl font-bold text-primary">천상 최용환</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Club Photo and Info Section */}
         <section className="py-16">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            {/* Club Photo */}
-            <div className="lg:col-span-2">
-              <div className="relative">
-                <Image
-                  src="/images/club-photo.png"
-                  alt="제 21대 22대 회장단 이취임식"
-                  width={800}
-                  height={500}
-                  className="w-full h-auto rounded-lg shadow-lg"
-                />
-              </div>
-            </div>
-
             {/* Club Information */}
             <div className="lg:col-span-1">
               <Card className="p-6">
@@ -201,6 +223,19 @@ export default function AboutPage() {
                 </div>
               </Card>
             </div>
+
+            {/* Club Photo */}
+            <div className="lg:col-span-2">
+              <div className="relative">
+                <Image
+                  src="/images/club-photo.png"
+                  alt="제 21대 22대 회장단 이취임식"
+                  width={800}
+                  height={500}
+                  className="w-full h-auto rounded-lg shadow-lg"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -223,41 +258,6 @@ export default function AboutPage() {
             <p className="text-center text-muted-foreground mt-4">
               경주시 승삼1길 5-5, 4층(용강동) - 경주중앙로타리클럽 회관
             </p>
-          </div>
-        </section>
-
-        {/* President's Message */}
-        <section className="py-16 bg-gray-50 rounded-lg">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-8">회장 인사말</h2>
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="flex-shrink-0">
-                <Image
-                  src="/gyeongju-rotary-president.png"
-                  alt="경주중앙로타리클럽 회장"
-                  width={160}
-                  height={160}
-                  className="rounded-full shadow-lg"
-                />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-lg leading-relaxed mb-4">
-                  안녕하십니까. 경주중앙로타리클럽 제22대 회장 최용환입니다.
-                </p>
-                <p className="text-lg leading-relaxed mb-4">
-                  로타리는 '봉사하는 마음'으로 시작되어 전 세계적으로 확산된 인류애 실천 단체입니다. 우리
-                  경주중앙로타리클럽은 2005년 창립 이래 지역사회 발전과 국제친선을 위해 꾸준히 노력해왔습니다.
-                </p>
-                <p className="text-lg leading-relaxed">
-                  앞으로도 '봉사하는 삶'의 가치를 실현하며, 더 나은 세상을 만들어가는 데 최선을 다하겠습니다. 많은
-                  관심과 성원 부탁드립니다.
-                </p>
-                <div className="mt-6">
-                  <p className="font-semibold">경주중앙로타리클럽 제22대 회장</p>
-                  <p className="text-xl font-bold text-primary">천상 최용환</p>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
