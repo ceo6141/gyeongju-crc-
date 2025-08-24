@@ -133,25 +133,38 @@ export default function AboutPage() {
         try {
           console.log("[v0] Image loaded, original size:", img.width, "x", img.height)
 
-          // 더 적극적인 크기 조정 (큰 이미지는 더 많이 압축)
-          let maxWidth = 800
-          let maxHeight = 600
+          let maxWidth = 600
+          let maxHeight = 400
+          let quality = 0.5
 
-          // 파일 크기가 매우 크면 더 작게 리사이징
-          if (file.size > 5 * 1024 * 1024) {
-            // 5MB 이상
+          // 파일 크기에 따른 적응적 압축
+          if (file.size > 10 * 1024 * 1024) {
+            // 10MB 이상 - 매우 작게
+            maxWidth = 400
+            maxHeight = 300
+            quality = 0.3
+          } else if (file.size > 5 * 1024 * 1024) {
+            // 5MB 이상 - 작게
+            maxWidth = 500
+            maxHeight = 350
+            quality = 0.4
+          } else if (file.size > 2 * 1024 * 1024) {
+            // 2MB 이상 - 중간
             maxWidth = 600
             maxHeight = 400
-          } else if (file.size > 2 * 1024 * 1024) {
-            // 2MB 이상
-            maxWidth = 700
-            maxHeight = 500
+            quality = 0.5
+          } else {
+            // 2MB 미만 - 덜 압축
+            maxWidth = 800
+            maxHeight = 600
+            quality = 0.7
           }
 
           let { width, height } = img
 
-          if (width > maxWidth || height > maxHeight) {
-            const ratio = Math.min(maxWidth / width, maxHeight / height)
+          // 항상 최대 크기로 제한
+          const ratio = Math.min(maxWidth / width, maxHeight / height)
+          if (ratio < 1) {
             width = Math.floor(width * ratio)
             height = Math.floor(height * ratio)
           }
@@ -169,11 +182,11 @@ export default function AboutPage() {
           ctx.imageSmoothingQuality = "high"
           ctx.drawImage(img, 0, 0, width, height)
 
-          // 더 높은 압축률 적용 (품질 0.6)
-          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.6)
+          // 적응적 품질로 압축
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", quality)
 
           console.log("[v0] Image compressed, new size:", Math.round(compressedDataUrl.length * 0.75), "bytes")
-          console.log("[v0] Final dimensions:", width, "x", height)
+          console.log("[v0] Final dimensions:", width, "x", height, "Quality:", quality)
 
           resolve(compressedDataUrl)
         } catch (error) {
@@ -182,17 +195,18 @@ export default function AboutPage() {
         }
       }
 
-      img.onerror = (error) => {
-        console.error("[v0] Image load error:", error)
+      img.onerror = () => {
+        console.error("[v0] Image load error")
         reject(new Error("이미지를 불러올 수 없습니다."))
       }
 
       const reader = new FileReader()
-      reader.onload = function () {
+      reader.onload = function (event) {
         try {
-          if (this.result && typeof this.result === "string") {
+          const result = event?.target?.result || this.result
+          if (result && typeof result === "string") {
             console.log("[v0] File read successfully, setting image source")
-            img.src = this.result
+            img.src = result
           } else {
             console.error("[v0] Invalid file read result")
             reject(new Error("파일 읽기 결과가 올바르지 않습니다."))
@@ -203,8 +217,8 @@ export default function AboutPage() {
         }
       }
 
-      reader.onerror = (error) => {
-        console.error("[v0] FileReader error:", error)
+      reader.onerror = () => {
+        console.error("[v0] FileReader error")
         reject(new Error("파일 읽기 중 오류가 발생했습니다."))
       }
 
@@ -240,6 +254,10 @@ export default function AboutPage() {
 
       console.log("[v0] Adding new image:", newImage.title)
       console.log("[v0] Original file size:", newImage.file.size, "bytes")
+
+      if (newImage.file.size > 5 * 1024 * 1024) {
+        console.log("[v0] Large file detected, applying aggressive compression")
+      }
 
       // 이미지 업로드 및 압축
       let imageSrc: string
@@ -284,7 +302,7 @@ export default function AboutPage() {
         }
       } catch (storageError) {
         console.error("[v0] localStorage save failed:", storageError)
-        alert("사진 저장 중 오류가 발생했습니다. 이미지 크기가 너무 클 수 있습니다.")
+        alert("사진 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
         return
       }
 
