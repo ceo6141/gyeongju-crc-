@@ -598,22 +598,24 @@ export default function AboutPage() {
                               <Input
                                 placeholder="사진 제목 *"
                                 value={editingImage.title}
-                                onChange={(e) => setEditingImage({ ...editingImage, title: e.target.value })}
+                                onChange={(e) => setEditingImage({ ...editingImage, title: e?.target?.value || "" })}
                               />
                               <Textarea
                                 placeholder="사진 설명 *"
                                 value={editingImage.description}
-                                onChange={(e) => setEditingImage({ ...editingImage, description: e.target.value })}
+                                onChange={(e) =>
+                                  setEditingImage({ ...editingImage, description: e?.target?.value || "" })
+                                }
                               />
                               <Input
                                 type="date"
                                 value={editingImage.date}
-                                onChange={(e) => setEditingImage({ ...editingImage, date: e.target.value })}
+                                onChange={(e) => setEditingImage({ ...editingImage, date: e?.target?.value || "" })}
                               />
                               <Input
                                 placeholder="장소 *"
                                 value={editingImage.location}
-                                onChange={(e) => setEditingImage({ ...editingImage, location: e.target.value })}
+                                onChange={(e) => setEditingImage({ ...editingImage, location: e?.target?.value || "" })}
                               />
                               <Button onClick={() => handleEditImage(image.id)} className="w-full">
                                 수정 완료
