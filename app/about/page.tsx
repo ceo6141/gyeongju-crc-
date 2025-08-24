@@ -136,7 +136,9 @@ export default function AboutPage() {
             {/* Club Information */}
             <div className="lg:col-span-1">
               <Card className="p-3 h-full flex flex-col">
-                <h3 className="text-lg font-bold mb-3 text-center">클럽 정보</h3>
+                <h3 className="text-lg font-bold mb-3 text-center">
+                  클럽 정보 <span className="text-xs text-muted-foreground">(2025-26년도)</span>
+                </h3>
                 <div className="space-y-1.5 flex-1">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium">현 회장:</span>
