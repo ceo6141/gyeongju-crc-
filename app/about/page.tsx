@@ -132,7 +132,7 @@ export default function AboutPage() {
 
         {/* Club Photo and Info Section */}
         <section className="py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             {/* Club Information */}
             <div className="lg:col-span-1">
               <Card className="p-3 h-full flex flex-col">
@@ -231,20 +231,10 @@ export default function AboutPage() {
               </Card>
             </div>
 
-            {/* Club Photos */}
-            <div className="lg:col-span-2 space-y-4">
-              {/* Group Photo */}
-              <div className="relative h-[300px]">
-                <Image
-                  src="/images/club-photo.png"
-                  alt="제 21대 22대 회장단 이취임식"
-                  fill
-                  className="object-cover rounded-lg shadow-lg"
-                />
-              </div>
-
+            {/* Club Building Photos - Vertical Stack */}
+            <div className="lg:col-span-1 space-y-4">
               {/* Club Building Photo */}
-              <div className="relative h-[300px]">
+              <div className="relative h-[400px]">
                 <Image
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/KakaoTalk_20250823_174449340.jpg-puIILbLwSWvbEvXvsSuGAJoBAYO08v.jpeg"
                   alt="경주중앙로타리클럽 회관"
@@ -252,6 +242,18 @@ export default function AboutPage() {
                   className="object-cover rounded-lg shadow-lg"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Group Photo - Full Width Below */}
+          <div className="mt-8">
+            <div className="relative h-[300px] w-full">
+              <Image
+                src="/images/club-photo.png"
+                alt="제 21대 22대 회장단 이취임식"
+                fill
+                className="object-cover rounded-lg shadow-lg"
+              />
             </div>
           </div>
         </section>

@@ -4,8 +4,9 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ExternalLink, Globe, Smartphone, Users, BookOpen, Award, Heart, History } from "lucide-react"
+import { ExternalLink, Globe, Smartphone, Users, BookOpen, Award, Heart, History, ArrowLeft } from "lucide-react"
 import { NaverBandLink } from "@/components/naver-band-link"
+import Link from "next/link"
 
 export default function RotaryNewsPage() {
   const [activeTab, setActiveTab] = useState("rotary-info")
@@ -146,6 +147,15 @@ export default function RotaryNewsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Link href="/">
+            <Button variant="outline" className="flex items-center gap-2 bg-transparent">
+              <ArrowLeft className="h-4 w-4" />
+              홈으로 돌아가기
+            </Button>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary mb-4">로타리 소식</h1>
