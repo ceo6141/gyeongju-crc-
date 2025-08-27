@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,82 +13,116 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Edit, Trash2, Calendar, MapPin, Users, Banknote } from "lucide-react"
-
-const getDefaultActivitiesData = () => []
-const getDefaultMemberNewsData = () => []
-
-const loadActivitiesData = () => {
-  try {
-    const stored = localStorage.getItem("gyeongju_rotary_activities_data")
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed)) {
-        console.log("[v0] Loading user activities data:", parsed.length)
-        return parsed
-      }
-    }
-    console.log("[v0] No activities data found, starting with empty array")
-    return []
-  } catch (error) {
-    console.error("Error loading activities data:", error)
-    return []
-  }
-}
-
-const loadMemberNewsData = () => {
-  try {
-    const stored = localStorage.getItem("gyeongju_rotary_member_news_data")
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed)) {
-        console.log("[v0] Loading user member news data:", parsed.length)
-        return parsed
-      }
-    }
-    console.log("[v0] No member news data found, starting with empty array")
-    return []
-  } catch (error) {
-    console.error("Error loading member news data:", error)
-    return []
-  }
-}
-
-const saveActivitiesData = (data) => {
-  try {
-    console.log("[v0] Saving activities data:", data.length)
-    localStorage.setItem("gyeongju_rotary_activities_data", JSON.stringify(data))
-    const saved = localStorage.getItem("gyeongju_rotary_activities_data")
-    if (saved) {
-      console.log("[v0] Activities data saved and verified successfully")
-    } else {
-      console.error("[v0] Failed to save activities data")
-    }
-  } catch (error) {
-    console.error("Error saving activities data:", error)
-  }
-}
-
-const saveMemberNewsData = (data) => {
-  try {
-    console.log("[v0] Saving member news data:", data.length)
-    localStorage.setItem("gyeongju_rotary_member_news_data", JSON.stringify(data))
-    const saved = localStorage.getItem("gyeongju_rotary_member_news_data")
-    if (saved) {
-      console.log("[v0] Member news data saved and verified successfully")
-    } else {
-      console.error("[v0] Failed to save member news data")
-    }
-  } catch (error) {
-    console.error("Error saving member news data:", error)
-  }
-}
+import {
+  syncActivitiesData,
+  syncMemberNewsData,
+  saveActivitiesData,
+  saveMemberNewsData,
+  type Activity,
+  type MemberNews,
+} from "@/lib/activities-data"
+import { useAdminAuth } from "@/hooks/use-admin-auth"
+import { AdminLogin } from "@/components/admin-login"
 
 export default function ActivitiesPage() {
-  const [activities, setActivities] = useState([])
-  const [memberNews, setMemberNews] = useState([])
-  const [authDialog, setAuthDialog] = useState({ open: false, action: null, id: null })
-  const [authPassword, setAuthPassword] = useState("")
-  const [newActivity, setNewActivity] = useState({
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [memberNews, setMemberNews] = useState<MemberNews[]>([])
+  const [activitiesVersion, setActivitiesVersion] = useState(0)
+  const [memberNewsVersion, setMemberNewsVersion] = useState(0)
+  const { requireAuth, showLogin, setShowLogin, handleLoginSuccess } = useAdminAuth()
+
+  const syncActivities = () => {
+    const allActivities = syncActivitiesData()
+    setActivities(allActivities)
+    setActivitiesVersion((prev) => prev + 1)
+    console.log("[v0] 봉사활동 페이지 동기화 완료:", allActivities.length, "개")
+    console.log("[v0] 봉사활동 페이지 데이터:", allActivities)
+  }
+
+  const syncMemberNewsFunc = () => {
+    const allMemberNews = syncMemberNewsData()
+    setMemberNews(allMemberNews)
+    setMemberNewsVersion((prev) => prev + 1)
+    console.log("[v0] 회원소식 페이지 동기화 완료:", allMemberNews.length, "개")
+    console.log("[v0] 회원소식 페이지 데이터:", allMemberNews)
+  }
+
+  useEffect(() => {
+    syncActivities()
+    syncMemberNewsFunc()
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "rotary-activities") {
+        console.log("[v0] 봉사활동 페이지 Storage 변경 감지, 재동기화")
+        syncActivities()
+      }
+      if (e.key === "rotary-member-news") {
+        console.log("[v0] 회원소식 페이지 Storage 변경 감지, 재동기화")
+        syncMemberNewsFunc()
+      }
+    }
+
+    const handleActivitiesUpdate = () => {
+      console.log("[v0] 봉사활동 페이지 업데이트 이벤트 감지, 즉시 동기화")
+      syncActivities()
+    }
+
+    const handleMemberNewsUpdate = () => {
+      console.log("[v0] 회원소식 페이지 업데이트 이벤트 감지, 즉시 동기화")
+      syncMemberNewsFunc()
+    }
+
+    const handleFocus = () => {
+      console.log("[v0] 봉사활동 페이지 포커스, 재동기화")
+      syncActivities()
+      syncMemberNewsFunc()
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("activitiesUpdated", handleActivitiesUpdate)
+    window.addEventListener("memberNewsUpdated", handleMemberNewsUpdate)
+    window.addEventListener("focus", handleFocus)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("activitiesUpdated", handleActivitiesUpdate)
+      window.removeEventListener("memberNewsUpdated", handleMemberNewsUpdate)
+      window.removeEventListener("focus", handleFocus)
+    }
+  }, [])
+
+  const saveActivities = (newActivities: Activity[]) => {
+    if (saveActivitiesData(newActivities)) {
+      setActivities(newActivities)
+      setActivitiesVersion((prev) => prev + 1)
+      window.dispatchEvent(
+        new CustomEvent("activitiesUpdated", {
+          detail: { activities: newActivities },
+        }),
+      )
+      console.log("[v0] 봉사활동 저장 완료:", newActivities.length, "개")
+    }
+  }
+
+  const saveMemberNewsFunc = (newMemberNews: MemberNews[]) => {
+    if (saveMemberNewsData(newMemberNews)) {
+      setMemberNews(newMemberNews)
+      setMemberNewsVersion((prev) => prev + 1)
+      window.dispatchEvent(
+        new CustomEvent("memberNewsUpdated", {
+          detail: { memberNews: newMemberNews },
+        }),
+      )
+      console.log("[v0] 회원소식 저장 완료:", newMemberNews.length, "개")
+    }
+  }
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null)
+  const [editingMemberNews, setEditingMemberNews] = useState<MemberNews | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isMemberNewsDialogOpen, setIsMemberNewsDialogOpen] = useState(false)
+  const [formData, setFormData] = useState({
     title: "",
     date: "",
     location: "",
@@ -96,126 +132,152 @@ export default function ActivitiesPage() {
     type: "봉사활동",
     image: "",
   })
-  const [newMemberNews, setNewMemberNews] = useState({
+  const [memberNewsFormData, setMemberNewsFormData] = useState({
     title: "",
     date: "",
     content: "",
     type: "회원소식",
   })
-  const [editingActivity, setEditingActivity] = useState(null)
-  const [editingMemberNews, setEditingMemberNews] = useState(null)
-  const [isAddingActivity, setIsAddingActivity] = useState(false)
-  const [isAddingMemberNews, setIsAddingMemberNews] = useState(false)
   const [imagePreview, setImagePreview] = useState("")
 
-  useEffect(() => {
-    console.log("[v0] Loading activities page data")
-    const activitiesData = loadActivitiesData()
-    const memberNewsData = loadMemberNewsData()
-
-    setActivities(activitiesData)
-    setMemberNews(memberNewsData)
-
-    console.log("[v0] Data loaded - Activities:", activitiesData.length, "News:", memberNewsData.length)
-
-    const handleBeforeUnload = () => {
-      console.log("[v0] Page unloading - ensuring data is saved")
-      saveActivitiesData(activities)
-      saveMemberNewsData(memberNews)
-    }
-
-    window.addEventListener("beforeunload", handleBeforeUnload)
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (activities.length > 0) {
-      console.log("[v0] Activities changed, auto-saving:", activities.length)
-      saveActivitiesData(activities)
-    }
-  }, [activities])
-
-  useEffect(() => {
-    if (memberNews.length > 0) {
-      console.log("[v0] Member news changed, auto-saving:", memberNews.length)
-      saveMemberNewsData(memberNews)
-    }
-  }, [memberNews])
-
-  const requireAuth = (action, id = null) => {
-    return new Promise((resolve) => {
-      setAuthDialog({
-        open: true,
-        action,
-        id,
-        resolve,
+  const handleAddActivity = () => {
+    requireAuth(() => {
+      setIsEditing(false)
+      setEditingActivity(null)
+      setFormData({
+        title: "",
+        date: "",
+        location: "",
+        description: "",
+        amount: "",
+        participants: "",
+        type: "봉사활동",
+        image: "",
       })
+      setImagePreview("")
+      setIsDialogOpen(true)
     })
   }
 
-  const handleAuthSubmit = () => {
-    console.log("[v0] Auth attempt with password:", authPassword ? "***" : "empty")
+  const handleEditActivity = (activity: Activity) => {
+    requireAuth(() => {
+      setIsEditing(true)
+      setEditingActivity(activity)
+      setFormData({
+        title: activity.title,
+        date: activity.date,
+        location: activity.location || "",
+        description: activity.description || "",
+        amount: activity.amount || "",
+        participants: activity.participants || "",
+        type: activity.type,
+        image: activity.image || "",
+      })
+      setImagePreview(activity.image || "")
+      setIsDialogOpen(true)
+    })
+  }
 
-    const validPasswords = ["rotary", "1234", "rotary2025"]
-    if (validPasswords.includes(authPassword)) {
-      console.log("[v0] Auth successful")
-      setAuthDialog({ open: false, action: null, id: null })
-      setAuthPassword("")
-
-      // Execute the pending action
-      if (authDialog.action === "deleteActivity") {
-        executeDeleteActivity(authDialog.id)
-      } else if (authDialog.action === "deleteMemberNews") {
-        executeDeleteMemberNews(authDialog.id)
-      } else if (authDialog.resolve) {
-        authDialog.resolve(true)
+  const handleDeleteActivity = (id: number) => {
+    requireAuth(() => {
+      if (confirm("이 봉사활동을 삭제하시겠습니까?")) {
+        const updatedActivities = activities.filter((activity) => activity.id !== id)
+        saveActivities(updatedActivities)
       }
-    } else {
-      console.log("[v0] Auth failed")
-      alert("비밀번호: rotary 또는 1234")
-    }
+    })
   }
 
-  const executeDeleteActivity = (id) => {
-    console.log("[v0] Executing delete activity:", id)
+  const handleSubmitActivity = (e: React.FormEvent) => {
+    e.preventDefault()
+    const currentDate = new Date().toISOString().split("T")[0].replace(/-/g, ".")
 
-    if (confirm("정말로 이 활동을 삭제하시겠습니까?")) {
-      console.log("[v0] User confirmed deletion")
-      const updatedActivities = activities.filter((activity) => activity.id !== id)
-      console.log("[v0] Updated activities count:", updatedActivities.length)
-
-      setActivities(updatedActivities)
-      saveActivitiesData(updatedActivities)
-      console.log("[v0] Activity deleted and saved successfully")
-    } else {
-      console.log("[v0] User cancelled deletion")
+    const newActivity: Activity = {
+      id: isEditing ? editingActivity!.id : Date.now(),
+      title: formData.title,
+      date: formData.date,
+      location: formData.location,
+      description: formData.description,
+      amount: formData.amount,
+      participants: formData.participants,
+      type: formData.type,
+      image: formData.image,
     }
+
+    let updatedActivities
+    if (isEditing) {
+      updatedActivities = activities.map((activity) => (activity.id === editingActivity!.id ? newActivity : activity))
+    } else {
+      updatedActivities = [newActivity, ...activities]
+    }
+
+    saveActivities(updatedActivities)
+    setIsDialogOpen(false)
   }
 
-  const executeDeleteMemberNews = (id) => {
-    console.log("[v0] Executing delete member news:", id)
-
-    if (confirm("정말로 이 소식을 삭제하시겠습니까?")) {
-      console.log("[v0] User confirmed deletion")
-      const updatedNews = memberNews.filter((news) => news.id !== id)
-      console.log("[v0] Updated news count:", updatedNews.length)
-
-      setMemberNews(updatedNews)
-      saveMemberNewsData(updatedNews)
-      console.log("[v0] Member news deleted and saved successfully")
-    } else {
-      console.log("[v0] User cancelled deletion")
-    }
+  const handleAddMemberNews = () => {
+    requireAuth(() => {
+      setIsEditing(false)
+      setEditingMemberNews(null)
+      setMemberNewsFormData({
+        title: "",
+        date: "",
+        content: "",
+        type: "회원소식",
+      })
+      setIsMemberNewsDialogOpen(true)
+    })
   }
 
-  const handlePhotoUpload = (event, isEditing = false) => {
+  const handleEditMemberNews = (news: MemberNews) => {
+    requireAuth(() => {
+      setIsEditing(true)
+      setEditingMemberNews(news)
+      setMemberNewsFormData({
+        title: news.title,
+        date: news.date,
+        content: news.content,
+        type: news.type,
+      })
+      setIsMemberNewsDialogOpen(true)
+    })
+  }
+
+  const handleDeleteMemberNews = (id: number) => {
+    requireAuth(() => {
+      if (confirm("이 회원소식을 삭제하시겠습니까?")) {
+        const updatedMemberNews = memberNews.filter((news) => news.id !== id)
+        saveMemberNewsFunc(updatedMemberNews)
+      }
+    })
+  }
+
+  const handleSubmitMemberNews = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const newMemberNews: MemberNews = {
+      id: isEditing ? editingMemberNews!.id : Date.now(),
+      title: memberNewsFormData.title,
+      date: memberNewsFormData.date,
+      content: memberNewsFormData.content,
+      type: memberNewsFormData.type,
+    }
+
+    let updatedMemberNews
+    if (isEditing) {
+      updatedMemberNews = memberNews.map((news) => (news.id === editingMemberNews!.id ? newMemberNews : news))
+    } else {
+      updatedMemberNews = [newMemberNews, ...memberNews]
+    }
+
+    saveMemberNewsFunc(updatedMemberNews)
+    setIsMemberNewsDialogOpen(false)
+  }
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
-    console.log("[v0] Photo upload started:", file.name, file.size)
+    console.log("[v0] 사진 업로드 시작:", file.name, file.size)
 
     if (file.size > 5 * 1024 * 1024) {
       alert("파일 크기는 5MB 이하여야 합니다.")
@@ -248,151 +310,21 @@ export default function ActivitiesPage() {
 
           canvas.width = width
           canvas.height = height
-          ctx.drawImage(img, 0, 0, width, height)
+          ctx!.drawImage(img, 0, 0, width, height)
 
           const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8)
-          console.log("[v0] Photo compressed successfully")
+          console.log("[v0] 사진 압축 완료")
 
           setImagePreview(compressedDataUrl)
-          if (isEditing && editingActivity) {
-            setEditingActivity({ ...editingActivity, image: compressedDataUrl })
-          } else {
-            setNewActivity({ ...newActivity, image: compressedDataUrl })
-          }
+          setFormData({ ...formData, image: compressedDataUrl })
         }
-        img.src = e.target.result
+        img.src = e.target!.result as string
       } catch (error) {
-        console.error("[v0] Photo processing error:", error)
+        console.error("[v0] 사진 처리 오류:", error)
         alert("사진 처리 중 오류가 발생했습니다.")
       }
     }
     reader.readAsDataURL(file)
-  }
-
-  const handleAddActivity = () => {
-    console.log("[v0] === ADD ACTIVITY BUTTON CLICKED ===")
-    console.log("[v0] Form data - Title:", newActivity.title, "Date:", newActivity.date)
-    console.log("[v0] Current activities count:", activities.length)
-
-    if (!newActivity.title || !newActivity.date) {
-      console.log("[v0] VALIDATION FAILED - Missing required fields")
-      console.log("[v0] Title empty:", !newActivity.title, "Date empty:", !newActivity.date)
-      alert("제목과 날짜는 필수입니다.")
-      return
-    }
-
-    console.log("[v0] VALIDATION PASSED - Creating activity")
-    const activity = {
-      ...newActivity,
-      id: Date.now(),
-    }
-
-    console.log("[v0] New activity created:", JSON.stringify(activity, null, 2))
-    const updatedActivities = [...activities, activity]
-    console.log("[v0] Updated activities array length:", updatedActivities.length)
-
-    setActivities(updatedActivities)
-    saveActivitiesData(updatedActivities)
-    console.log("[v0] State updated and data saved")
-
-    const resetForm = {
-      title: "",
-      date: "",
-      location: "",
-      description: "",
-      amount: "",
-      participants: "",
-      type: "봉사활동",
-      image: "",
-    }
-
-    setNewActivity(resetForm)
-    setImagePreview("")
-    setIsAddingActivity(false)
-
-    console.log("[v0] Form reset and dialog closed")
-    console.log("[v0] === ADD ACTIVITY COMPLETED ===")
-
-    setTimeout(() => {
-      alert("봉사활동이 성공적으로 추가되었습니다!")
-      console.log("[v0] Success message shown, final activities count:", updatedActivities.length)
-    }, 100)
-  }
-
-  const handleEditActivity = (activity) => {
-    setEditingActivity(activity)
-    setImagePreview(activity.image || "")
-  }
-
-  const handleUpdateActivity = () => {
-    if (!editingActivity.title || !editingActivity.date) {
-      alert("제목과 날짜는 필수입니다.")
-      return
-    }
-
-    const updatedActivities = activities.map((activity) =>
-      activity.id === editingActivity.id ? editingActivity : activity,
-    )
-
-    console.log("[v0] Updating activity:", editingActivity.title)
-    setActivities(updatedActivities)
-    saveActivitiesData(updatedActivities)
-    setEditingActivity(null)
-    setImagePreview("")
-
-    setTimeout(() => {
-      console.log("[v0] Activity update completed, current count:", updatedActivities.length)
-    }, 100)
-  }
-
-  const handleDeleteActivity = (id) => {
-    console.log("[v0] Delete activity requested:", id)
-    requireAuth("deleteActivity", id)
-  }
-
-  const handleAddMemberNews = () => {
-    if (!newMemberNews.title || !newMemberNews.date) {
-      alert("제목과 날짜는 필수입니다.")
-      return
-    }
-
-    const news = {
-      ...newMemberNews,
-      id: Date.now(),
-    }
-
-    const updatedNews = [...memberNews, news]
-    setMemberNews(updatedNews)
-    saveMemberNewsData(updatedNews)
-
-    setNewMemberNews({
-      title: "",
-      date: "",
-      content: "",
-      type: "회원소식",
-    })
-    setIsAddingMemberNews(false)
-  }
-
-  const handleEditMemberNews = (news) => {
-    setEditingMemberNews(news)
-  }
-
-  const handleUpdateMemberNews = () => {
-    if (!editingMemberNews.title || !editingMemberNews.date) {
-      alert("제목과 날짜는 필수입니다.")
-      return
-    }
-
-    const updatedNews = memberNews.map((news) => (news.id === editingMemberNews.id ? editingMemberNews : news))
-    setMemberNews(updatedNews)
-    saveMemberNewsData(updatedNews)
-    setEditingMemberNews(null)
-  }
-
-  const handleDeleteMemberNews = (id) => {
-    console.log("[v0] Delete member news requested:", id)
-    requireAuth("deleteMemberNews", id)
   }
 
   return (
@@ -403,50 +335,6 @@ export default function ActivitiesPage() {
           <p className="text-lg text-gray-600">경주중앙로타리클럽의 봉사활동과 회원소식을 확인하세요.</p>
         </div>
 
-        <Dialog
-          open={authDialog.open}
-          onOpenChange={(open) => {
-            if (!open) {
-              setAuthDialog({ open: false, action: null, id: null })
-              setAuthPassword("")
-            }
-          }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>관리자 인증</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="auth-password" className="text-right">
-                  비밀번호
-                </Label>
-                <Input
-                  id="auth-password"
-                  type="password"
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  className="col-span-3"
-                  onKeyPress={(e) => e.key === "Enter" && handleAuthSubmit()}
-                  autoFocus
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setAuthDialog({ open: false, action: null, id: null })
-                  setAuthPassword("")
-                }}
-              >
-                취소
-              </Button>
-              <Button onClick={handleAuthSubmit}>확인</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
         <Tabs defaultValue="activities" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="activities">봉사활동</TabsTrigger>
@@ -455,118 +343,72 @@ export default function ActivitiesPage() {
 
           <TabsContent value="activities">
             <div className="flex justify-center mb-6">
-              <Dialog
-                open={isAddingActivity}
-                onOpenChange={(open) => {
-                  console.log("[v0] Dialog state changing to:", open)
-                  setIsAddingActivity(open)
-                  if (!open) {
-                    console.log("[v0] Dialog closing - resetting form")
-                    setNewActivity({
-                      title: "",
-                      date: "",
-                      location: "",
-                      description: "",
-                      amount: "",
-                      participants: "",
-                      type: "봉사활동",
-                      image: "",
-                    })
-                    setImagePreview("")
-                  }
-                }}
-              >
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => console.log("[v0] Add activity button clicked - opening dialog")}
-                  >
+                  <Button onClick={handleAddActivity} className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="w-4 h-4 mr-2" />새 봉사활동 추가
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>새 봉사활동 추가</DialogTitle>
+                    <DialogTitle>{isEditing ? "봉사활동 수정" : "새 봉사활동 추가"}</DialogTitle>
                   </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-title" className="text-right">
-                        제목
-                      </Label>
+                  <form onSubmit={handleSubmitActivity} className="space-y-4">
+                    <div>
+                      <Label>제목</Label>
                       <Input
-                        id="new-title"
-                        value={newActivity.title}
-                        onChange={(e) => setNewActivity({ ...newActivity, title: e.target.value })}
-                        className="col-span-3"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        required
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-date" className="text-right">
-                        날짜
-                      </Label>
+                    <div>
+                      <Label>날짜</Label>
                       <Input
-                        id="new-date"
-                        value={newActivity.date}
-                        onChange={(e) => setNewActivity({ ...newActivity, date: e.target.value })}
-                        className="col-span-3"
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        required
                         placeholder="2024.01.01"
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-location" className="text-right">
-                        장소
-                      </Label>
+                    <div>
+                      <Label>장소</Label>
                       <Input
-                        id="new-location"
-                        value={newActivity.location}
-                        onChange={(e) => setNewActivity({ ...newActivity, location: e.target.value })}
-                        className="col-span-3"
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-description" className="text-right">
-                        설명
-                      </Label>
+                    <div>
+                      <Label>설명</Label>
                       <Textarea
-                        id="new-description"
-                        value={newActivity.description}
-                        onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
-                        className="col-span-3"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        rows={3}
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-amount" className="text-right">
-                        기부금액
-                      </Label>
+                    <div>
+                      <Label>기부금액</Label>
                       <Input
-                        id="new-amount"
-                        value={newActivity.amount}
-                        onChange={(e) => setNewActivity({ ...newActivity, amount: e.target.value })}
-                        className="col-span-3"
+                        value={formData.amount}
+                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                         placeholder="100만원"
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-participants" className="text-right">
-                        참가자수
-                      </Label>
+                    <div>
+                      <Label>참가자수</Label>
                       <Input
-                        id="new-participants"
-                        value={newActivity.participants}
-                        onChange={(e) => setNewActivity({ ...newActivity, participants: e.target.value })}
-                        className="col-span-3"
+                        value={formData.participants}
+                        onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
                         placeholder="10명"
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-type" className="text-right">
-                        유형
-                      </Label>
+                    <div>
+                      <Label>유형</Label>
                       <Select
-                        value={newActivity.type}
-                        onValueChange={(value) => setNewActivity({ ...newActivity, type: value })}
+                        value={formData.type}
+                        onValueChange={(value) => setFormData({ ...formData, type: value })}
                       >
-                        <SelectTrigger className="col-span-3">
+                        <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -577,67 +419,44 @@ export default function ActivitiesPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-image-url" className="text-right">
-                        이미지 URL
-                      </Label>
+                    <div>
+                      <Label>이미지 URL</Label>
                       <Input
-                        id="new-image-url"
-                        value={newActivity.image}
-                        onChange={(e) => setNewActivity({ ...newActivity, image: e.target.value })}
-                        className="col-span-3"
+                        value={formData.image}
+                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                         placeholder="https://example.com/image.jpg (선택)"
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-image-file" className="text-right">
-                        또는 파일 업로드
-                      </Label>
-                      <div className="col-span-3">
-                        <Input
-                          id="new-image-file"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handlePhotoUpload(e)}
-                        />
-                        {imagePreview && (
-                          <div className="mt-2">
-                            <img
-                              src={imagePreview || "/placeholder.svg"}
-                              alt="미리보기"
-                              className="w-32 h-24 object-cover rounded"
-                            />
-                          </div>
-                        )}
-                      </div>
+                    <div>
+                      <Label>또는 파일 업로드</Label>
+                      <Input type="file" accept="image/*" onChange={handlePhotoUpload} />
+                      {imagePreview && (
+                        <div className="mt-2">
+                          <img
+                            src={imagePreview || "/placeholder.svg"}
+                            alt="미리보기"
+                            className="w-32 h-24 object-cover rounded"
+                          />
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        console.log("[v0] Cancel button clicked")
-                        setIsAddingActivity(false)
-                      }}
-                    >
-                      취소
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        console.log("[v0] Add button clicked - calling handleAddActivity")
-                        handleAddActivity()
-                      }}
-                    >
-                      추가
-                    </Button>
-                  </div>
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                        취소
+                      </Button>
+                      <Button type="submit">{isEditing ? "수정" : "추가"}</Button>
+                    </div>
+                  </form>
                 </DialogContent>
               </Dialog>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {activities.map((activity) => (
-                <Card key={activity.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card
+                  key={`${activity.id}-${activitiesVersion}`}
+                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                >
                   {activity.image && (
                     <div className="aspect-video overflow-hidden">
                       <img
@@ -693,206 +512,61 @@ export default function ActivitiesPage() {
                 </Card>
               ))}
             </div>
-
-            {/* Edit Activity Dialog */}
-            <Dialog open={!!editingActivity} onOpenChange={() => setEditingActivity(null)}>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>봉사활동 수정</DialogTitle>
-                </DialogHeader>
-                {editingActivity && (
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-title" className="text-right">
-                        제목
-                      </Label>
-                      <Input
-                        id="edit-title"
-                        value={editingActivity.title}
-                        onChange={(e) => setEditingActivity({ ...editingActivity, title: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-date" className="text-right">
-                        날짜
-                      </Label>
-                      <Input
-                        id="edit-date"
-                        value={editingActivity.date}
-                        onChange={(e) => setEditingActivity({ ...editingActivity, date: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-location" className="text-right">
-                        장소
-                      </Label>
-                      <Input
-                        id="edit-location"
-                        value={editingActivity.location}
-                        onChange={(e) => setEditingActivity({ ...editingActivity, location: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-description" className="text-right">
-                        설명
-                      </Label>
-                      <Textarea
-                        id="edit-description"
-                        value={editingActivity.description}
-                        onChange={(e) => setEditingActivity({ ...editingActivity, description: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-amount" className="text-right">
-                        기부금액
-                      </Label>
-                      <Input
-                        id="edit-amount"
-                        value={editingActivity.amount}
-                        onChange={(e) => setEditingActivity({ ...editingActivity, amount: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-participants" className="text-right">
-                        참가자수
-                      </Label>
-                      <Input
-                        id="edit-participants"
-                        value={editingActivity.participants}
-                        onChange={(e) => setEditingActivity({ ...editingActivity, participants: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-type" className="text-right">
-                        유형
-                      </Label>
-                      <Select
-                        value={editingActivity.type}
-                        onValueChange={(value) => setEditingActivity({ ...editingActivity, type: value })}
-                      >
-                        <SelectTrigger className="col-span-3">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="봉사활동">봉사활동</SelectItem>
-                          <SelectItem value="기부활동">기부활동</SelectItem>
-                          <SelectItem value="장학사업">장학사업</SelectItem>
-                          <SelectItem value="환경보호">환경보호</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-image-url" className="text-right">
-                        이미지 URL
-                      </Label>
-                      <Input
-                        id="edit-image-url"
-                        value={editingActivity.image}
-                        onChange={(e) => setEditingActivity({ ...editingActivity, image: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-image-file" className="text-right">
-                        또는 파일 업로드
-                      </Label>
-                      <div className="col-span-3">
-                        <Input
-                          id="edit-image-file"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handlePhotoUpload(e, true)}
-                        />
-                        {imagePreview && (
-                          <div className="mt-2">
-                            <img
-                              src={imagePreview || "/placeholder.svg"}
-                              alt="미리보기"
-                              className="w-32 h-24 object-cover rounded"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setEditingActivity(null)}>
-                    취소
-                  </Button>
-                  <Button onClick={handleUpdateActivity}>수정</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
           </TabsContent>
 
           <TabsContent value="member-news">
             <div className="flex justify-center mb-6">
-              <Dialog open={isAddingMemberNews} onOpenChange={setIsAddingMemberNews}>
+              <Dialog open={isMemberNewsDialogOpen} onOpenChange={setIsMemberNewsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={handleAddMemberNews} className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="w-4 h-4 mr-2" />새 회원소식 추가
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>새 회원소식 추가</DialogTitle>
+                    <DialogTitle>{isEditing ? "회원소식 수정" : "새 회원소식 추가"}</DialogTitle>
                   </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-news-title" className="text-right">
-                        제목
-                      </Label>
+                  <form onSubmit={handleSubmitMemberNews} className="space-y-4">
+                    <div>
+                      <Label>제목</Label>
                       <Input
-                        id="new-news-title"
-                        value={newMemberNews.title}
-                        onChange={(e) => setNewMemberNews({ ...newMemberNews, title: e.target.value })}
-                        className="col-span-3"
+                        value={memberNewsFormData.title}
+                        onChange={(e) => setMemberNewsFormData({ ...memberNewsFormData, title: e.target.value })}
+                        required
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-news-date" className="text-right">
-                        날짜
-                      </Label>
+                    <div>
+                      <Label>날짜</Label>
                       <Input
-                        id="new-news-date"
-                        value={newMemberNews.date}
-                        onChange={(e) => setNewMemberNews({ ...newMemberNews, date: e.target.value })}
-                        className="col-span-3"
+                        value={memberNewsFormData.date}
+                        onChange={(e) => setMemberNewsFormData({ ...memberNewsFormData, date: e.target.value })}
+                        required
                         placeholder="2024년 1월 1일"
                       />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="new-news-content" className="text-right">
-                        내용
-                      </Label>
+                    <div>
+                      <Label>내용</Label>
                       <Textarea
-                        id="new-news-content"
-                        value={newMemberNews.content}
-                        onChange={(e) => setNewMemberNews({ ...newMemberNews, content: e.target.value })}
-                        className="col-span-3"
+                        value={memberNewsFormData.content}
+                        onChange={(e) => setMemberNewsFormData({ ...memberNewsFormData, content: e.target.value })}
+                        required
+                        rows={3}
                       />
                     </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsAddingMemberNews(false)}>
-                      취소
-                    </Button>
-                    <Button onClick={handleAddMemberNews}>추가</Button>
-                  </div>
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setIsMemberNewsDialogOpen(false)}>
+                        취소
+                      </Button>
+                      <Button type="submit">{isEditing ? "수정" : "추가"}</Button>
+                    </div>
+                  </form>
                 </DialogContent>
               </Dialog>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {memberNews.map((news) => (
-                <Card key={news.id} className="hover:shadow-lg transition-shadow">
+                <Card key={`${news.id}-${memberNewsVersion}`} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <Badge variant="outline" className="mb-2">
@@ -919,61 +593,11 @@ export default function ActivitiesPage() {
                 </Card>
               ))}
             </div>
-
-            {/* Edit Member News Dialog */}
-            <Dialog open={!!editingMemberNews} onOpenChange={() => setEditingMemberNews(null)}>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>회원소식 수정</DialogTitle>
-                </DialogHeader>
-                {editingMemberNews && (
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-news-title" className="text-right">
-                        제목
-                      </Label>
-                      <Input
-                        id="edit-news-title"
-                        value={editingMemberNews.title}
-                        onChange={(e) => setEditingMemberNews({ ...editingMemberNews, title: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-news-date" className="text-right">
-                        날짜
-                      </Label>
-                      <Input
-                        id="edit-news-date"
-                        value={editingMemberNews.date}
-                        onChange={(e) => setEditingMemberNews({ ...editingMemberNews, date: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="edit-news-content" className="text-right">
-                        내용
-                      </Label>
-                      <Textarea
-                        id="edit-news-content"
-                        value={editingMemberNews.content}
-                        onChange={(e) => setEditingMemberNews({ ...editingMemberNews, content: e.target.value })}
-                        className="col-span-3"
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setEditingMemberNews(null)}>
-                    취소
-                  </Button>
-                  <Button onClick={handleUpdateMemberNews}>수정</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
           </TabsContent>
         </Tabs>
       </div>
+
+      <AdminLogin isOpen={showLogin} onClose={() => setShowLogin(false)} onSuccess={handleLoginSuccess} />
     </div>
   )
 }
