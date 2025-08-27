@@ -1,0 +1,30 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "경주중앙로타리클럽",
+  "alternateName": "Gyeongju Central Rotary Club",
+  "url": "https://gjcrotaryclub.vercel.app",
+  "logo": "https://gjcrotaryclub.vercel.app/rotary-logo-official.png",
+  "description": "경주 지역의 봉사단체로 지역사회 발전과 국제친선을 위한 다양한 봉사활동을 펼치고 있습니다.",
+  "foundingDate": "2005",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "승삼1길 5-5, 4층(용강동)",
+    "addressLocality": "경주시",
+    "addressRegion": "경상북도",
+    "postalCode": "38090",
+    "addressCountry": "KR"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+82-54-773-7676",
+    "contactType": "customer service",
+    "email": "ceo6141@gmail.com"
+  },
+  "memberOf": {
+    "@type": "Organization",
+    "name": "국제로타리 3630지구",
+    "alternateName": "Rotary International District 3630"
+  },
+  "keywords": "경주중앙로타리클럽, 경주로타리, 로타리클럽, 봉사단체, 경주봉사, 지역사회봉사, 국제친선, 천상최용환, 경주시민단체"
+}

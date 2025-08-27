@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+User-agent: NaverBot
+Allow: /
+
+Disallow: /admin
+Disallow: /api
+
+Sitemap: https://gjcrotaryclub.vercel.app/sitemap.xml
