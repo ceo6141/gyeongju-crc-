@@ -12,70 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Edit, Trash2, Calendar, MapPin, Users, Banknote } from "lucide-react"
 
-const getDefaultActivitiesData = () => [
-  {
-    id: 1,
-    title: "지역사회 기부금 전달",
-    date: "2025년 7월 22일",
-    location: "경주예의전인문화센터 (센터장 박귀현)",
-    description: "지역사회를 위한 기부금 전달식을 개최하였습니다.",
-    amount: "200만원",
-    participants: "15명",
-    type: "기부활동",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: 2,
-    title: "경주 문화재 보존 활동",
-    date: "2024.11.20",
-    location: "불국사 일원",
-    description: "경주 문화재 보존 및 환경정화 활동을 실시하였습니다.",
-    amount: "자원봉사",
-    participants: "12명",
-    type: "봉사활동",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-  {
-    id: 3,
-    title: "청소년 장학금 지원",
-    date: "2024.10.10",
-    location: "경주중앙로타리클럽 회관",
-    description: "지역 우수 청소년에게 장학금을 지원하였습니다.",
-    amount: "500만원",
-    participants: "20명",
-    type: "장학사업",
-    image: "/placeholder.svg?height=400&width=600",
-  },
-]
-
-const getDefaultMemberNewsData = () => [
-  {
-    id: 1,
-    title: "신입회원 환영식",
-    date: "2025년 1월 15일",
-    content: "새로운 회원들을 환영하는 자리를 마련했습니다.",
-    type: "회원소식",
-  },
-  {
-    id: 2,
-    title: "정기총회 개최",
-    date: "2024년 12월 20일",
-    content: "2024년 정기총회가 성공적으로 개최되었습니다.",
-    type: "회원소식",
-  },
-  {
-    id: 3,
-    title: "송년회 안내",
-    date: "2024년 12월 30일",
-    content: "올해 마지막 모임인 송년회에 많은 참석 부탁드립니다.",
-    type: "회원소식",
-  },
-]
-
 const loadActivitiesData = () => {
   try {
     const stored = localStorage.getItem("activities_data")
-
     if (stored) {
       const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) {
@@ -83,20 +22,17 @@ const loadActivitiesData = () => {
         return parsed
       }
     }
-
-    // Only use default data if no user data exists at all
-    console.log("[v0] Loading default activities data")
-    return getDefaultActivitiesData()
+    console.log("[v0] No activities data found, returning empty array")
+    return []
   } catch (error) {
     console.error("Error loading activities data:", error)
-    return getDefaultActivitiesData()
+    return []
   }
 }
 
 const loadMemberNewsData = () => {
   try {
     const stored = localStorage.getItem("member_news_data")
-
     if (stored) {
       const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) {
@@ -104,13 +40,11 @@ const loadMemberNewsData = () => {
         return parsed
       }
     }
-
-    // Only use default data if no user data exists at all
-    console.log("[v0] Loading default member news data")
-    return getDefaultMemberNewsData()
+    console.log("[v0] No member news data found, returning empty array")
+    return []
   } catch (error) {
     console.error("Error loading member news data:", error)
-    return getDefaultMemberNewsData()
+    return []
   }
 }
 
@@ -118,7 +52,6 @@ const saveActivitiesData = (data) => {
   try {
     console.log("[v0] Saving activities data:", data.length)
     localStorage.setItem("activities_data", JSON.stringify(data))
-    localStorage.setItem("activities_user_modified", "true")
     console.log("[v0] Activities data saved successfully")
   } catch (error) {
     console.error("Error saving activities data:", error)
@@ -129,7 +62,6 @@ const saveMemberNewsData = (data) => {
   try {
     console.log("[v0] Saving member news data:", data.length)
     localStorage.setItem("member_news_data", JSON.stringify(data))
-    localStorage.setItem("member_news_user_modified", "true")
     console.log("[v0] Member news data saved successfully")
   } catch (error) {
     console.error("Error saving member news data:", error)
@@ -352,7 +284,9 @@ export default function ActivitiesPage() {
     setEditingActivity(null)
     setImagePreview("")
 
-    console.log("[v0] Activity updated successfully")
+    setTimeout(() => {
+      console.log("[v0] Activity update completed, current count:", updatedActivities.length)
+    }, 100)
   }
 
   const handleDeleteActivity = (id) => {
