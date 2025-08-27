@@ -234,7 +234,10 @@ export default function ActivitiesPage() {
   }
 
   const handleAddActivity = () => {
+    console.log("[v0] Add activity attempt - Title:", newActivity.title, "Date:", newActivity.date)
+
     if (!newActivity.title || !newActivity.date) {
+      console.log("[v0] Add activity failed - Missing required fields")
       alert("제목과 날짜는 필수입니다.")
       return
     }
@@ -244,12 +247,14 @@ export default function ActivitiesPage() {
       id: Date.now(),
     }
 
+    console.log("[v0] Creating new activity:", activity)
     const updatedActivities = [...activities, activity]
-    console.log("[v0] Adding new activity:", activity.title)
+    console.log("[v0] Updated activities array length:", updatedActivities.length)
 
     setActivities(updatedActivities)
     saveActivitiesData(updatedActivities)
 
+    console.log("[v0] Resetting form and closing dialog")
     setNewActivity({
       title: "",
       date: "",
@@ -263,7 +268,7 @@ export default function ActivitiesPage() {
     setImagePreview("")
     setIsAddingActivity(false)
 
-    console.log("[v0] Activity added successfully")
+    console.log("[v0] Activity added successfully, dialog should be closed")
   }
 
   const handleEditActivity = (activity) => {
