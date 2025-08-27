@@ -12,21 +12,86 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Edit, Trash2, Calendar, MapPin, Users, Banknote } from "lucide-react"
 
+const getDefaultActivitiesData = () => [
+  {
+    id: 1,
+    title: "지역사회 기부금 전달",
+    date: "2025년 7월 22일",
+    location: "경주예술의전당",
+    description: "경주 문화재 및 환경보호를 위한 기부금을 전달하였습니다.",
+    amount: "200만원",
+    participants: "12명",
+    type: "기부활동",
+    image: "/placeholder.svg?height=300&width=400",
+  },
+  {
+    id: 2,
+    title: "경주 문화재 보존 활동",
+    date: "2025년 6월 15일",
+    location: "불국사 일원",
+    description: "경주 지역 문화재 보존을 위한 봉사활동을 실시했습니다.",
+    amount: "150만원",
+    participants: "15명",
+    type: "봉사활동",
+    image: "/placeholder.svg?height=300&width=400",
+  },
+  {
+    id: 3,
+    title: "청소년 장학금 지원",
+    date: "2025년 5월 20일",
+    location: "경주시청",
+    description: "지역 청소년들의 교육을 위한 장학금을 지원했습니다.",
+    amount: "500만원",
+    participants: "20명",
+    type: "장학사업",
+    image: "/placeholder.svg?height=300&width=400",
+  },
+]
+
+const getDefaultMemberNewsData = () => [
+  {
+    id: 1,
+    title: "신입회원 환영식",
+    date: "2025년 7월 15일",
+    content: "새로운 회원들을 환영하는 식을 가졌습니다. 앞으로 함께 봉사활동에 참여해주세요.",
+    type: "회원소식",
+  },
+  {
+    id: 2,
+    title: "정기 월례회 개최",
+    date: "2025년 7월 10일",
+    content: "7월 정기 월례회가 성공적으로 개최되었습니다. 다음 달 활동 계획을 논의했습니다.",
+    type: "회원소식",
+  },
+  {
+    id: 3,
+    title: "봉사활동 참여 감사",
+    date: "2025년 6월 30일",
+    content: "지난 달 봉사활동에 참여해주신 모든 회원분들께 감사드립니다.",
+    type: "회원소식",
+  },
+]
+
 const loadActivitiesData = () => {
   try {
     const stored = localStorage.getItem("activities_data")
     if (stored) {
       const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed)) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         console.log("[v0] Loading user activities data:", parsed.length)
         return parsed
       }
     }
-    console.log("[v0] No activities data found, returning empty array")
-    return []
+    console.log("[v0] Using default activities data")
+    const defaultData = getDefaultActivitiesData()
+    // 기본 데이터를 localStorage에도 저장하여 일관성 유지
+    localStorage.setItem("activities_data", JSON.stringify(defaultData))
+    return defaultData
   } catch (error) {
     console.error("Error loading activities data:", error)
-    return []
+    const defaultData = getDefaultActivitiesData()
+    localStorage.setItem("activities_data", JSON.stringify(defaultData))
+    return defaultData
   }
 }
 
@@ -35,16 +100,21 @@ const loadMemberNewsData = () => {
     const stored = localStorage.getItem("member_news_data")
     if (stored) {
       const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed)) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         console.log("[v0] Loading user member news data:", parsed.length)
         return parsed
       }
     }
-    console.log("[v0] No member news data found, returning empty array")
-    return []
+    console.log("[v0] Using default member news data")
+    const defaultData = getDefaultMemberNewsData()
+    // 기본 데이터를 localStorage에도 저장하여 일관성 유지
+    localStorage.setItem("member_news_data", JSON.stringify(defaultData))
+    return defaultData
   } catch (error) {
     console.error("Error loading member news data:", error)
-    return []
+    const defaultData = getDefaultMemberNewsData()
+    localStorage.setItem("member_news_data", JSON.stringify(defaultData))
+    return defaultData
   }
 }
 
