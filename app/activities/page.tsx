@@ -32,22 +32,37 @@ export default function ActivitiesPage() {
   const { requireAuth, showLogin, setShowLogin, handleLoginSuccess } = useAdminAuth()
 
   const syncActivities = () => {
-    const allActivities = syncActivitiesData()
-    setActivities(allActivities)
-    setActivitiesVersion((prev) => prev + 1)
-    console.log("[v0] 봉사활동 페이지 동기화 완료:", allActivities.length, "개")
-    console.log("[v0] 봉사활동 페이지 데이터:", allActivities)
+    console.log("[v0] 봉사활동 페이지 데이터 로딩 시작")
+    try {
+      const allActivities = syncActivitiesData()
+      setActivities(allActivities)
+      setActivitiesVersion((prev) => prev + 1)
+      console.log("[v0] 봉사활동 페이지 동기화 완료:", allActivities.length, "개")
+      console.log("[v0] 봉사활동 페이지 데이터:", allActivities)
+    } catch (error) {
+      console.error("[v0] 봉사활동 페이지 로딩 오류:", error)
+      // 오류 발생 시 빈 배열로 초기화
+      setActivities([])
+    }
   }
 
   const syncMemberNewsFunc = () => {
-    const allMemberNews = syncMemberNewsData()
-    setMemberNews(allMemberNews)
-    setMemberNewsVersion((prev) => prev + 1)
-    console.log("[v0] 회원소식 페이지 동기화 완료:", allMemberNews.length, "개")
-    console.log("[v0] 회원소식 페이지 데이터:", allMemberNews)
+    console.log("[v0] 회원소식 페이지 데이터 로딩 시작")
+    try {
+      const allMemberNews = syncMemberNewsData()
+      setMemberNews(allMemberNews)
+      setMemberNewsVersion((prev) => prev + 1)
+      console.log("[v0] 회원소식 페이지 동기화 완료:", allMemberNews.length, "개")
+      console.log("[v0] 회원소식 페이지 데이터:", allMemberNews)
+    } catch (error) {
+      console.error("[v0] 회원소식 페이지 로딩 오류:", error)
+      // 오류 발생 시 빈 배열로 초기화
+      setMemberNews([])
+    }
   }
 
   useEffect(() => {
+    console.log("[v0] 봉사활동 페이지 useEffect 시작")
     syncActivities()
     syncMemberNewsFunc()
 

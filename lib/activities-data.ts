@@ -21,8 +21,47 @@ export interface MemberNews {
 const ACTIVITIES_STORAGE_KEY = "rotary-activities"
 const MEMBER_NEWS_STORAGE_KEY = "rotary-member-news"
 
-const getDefaultActivitiesData = (): Activity[] => []
-const getDefaultMemberNewsData = (): MemberNews[] => []
+const getDefaultActivitiesData = (): Activity[] => [
+  {
+    id: 1,
+    title: "지역사회 기부금 전달",
+    date: "2025.07.22",
+    location: "경주시청",
+    description: "경주 지역 소외계층을 위한 기부금을 전달했습니다.",
+    amount: "200만원",
+    participants: "12명",
+    type: "기부활동",
+    image: "/placeholder.svg?height=300&width=400",
+  },
+  {
+    id: 2,
+    title: "환경정화 봉사활동",
+    date: "2025.06.15",
+    location: "대릉원 일대",
+    description: "경주 대릉원 주변 환경정화 활동을 실시했습니다.",
+    amount: "",
+    participants: "20명",
+    type: "봉사활동",
+    image: "/placeholder.svg?height=300&width=400",
+  },
+]
+
+const getDefaultMemberNewsData = (): MemberNews[] => [
+  {
+    id: 1,
+    title: "신입회원 환영식",
+    date: "2025년 8월 10일",
+    content: "새로운 회원들을 환영하는 시간을 가졌습니다.",
+    type: "회원소식",
+  },
+  {
+    id: 2,
+    title: "정기총회 개최",
+    date: "2025년 7월 25일",
+    content: "2025-26년도 정기총회가 성공적으로 개최되었습니다.",
+    type: "회원소식",
+  },
+]
 
 export const syncActivitiesData = (): Activity[] => {
   try {
