@@ -17,7 +17,7 @@ const getDefaultMemberNewsData = () => []
 
 const loadActivitiesData = () => {
   try {
-    const stored = localStorage.getItem("activities_data")
+    const stored = localStorage.getItem("gyeongju_rotary_activities_data")
     if (stored) {
       const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) {
@@ -35,7 +35,7 @@ const loadActivitiesData = () => {
 
 const loadMemberNewsData = () => {
   try {
-    const stored = localStorage.getItem("member_news_data")
+    const stored = localStorage.getItem("gyeongju_rotary_member_news_data")
     if (stored) {
       const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) {
@@ -54,8 +54,13 @@ const loadMemberNewsData = () => {
 const saveActivitiesData = (data) => {
   try {
     console.log("[v0] Saving activities data:", data.length)
-    localStorage.setItem("activities_data", JSON.stringify(data))
-    console.log("[v0] Activities data saved successfully")
+    localStorage.setItem("gyeongju_rotary_activities_data", JSON.stringify(data))
+    const saved = localStorage.getItem("gyeongju_rotary_activities_data")
+    if (saved) {
+      console.log("[v0] Activities data saved and verified successfully")
+    } else {
+      console.error("[v0] Failed to save activities data")
+    }
   } catch (error) {
     console.error("Error saving activities data:", error)
   }
@@ -64,8 +69,13 @@ const saveActivitiesData = (data) => {
 const saveMemberNewsData = (data) => {
   try {
     console.log("[v0] Saving member news data:", data.length)
-    localStorage.setItem("member_news_data", JSON.stringify(data))
-    console.log("[v0] Member news data saved successfully")
+    localStorage.setItem("gyeongju_rotary_member_news_data", JSON.stringify(data))
+    const saved = localStorage.getItem("gyeongju_rotary_member_news_data")
+    if (saved) {
+      console.log("[v0] Member news data saved and verified successfully")
+    } else {
+      console.error("[v0] Failed to save member news data")
+    }
   } catch (error) {
     console.error("Error saving member news data:", error)
   }
@@ -107,7 +117,33 @@ export default function ActivitiesPage() {
     setMemberNews(memberNewsData)
 
     console.log("[v0] Data loaded - Activities:", activitiesData.length, "News:", memberNewsData.length)
+
+    const handleBeforeUnload = () => {
+      console.log("[v0] Page unloading - ensuring data is saved")
+      saveActivitiesData(activities)
+      saveMemberNewsData(memberNews)
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+    }
   }, [])
+
+  useEffect(() => {
+    if (activities.length > 0) {
+      console.log("[v0] Activities changed, auto-saving:", activities.length)
+      saveActivitiesData(activities)
+    }
+  }, [activities])
+
+  useEffect(() => {
+    if (memberNews.length > 0) {
+      console.log("[v0] Member news changed, auto-saving:", memberNews.length)
+      saveMemberNewsData(memberNews)
+    }
+  }, [memberNews])
 
   const requireAuth = (action, id = null) => {
     return new Promise((resolve) => {
@@ -234,28 +270,32 @@ export default function ActivitiesPage() {
   }
 
   const handleAddActivity = () => {
-    console.log("[v0] Add activity attempt - Title:", newActivity.title, "Date:", newActivity.date)
+    console.log("[v0] === ADD ACTIVITY BUTTON CLICKED ===")
+    console.log("[v0] Form data - Title:", newActivity.title, "Date:", newActivity.date)
+    console.log("[v0] Current activities count:", activities.length)
 
     if (!newActivity.title || !newActivity.date) {
-      console.log("[v0] Add activity failed - Missing required fields")
+      console.log("[v0] VALIDATION FAILED - Missing required fields")
+      console.log("[v0] Title empty:", !newActivity.title, "Date empty:", !newActivity.date)
       alert("제목과 날짜는 필수입니다.")
       return
     }
 
+    console.log("[v0] VALIDATION PASSED - Creating activity")
     const activity = {
       ...newActivity,
       id: Date.now(),
     }
 
-    console.log("[v0] Creating new activity:", activity)
+    console.log("[v0] New activity created:", JSON.stringify(activity, null, 2))
     const updatedActivities = [...activities, activity]
     console.log("[v0] Updated activities array length:", updatedActivities.length)
 
     setActivities(updatedActivities)
     saveActivitiesData(updatedActivities)
+    console.log("[v0] State updated and data saved")
 
-    console.log("[v0] Resetting form and closing dialog")
-    setNewActivity({
+    const resetForm = {
       title: "",
       date: "",
       location: "",
@@ -264,11 +304,19 @@ export default function ActivitiesPage() {
       participants: "",
       type: "봉사활동",
       image: "",
-    })
+    }
+
+    setNewActivity(resetForm)
     setImagePreview("")
     setIsAddingActivity(false)
 
-    console.log("[v0] Activity added successfully, dialog should be closed")
+    console.log("[v0] Form reset and dialog closed")
+    console.log("[v0] === ADD ACTIVITY COMPLETED ===")
+
+    setTimeout(() => {
+      alert("봉사활동이 성공적으로 추가되었습니다!")
+      console.log("[v0] Success message shown, final activities count:", updatedActivities.length)
+    }, 100)
   }
 
   const handleEditActivity = (activity) => {
@@ -407,9 +455,32 @@ export default function ActivitiesPage() {
 
           <TabsContent value="activities">
             <div className="flex justify-center mb-6">
-              <Dialog open={isAddingActivity} onOpenChange={setIsAddingActivity}>
+              <Dialog
+                open={isAddingActivity}
+                onOpenChange={(open) => {
+                  console.log("[v0] Dialog state changing to:", open)
+                  setIsAddingActivity(open)
+                  if (!open) {
+                    console.log("[v0] Dialog closing - resetting form")
+                    setNewActivity({
+                      title: "",
+                      date: "",
+                      location: "",
+                      description: "",
+                      amount: "",
+                      participants: "",
+                      type: "봉사활동",
+                      image: "",
+                    })
+                    setImagePreview("")
+                  }
+                }}
+              >
                 <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => console.log("[v0] Add activity button clicked - opening dialog")}
+                  >
                     <Plus className="w-4 h-4 mr-2" />새 봉사활동 추가
                   </Button>
                 </DialogTrigger>
@@ -542,10 +613,23 @@ export default function ActivitiesPage() {
                     </div>
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsAddingActivity(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        console.log("[v0] Cancel button clicked")
+                        setIsAddingActivity(false)
+                      }}
+                    >
                       취소
                     </Button>
-                    <Button onClick={handleAddActivity}>추가</Button>
+                    <Button
+                      onClick={() => {
+                        console.log("[v0] Add button clicked - calling handleAddActivity")
+                        handleAddActivity()
+                      }}
+                    >
+                      추가
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
