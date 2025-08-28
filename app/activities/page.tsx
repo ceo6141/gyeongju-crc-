@@ -103,19 +103,6 @@ export default function ActivitiesPage() {
           memberNewsData.length,
           "개",
         )
-      } else if (savedActivities || savedMemberNews) {
-        const activitiesData = savedActivities ? JSON.parse(savedActivities) : []
-        const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : []
-
-        setActivities(activitiesData)
-        setMemberNews(memberNewsData)
-        console.log(
-          "[v0] 저장된 데이터 로드 - 봉사활동:",
-          activitiesData.length,
-          "개, 회원소식:",
-          memberNewsData.length,
-          "개",
-        )
       } else {
         const defaultActivities = getDefaultActivities()
         const defaultMemberNews = getDefaultMemberNews()
@@ -124,7 +111,7 @@ export default function ActivitiesPage() {
         setMemberNews(defaultMemberNews)
 
         console.log(
-          "[v0] 기본 데이터 로드 (저장하지 않음) - 봉사활동:",
+          "[v0] 기본 데이터 로드 - 봉사활동:",
           defaultActivities.length,
           "개, 회원소식:",
           defaultMemberNews.length,
@@ -144,6 +131,12 @@ export default function ActivitiesPage() {
       localStorage.setItem("gyeongju-rotary-user-modified", "true")
       setActivities(data)
       console.log("[v0] 봉사활동 저장 및 상태 업데이트 완료:", data.length, "개")
+
+      setTimeout(() => {
+        const saved = localStorage.getItem("gyeongju-rotary-activities")
+        const parsed = saved ? JSON.parse(saved) : []
+        console.log("[v0] 저장 검증 - localStorage에 저장된 봉사활동:", parsed.length, "개")
+      }, 100)
     } catch (error) {
       console.error("[v0] 봉사활동 저장 오류:", error)
       alert("저장 중 오류가 발생했습니다.")
@@ -268,7 +261,11 @@ export default function ActivitiesPage() {
         const updated = activities.filter((a) => a.id !== id)
         saveActivities(updated)
         console.log("[v0] 봉사활동 삭제 완료 - 남은 개수:", updated.length)
-        alert("봉사활동이 삭제되었습니다.")
+
+        setTimeout(() => {
+          alert("봉사활동이 삭제되었습니다.")
+          window.location.reload()
+        }, 500)
       }
     })
   }
@@ -349,7 +346,11 @@ export default function ActivitiesPage() {
         const updated = memberNews.filter((n) => n.id !== id)
         saveMemberNews(updated)
         console.log("[v0] 회원소식 삭제 완료 - 남은 개수:", updated.length)
-        alert("회원소식이 삭제되었습니다.")
+
+        setTimeout(() => {
+          alert("회원소식이 삭제되었습니다.")
+          window.location.reload()
+        }, 500)
       }
     })
   }
