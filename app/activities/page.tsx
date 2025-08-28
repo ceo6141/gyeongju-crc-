@@ -90,8 +90,21 @@ export default function ActivitiesPage() {
       const savedActivities = localStorage.getItem("gyeongju-rotary-activities")
       const savedMemberNews = localStorage.getItem("gyeongju-rotary-member-news")
 
-      if (userModified || savedActivities || savedMemberNews) {
-        // 사용자가 수정한 적이 있거나 저장된 데이터가 있으면 저장된 데이터만 사용
+      if (userModified) {
+        const activitiesData = savedActivities ? JSON.parse(savedActivities) : []
+        const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : []
+
+        setActivities(activitiesData)
+        setMemberNews(memberNewsData)
+        console.log(
+          "[v0] 사용자 수정 데이터 로드 - 봉사활동:",
+          activitiesData.length,
+          "개, 회원소식:",
+          memberNewsData.length,
+          "개",
+        )
+      } else if (savedActivities || savedMemberNews) {
+        // 사용자 수정 플래그는 없지만 저장된 데이터가 있는 경우
         const activitiesData = savedActivities ? JSON.parse(savedActivities) : []
         const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : []
 
@@ -267,7 +280,10 @@ export default function ActivitiesPage() {
       if (confirm("이 봉사활동을 삭제하시겠습니까?")) {
         const updated = activities.filter((a) => a.id !== id)
         saveActivities(updated)
-        console.log("[v0] 봉사활동 삭제 완료:", id)
+        console.log("[v0] 봉사활동 삭제 완료:", id, "남은 개수:", updated.length)
+        setTimeout(() => {
+          console.log("[v0] 삭제 후 현재 상태:", activities.length, "개")
+        }, 100)
       }
     })
   }
@@ -346,7 +362,10 @@ export default function ActivitiesPage() {
       if (confirm("이 회원소식을 삭제하시겠습니까?")) {
         const updated = memberNews.filter((n) => n.id !== id)
         saveMemberNews(updated)
-        console.log("[v0] 회원소식 삭제 완료:", id)
+        console.log("[v0] 회원소식 삭제 완료:", id, "남은 개수:", updated.length)
+        setTimeout(() => {
+          console.log("[v0] 삭제 후 현재 상태:", memberNews.length, "개")
+        }, 100)
       }
     })
   }
