@@ -89,24 +89,26 @@ export default function ActivitiesPage() {
       const savedActivities = localStorage.getItem("gyeongju-rotary-activities")
       const savedMemberNews = localStorage.getItem("gyeongju-rotary-member-news")
 
-      if (savedActivities) {
+      if (savedActivities && savedActivities !== "[]") {
         const parsed = JSON.parse(savedActivities)
         setActivities(parsed)
         console.log("[v0] 저장된 봉사활동 로드:", parsed.length, "개")
       } else {
         const defaultData = getDefaultActivities()
         setActivities(defaultData)
-        console.log("[v0] 기본 봉사활동 로드:", defaultData.length, "개")
+        localStorage.setItem("gyeongju-rotary-activities", JSON.stringify(defaultData))
+        console.log("[v0] 기본 봉사활동 로드 및 저장:", defaultData.length, "개")
       }
 
-      if (savedMemberNews) {
+      if (savedMemberNews && savedMemberNews !== "[]") {
         const parsed = JSON.parse(savedMemberNews)
         setMemberNews(parsed)
         console.log("[v0] 저장된 회원소식 로드:", parsed.length, "개")
       } else {
         const defaultData = getDefaultMemberNews()
         setMemberNews(defaultData)
-        console.log("[v0] 기본 회원소식 로드:", defaultData.length, "개")
+        localStorage.setItem("gyeongju-rotary-member-news", JSON.stringify(defaultData))
+        console.log("[v0] 기본 회원소식 로드 및 저장:", defaultData.length, "개")
       }
     } catch (error) {
       console.error("[v0] 데이터 로딩 오류:", error)
@@ -118,8 +120,19 @@ export default function ActivitiesPage() {
   const saveActivities = (data: Activity[]) => {
     try {
       localStorage.setItem("gyeongju-rotary-activities", JSON.stringify(data))
-      setActivities(data)
+      setActivities([...data])
       console.log("[v0] 봉사활동 저장 완료:", data.length, "개")
+
+      setTimeout(() => {
+        const saved = localStorage.getItem("gyeongju-rotary-activities")
+        if (saved) {
+          const verified = JSON.parse(saved)
+          console.log("[v0] 저장 검증 완료:", verified.length, "개")
+          if (verified.length !== data.length) {
+            console.error("[v0] 저장 검증 실패 - 데이터 불일치")
+          }
+        }
+      }, 100)
     } catch (error) {
       console.error("[v0] 봉사활동 저장 오류:", error)
       alert("저장 중 오류가 발생했습니다.")
@@ -129,8 +142,14 @@ export default function ActivitiesPage() {
   const saveMemberNews = (data: MemberNews[]) => {
     try {
       localStorage.setItem("gyeongju-rotary-member-news", JSON.stringify(data))
-      setMemberNews(data)
+      setMemberNews([...data])
       console.log("[v0] 회원소식 저장 완료:", data.length, "개")
+
+      const saved = localStorage.getItem("gyeongju-rotary-member-news")
+      if (saved) {
+        const verified = JSON.parse(saved)
+        console.log("[v0] 회원소식 저장 검증 완료:", verified.length, "개")
+      }
     } catch (error) {
       console.error("[v0] 회원소식 저장 오류:", error)
       alert("저장 중 오류가 발생했습니다.")
@@ -164,6 +183,49 @@ export default function ActivitiesPage() {
 
   useEffect(() => {
     loadData()
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log("[v0] 페이지 가시성 변경 - 데이터 다시 로드")
+        loadData()
+      }
+    }
+
+    const handleFocus = () => {
+      console.log("[v0] 페이지 포커스 - 데이터 다시 로드")
+      loadData()
+    }
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "gyeongju-rotary-activities" || e.key === "gyeongju-rotary-member-news") {
+        console.log("[v0] localStorage 변경 감지 - 데이터 다시 로드")
+        loadData()
+      }
+    }
+
+    const handleBeforeUnload = () => {
+      console.log("[v0] 페이지 언로드 전 데이터 저장 확인")
+      const currentActivities = localStorage.getItem("gyeongju-rotary-activities")
+      const currentMemberNews = localStorage.getItem("gyeongju-rotary-member-news")
+      if (currentActivities) {
+        console.log("[v0] 봉사활동 데이터 유지 확인됨")
+      }
+      if (currentMemberNews) {
+        console.log("[v0] 회원소식 데이터 유지 확인됨")
+      }
+    }
+
+    window.addEventListener("focus", handleFocus)
+    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener("focus", handleFocus)
+      window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
   }, [])
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -266,7 +328,12 @@ export default function ActivitiesPage() {
     }
 
     saveActivities(updated)
-    setIsDialogOpen(false)
+
+    setTimeout(() => {
+      setIsDialogOpen(false)
+      alert(isEditing ? "봉사활동이 수정되었습니다." : "봉사활동이 추가되었습니다.")
+      console.log("[v0] 봉사활동 저장 및 UI 업데이트 완료")
+    }, 200)
   }
 
   const handleAddMemberNews = () => {
@@ -337,6 +404,8 @@ export default function ActivitiesPage() {
 
     saveMemberNews(updated)
     setIsMemberNewsDialogOpen(false)
+
+    alert(isEditing ? "회원소식이 수정되었습니다." : "회원소식이 추가되었습니다.")
   }
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
