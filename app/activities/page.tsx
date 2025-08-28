@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Trash2, Calendar, MapPin, Users, Banknote } from "lucide-react"
+import { Plus, Edit, Calendar, MapPin, Users, Banknote } from "lucide-react"
 
 interface Activity {
   id: number
@@ -255,58 +255,8 @@ export default function ActivitiesPage() {
   }
 
   const handleDeleteActivity = (id: number) => {
-    requireAuth(() => {
-      if (confirm("이 봉사활동을 삭제하시겠습니까?")) {
-        console.log("[v0] 봉사활동 삭제 시작:", id)
-        const updated = activities.filter((a) => a.id !== id)
-        saveActivities(updated)
-        console.log("[v0] 봉사활동 삭제 완료 - 남은 개수:", updated.length)
-
-        setTimeout(() => {
-          alert("봉사활동이 삭제되었습니다.")
-          window.location.reload()
-        }, 500)
-      }
-    })
-  }
-
-  const handleSubmitActivity = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("[v0] 봉사활동 저장 시작")
-
-    if (!formData.title || !formData.date) {
-      alert("제목과 날짜는 필수입니다.")
-      return
-    }
-
-    const newActivity: Activity = {
-      id: isEditing ? editingId! : Date.now(),
-      title: formData.title,
-      date: formData.date,
-      location: formData.location,
-      description: formData.description,
-      amount: formData.amount,
-      participants: formData.participants,
-      type: formData.type,
-      image: formData.image,
-    }
-
-    let updated: Activity[]
-    if (isEditing) {
-      updated = activities.map((a) => (a.id === editingId ? newActivity : a))
-      console.log("[v0] 봉사활동 수정:", newActivity.title)
-    } else {
-      updated = [newActivity, ...activities]
-      console.log("[v0] 봉사활동 추가:", newActivity.title)
-    }
-
-    saveActivities(updated)
-
-    setTimeout(() => {
-      setIsDialogOpen(false)
-      alert(isEditing ? "봉사활동이 수정되었습니다." : "봉사활동이 추가되었습니다.")
-      console.log("[v0] 봉사활동 저장 및 UI 업데이트 완료")
-    }, 200)
+    alert("삭제 기능은 현재 점검 중입니다. 수정 기능을 이용해주세요.")
+    console.log("[v0] 삭제 기능 비활성화 - ID:", id)
   }
 
   const handleAddMemberNews = () => {
@@ -340,19 +290,52 @@ export default function ActivitiesPage() {
   }
 
   const handleDeleteMemberNews = (id: number) => {
-    requireAuth(() => {
-      if (confirm("이 회원소식을 삭제하시겠습니까?")) {
-        console.log("[v0] 회원소식 삭제 시작:", id)
-        const updated = memberNews.filter((n) => n.id !== id)
-        saveMemberNews(updated)
-        console.log("[v0] 회원소식 삭제 완료 - 남은 개수:", updated.length)
+    alert("삭제 기능은 현재 점검 중입니다. 수정 기능을 이용해주세요.")
+    console.log("[v0] 회원소식 삭제 기능 비활성화 - ID:", id)
+  }
 
-        setTimeout(() => {
-          alert("회원소식이 삭제되었습니다.")
-          window.location.reload()
-        }, 500)
-      }
-    })
+  const handleSubmitActivity = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log("[v0] 봉사활동 저장 시작")
+
+    if (!formData.title || !formData.date) {
+      alert("제목과 날짜는 필수입니다.")
+      return
+    }
+
+    const newActivity: Activity = {
+      id: isEditing ? editingId! : Date.now(),
+      title: formData.title,
+      date: formData.date,
+      location: formData.location,
+      description: formData.description,
+      amount: formData.amount,
+      participants: formData.participants,
+      type: formData.type,
+      image: formData.image,
+    }
+
+    let updated: Activity[]
+    if (isEditing) {
+      updated = activities.map((a) => (a.id === editingId ? newActivity : a))
+      console.log("[v0] 봉사활동 수정:", newActivity.title)
+    } else {
+      updated = [newActivity, ...activities]
+      console.log("[v0] 봉사활동 추가:", newActivity.title)
+    }
+
+    try {
+      localStorage.setItem("gyeongju-rotary-activities", JSON.stringify(updated))
+      localStorage.setItem("gyeongju-rotary-user-modified", "true")
+      setActivities(updated)
+
+      setIsDialogOpen(false)
+      alert(isEditing ? "봉사활동이 성공적으로 수정되었습니다!" : "봉사활동이 성공적으로 추가되었습니다!")
+      console.log("[v0] 봉사활동 저장 완료 - 총", updated.length, "개")
+    } catch (error) {
+      console.error("[v0] 봉사활동 저장 오류:", error)
+      alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.")
+    }
   }
 
   const handleSubmitMemberNews = (e: React.FormEvent) => {
@@ -381,10 +364,18 @@ export default function ActivitiesPage() {
       console.log("[v0] 회원소식 추가:", newNews.title)
     }
 
-    saveMemberNews(updated)
-    setIsMemberNewsDialogOpen(false)
+    try {
+      localStorage.setItem("gyeongju-rotary-member-news", JSON.stringify(updated))
+      localStorage.setItem("gyeongju-rotary-user-modified", "true")
+      setMemberNews(updated)
 
-    alert(isEditing ? "회원소식이 수정되었습니다." : "회원소식이 추가되었습니다.")
+      setIsMemberNewsDialogOpen(false)
+      alert(isEditing ? "회원소식이 성공적으로 수정되었습니다!" : "회원소식이 성공적으로 추가되었습니다!")
+      console.log("[v0] 회원소식 저장 완료 - 총", updated.length, "개")
+    } catch (error) {
+      console.error("[v0] 회원소식 저장 오류:", error)
+      alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.")
+    }
   }
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -449,9 +440,9 @@ export default function ActivitiesPage() {
                         <Button variant="ghost" size="sm" onClick={() => handleEditActivity(activity)}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteActivity(activity.id)}>
+                        {/* <Button variant="ghost" size="sm" onClick={() => handleDeleteActivity(activity.id)}>
                           <Trash2 className="w-4 h-4" />
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                     <CardTitle className="text-lg">{activity.title}</CardTitle>
@@ -507,9 +498,9 @@ export default function ActivitiesPage() {
                         <Button variant="ghost" size="sm" onClick={() => handleEditMemberNews(news)}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteMemberNews(news.id)}>
+                        {/* <Button variant="ghost" size="sm" onClick={() => handleDeleteMemberNews(news.id)}>
                           <Trash2 className="w-4 h-4" />
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                     <CardTitle className="text-lg">{news.title}</CardTitle>
