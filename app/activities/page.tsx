@@ -201,10 +201,16 @@ export default function ActivitiesPage() {
     requireAuth(() => {
       const activity = activities.find((a) => a.id === id)
       if (activity && confirm(`"${activity.title}" 봉사활동을 삭제하시겠습니까?`)) {
+        console.log("[v0] 봉사활동 삭제 시작:", activity.title)
         const updated = activities.filter((a) => a.id !== id)
+
         if (saveActivities(updated)) {
+          // 삭제 상태를 localStorage에 명시적으로 저장
+          localStorage.setItem("gjrc-activities-deleted", "true")
+          console.log("[v0] 봉사활동 삭제 완료, 새로고침 시작")
           alert("봉사활동이 삭제되었습니다.")
-          console.log("[v0] 봉사활동 삭제 완료:", activity.title)
+          // 강제 새로고침으로 확실한 상태 업데이트
+          window.location.reload()
         } else {
           alert("삭제 중 오류가 발생했습니다.")
         }
@@ -246,10 +252,16 @@ export default function ActivitiesPage() {
     requireAuth(() => {
       const news = memberNews.find((n) => n.id === id)
       if (news && confirm(`"${news.title}" 회원소식을 삭제하시겠습니까?`)) {
+        console.log("[v0] 회원소식 삭제 시작:", news.title)
         const updated = memberNews.filter((n) => n.id !== id)
+
         if (saveMemberNews(updated)) {
+          // 삭제 상태를 localStorage에 명시적으로 저장
+          localStorage.setItem("gjrc-member-news-deleted", "true")
+          console.log("[v0] 회원소식 삭제 완료, 새로고침 시작")
           alert("회원소식이 삭제되었습니다.")
-          console.log("[v0] 회원소식 삭제 완료:", news.title)
+          // 강제 새로고침으로 확실한 상태 업데이트
+          window.location.reload()
         } else {
           alert("삭제 중 오류가 발생했습니다.")
         }
