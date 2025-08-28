@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Calendar, MapPin, Users, Banknote } from "lucide-react"
+import { Plus, Edit, Calendar, MapPin, Users, Banknote, Trash2 } from "lucide-react"
 
 interface Activity {
   id: number
@@ -41,117 +41,60 @@ export default function ActivitiesPage() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
-  const getDefaultActivities = (): Activity[] => [
-    {
-      id: 1,
-      title: "지역사회 기부금 전달",
-      date: "2025.07.22",
-      location: "경주시청",
-      description: "경주 지역 소외계층을 위한 기부금을 전달했습니다.",
-      amount: "200만원",
-      participants: "12명",
-      type: "기부활동",
-      image: "/placeholder.svg?height=300&width=400&text=기부금전달",
-    },
-    {
-      id: 2,
-      title: "환경정화 봉사활동",
-      date: "2025.06.15",
-      location: "대릉원 일대",
-      description: "경주 대릉원 주변 환경정화 활동을 실시했습니다.",
-      amount: "",
-      participants: "20명",
-      type: "봉사활동",
-      image: "/placeholder.svg?height=300&width=400&text=환경정화",
-    },
-  ]
-
-  const getDefaultMemberNews = (): MemberNews[] => [
-    {
-      id: 1,
-      title: "신입회원 환영식",
-      date: "2025년 8월 10일",
-      content: "새로운 회원들을 환영하는 시간을 가졌습니다.",
-      type: "회원소식",
-    },
-    {
-      id: 2,
-      title: "정기총회 개최",
-      date: "2025년 7월 25일",
-      content: "2025-26년도 정기총회가 성공적으로 개최되었습니다.",
-      type: "회원소식",
-    },
-  ]
+  const getDefaultActivities = (): Activity[] => []
+  const getDefaultMemberNews = (): MemberNews[] => []
 
   const loadData = () => {
     console.log("[v0] 봉사활동 데이터 로딩 시작")
     try {
-      const userModified = localStorage.getItem("gyeongju-rotary-user-modified") === "true"
-      const savedActivities = localStorage.getItem("gyeongju-rotary-activities")
-      const savedMemberNews = localStorage.getItem("gyeongju-rotary-member-news")
+      const savedActivities = localStorage.getItem("gjrc-activities-v2")
+      const savedMemberNews = localStorage.getItem("gjrc-member-news-v2")
 
-      if (userModified) {
-        const activitiesData = savedActivities ? JSON.parse(savedActivities) : []
-        const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : []
-
+      if (savedActivities) {
+        const activitiesData = JSON.parse(savedActivities)
         setActivities(activitiesData)
-        setMemberNews(memberNewsData)
-        console.log(
-          "[v0] 사용자 수정 데이터 로드 - 봉사활동:",
-          activitiesData.length,
-          "개, 회원소식:",
-          memberNewsData.length,
-          "개",
-        )
+        console.log("[v0] 저장된 봉사활동 로드:", activitiesData.length, "개")
       } else {
-        const defaultActivities = getDefaultActivities()
-        const defaultMemberNews = getDefaultMemberNews()
+        setActivities([])
+        console.log("[v0] 빈 봉사활동 배열로 시작")
+      }
 
-        setActivities(defaultActivities)
-        setMemberNews(defaultMemberNews)
-
-        console.log(
-          "[v0] 기본 데이터 로드 - 봉사활동:",
-          defaultActivities.length,
-          "개, 회원소식:",
-          defaultMemberNews.length,
-          "개",
-        )
+      if (savedMemberNews) {
+        const memberNewsData = JSON.parse(savedMemberNews)
+        setMemberNews(memberNewsData)
+        console.log("[v0] 저장된 회원소식 로드:", memberNewsData.length, "개")
+      } else {
+        setMemberNews([])
+        console.log("[v0] 빈 회원소식 배열로 시작")
       }
     } catch (error) {
       console.error("[v0] 데이터 로딩 오류:", error)
-      setActivities(getDefaultActivities())
-      setMemberNews(getDefaultMemberNews())
+      setActivities([])
+      setMemberNews([])
     }
   }
 
   const saveActivities = (data: Activity[]) => {
     try {
-      localStorage.setItem("gyeongju-rotary-activities", JSON.stringify(data))
-      localStorage.setItem("gyeongju-rotary-user-modified", "true")
-      setActivities(data)
-      console.log("[v0] 봉사활동 저장 및 상태 업데이트 완료:", data.length, "개")
-
-      setTimeout(() => {
-        const saved = localStorage.getItem("gyeongju-rotary-activities")
-        const parsed = saved ? JSON.parse(saved) : []
-        console.log("[v0] 저장 검증 - localStorage에 저장된 봉사활동:", parsed.length, "개")
-      }, 100)
+      localStorage.setItem("gjrc-activities-v2", JSON.stringify(data))
+      setActivities([...data])
+      console.log("[v0] 봉사활동 저장 완료:", data.length, "개")
+      return true
     } catch (error) {
       console.error("[v0] 봉사활동 저장 오류:", error)
-      alert("저장 중 오류가 발생했습니다.")
+      return false
     }
   }
 
   const saveMemberNews = (data: MemberNews[]) => {
     try {
-      localStorage.setItem("gyeongju-rotary-member-news", JSON.stringify(data))
-      localStorage.setItem("gyeongju-rotary-user-modified", "true")
-      setMemberNews(data)
-      console.log("[v0] 회원소식 저장 및 상태 업데이트 완료:", data.length, "개")
+      localStorage.setItem("gjrc-member-news-v2", JSON.stringify(data))
+      setMemberNews([...data])
+      console.log("[v0] 회원소식 저장 완료:", data.length, "개")
+      return true
     } catch (error) {
       console.error("[v0] 회원소식 저장 오류:", error)
-      alert("저장 중 오류가 발생했습니다.")
+      return false
     }
   }
 
@@ -255,8 +198,18 @@ export default function ActivitiesPage() {
   }
 
   const handleDeleteActivity = (id: number) => {
-    alert("삭제 기능은 현재 점검 중입니다. 수정 기능을 이용해주세요.")
-    console.log("[v0] 삭제 기능 비활성화 - ID:", id)
+    requireAuth(() => {
+      const activity = activities.find((a) => a.id === id)
+      if (activity && confirm(`"${activity.title}" 봉사활동을 삭제하시겠습니까?`)) {
+        const updated = activities.filter((a) => a.id !== id)
+        if (saveActivities(updated)) {
+          alert("봉사활동이 삭제되었습니다.")
+          console.log("[v0] 봉사활동 삭제 완료:", activity.title)
+        } else {
+          alert("삭제 중 오류가 발생했습니다.")
+        }
+      }
+    })
   }
 
   const handleAddMemberNews = () => {
@@ -290,8 +243,18 @@ export default function ActivitiesPage() {
   }
 
   const handleDeleteMemberNews = (id: number) => {
-    alert("삭제 기능은 현재 점검 중입니다. 수정 기능을 이용해주세요.")
-    console.log("[v0] 회원소식 삭제 기능 비활성화 - ID:", id)
+    requireAuth(() => {
+      const news = memberNews.find((n) => n.id === id)
+      if (news && confirm(`"${news.title}" 회원소식을 삭제하시겠습니까?`)) {
+        const updated = memberNews.filter((n) => n.id !== id)
+        if (saveMemberNews(updated)) {
+          alert("회원소식이 삭제되었습니다.")
+          console.log("[v0] 회원소식 삭제 완료:", news.title)
+        } else {
+          alert("삭제 중 오류가 발생했습니다.")
+        }
+      }
+    })
   }
 
   const handleSubmitActivity = (e: React.FormEvent) => {
@@ -324,16 +287,10 @@ export default function ActivitiesPage() {
       console.log("[v0] 봉사활동 추가:", newActivity.title)
     }
 
-    try {
-      localStorage.setItem("gyeongju-rotary-activities", JSON.stringify(updated))
-      localStorage.setItem("gyeongju-rotary-user-modified", "true")
-      setActivities(updated)
-
+    if (saveActivities(updated)) {
       setIsDialogOpen(false)
       alert(isEditing ? "봉사활동이 성공적으로 수정되었습니다!" : "봉사활동이 성공적으로 추가되었습니다!")
-      console.log("[v0] 봉사활동 저장 완료 - 총", updated.length, "개")
-    } catch (error) {
-      console.error("[v0] 봉사활동 저장 오류:", error)
+    } else {
       alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.")
     }
   }
@@ -364,16 +321,10 @@ export default function ActivitiesPage() {
       console.log("[v0] 회원소식 추가:", newNews.title)
     }
 
-    try {
-      localStorage.setItem("gyeongju-rotary-member-news", JSON.stringify(updated))
-      localStorage.setItem("gyeongju-rotary-user-modified", "true")
-      setMemberNews(updated)
-
+    if (saveMemberNews(updated)) {
       setIsMemberNewsDialogOpen(false)
       alert(isEditing ? "회원소식이 성공적으로 수정되었습니다!" : "회원소식이 성공적으로 추가되었습니다!")
-      console.log("[v0] 회원소식 저장 완료 - 총", updated.length, "개")
-    } catch (error) {
-      console.error("[v0] 회원소식 저장 오류:", error)
+    } else {
       alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.")
     }
   }
@@ -382,10 +333,10 @@ export default function ActivitiesPage() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    console.log("[v0] 사진 업로드 시작:", file.name)
+    console.log("[v0] 사진 업로드 시작:", file.name, "크기:", Math.round(file.size / 1024), "KB")
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("파일 크기는 5MB 이하여야 합니다.")
+    if (file.size > 10 * 1024 * 1024) {
+      alert("파일 크기는 10MB 이하여야 합니다.")
       return
     }
 
@@ -394,6 +345,10 @@ export default function ActivitiesPage() {
       const result = e.target?.result as string
       setFormData({ ...formData, image: result })
       console.log("[v0] 사진 업로드 완료")
+    }
+    reader.onerror = () => {
+      console.error("[v0] 사진 업로드 실패")
+      alert("사진 업로드 중 오류가 발생했습니다.")
     }
     reader.readAsDataURL(file)
   }
@@ -440,9 +395,9 @@ export default function ActivitiesPage() {
                         <Button variant="ghost" size="sm" onClick={() => handleEditActivity(activity)}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        {/* <Button variant="ghost" size="sm" onClick={() => handleDeleteActivity(activity.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteActivity(activity.id)}>
                           <Trash2 className="w-4 h-4" />
-                        </Button> */}
+                        </Button>
                       </div>
                     </div>
                     <CardTitle className="text-lg">{activity.title}</CardTitle>
@@ -498,9 +453,9 @@ export default function ActivitiesPage() {
                         <Button variant="ghost" size="sm" onClick={() => handleEditMemberNews(news)}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        {/* <Button variant="ghost" size="sm" onClick={() => handleDeleteMemberNews(news.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteMemberNews(news.id)}>
                           <Trash2 className="w-4 h-4" />
-                        </Button> */}
+                        </Button>
                       </div>
                     </div>
                     <CardTitle className="text-lg">{news.title}</CardTitle>

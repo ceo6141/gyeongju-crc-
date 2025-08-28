@@ -1,24 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Edit, Crown, History, Building2, Users } from "lucide-react"
-import Image from "next/image"
 import { getMemberCount } from "@/lib/members-data"
 import { Navigation } from "@/components/navigation"
-
-interface ClubContact {
-  address: string
-  phone: string
-  fax: string
-  email: string
-  postalCode: string
-}
 
 const presidents = [
   { term: "초대", period: "2005", name: "이암 최병준", nameHanja: "李殷 최炳俊" },
@@ -323,14 +309,6 @@ const historyByYear = [
 
 export default function AboutPage() {
   const [nextMeetingDate, setNextMeetingDate] = useState<string>("")
-  const [clubContact, setClubContact] = useState<ClubContact>({
-    address: "경주시 승삼1길 5-5, 4층(용강동)",
-    phone: "054-773-7676",
-    fax: "054-773-7673",
-    email: "ceo6141@gmail.com",
-    postalCode: "우편번호(ZIP CODE) : 38090",
-  })
-  const [isEditingContact, setIsEditingContact] = useState(false)
   const [currentMemberCount, setCurrentMemberCount] = useState<number>(0)
 
   useEffect(() => {
@@ -393,7 +371,6 @@ export default function AboutPage() {
             return parsedMembers.length
           }
         }
-        // Fallback to static data if localStorage is empty
         return getMemberCount()
       } catch (error) {
         return getMemberCount()
@@ -415,450 +392,64 @@ export default function AboutPage() {
     }
   }, [])
 
-  const handleContactEdit = () => {
-    setIsEditingContact(false)
-  }
-
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <Navigation />
 
-      <div className="pt-20 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Hero Section */}
-          <section className="text-center py-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6">경주중앙로타리클럽</h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              1905년 시카고에서 시작된 로타리는 전 세계 200여 개국에서 120만 명의 회원이 활동하는 국제적인
-              봉사단체입니다. 경주중앙로타리클럽은 지역사회 발전과 국제친선을 위해 노력하고 있습니다.
-            </p>
-          </section>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-center mb-8">클럽소개</h1>
 
-          {/* President's Message */}
-          <section className="py-16 bg-gray-50 rounded-lg">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl font-bold mb-8">회장 인사말</h2>
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="flex-shrink-0">
-                  <Image
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/KakaoTalk_20250604_152409666.jpg-ifeMFXyH5GS3y4HqwvH5ED17TXkHQf.jpeg"
-                    alt="경주중앙로타리클럽 회장"
-                    width={160}
-                    height={160}
-                    className="rounded-full shadow-lg"
-                  />
+        <Tabs defaultValue="history" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="history">클럽 연혁</TabsTrigger>
+            <TabsTrigger value="presidents">역대 회장</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="history">
+            <Card>
+              <CardHeader>
+                <CardTitle>경주중앙로타리클럽 연혁</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {historyByYear.map((yearData) => (
+                    <div key={yearData.year} className={`border-l-4 ${yearData.color} pl-4`}>
+                      <h3 className={`font-bold text-lg ${yearData.textColor} mb-2`}>{yearData.year}</h3>
+                      <ul className="list-disc list-inside space-y-1 text-sm">
+                        {yearData.events.map((event, index) => (
+                          <li key={index}>{event}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-lg leading-relaxed mb-4">
-                    안녕하십니까!! 경주중앙로타리클럽 제22대 회장 천상(天翔) 최용환입니다.
-                  </p>
-                  <p className="text-lg leading-relaxed mb-4">
-                    로타리는 '봉사하는 마음'으로 시작되어 전 세계적으로 확산된 인류애 실천 단체입니다. 우리
-                    경주중앙로타리클럽은 2005년 창립 이래 지역사회 발전과 국제친선을 위해 꾸준히 노력해왔습니다.
-                  </p>
-                  <p className="text-lg leading-relaxed">
-                    앞으로도 '봉사하는 삶'의 가치를 실현하며, 더 나은 세상을 만들어가는 데 최선을 다하겠습니다. 많은
-                    관심과 성원 부탁드립니다.
-                  </p>
-                  <div className="mt-6">
-                    <p className="font-semibold">경주중앙로타리클럽 제22대 회장</p>
-                    <p className="text-xl font-bold text-primary">천상 天翔 최용환</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          {/* 창립정보와 클럽 발전사 */}
-          <section className="py-16">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* 창립정보 */}
-                <Card className="p-6">
-                  <h3 className="text-2xl font-bold mb-6 text-primary">창립정보</h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">창립일:</span>
-                      <span className="text-lg font-semibold">2005년 1월 20일</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">창립장소:</span>
-                      <span>경주 힐튼호텔</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">스폰서클럽:</span>
-                      <span>경주선덕로타리클럽</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">초대회장:</span>
-                      <span>이암 최병준</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">창립회원:</span>
-                      <span>61명</span>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* 클럽 발전사 */}
-                <Card className="p-6">
-                  <h3 className="text-2xl font-bold mb-6 text-primary">클럽 발전사</h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">창립 20주년:</span>
-                      <span className="text-lg font-semibold">2025년</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">현재 회원수:</span>
-                      <span className="text-lg font-semibold text-primary">{currentMemberCount}명</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">역대 회장:</span>
-                      <span>22명</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">자매클럽:</span>
-                      <span>3개 클럽</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">주요 봉사:</span>
-                      <span>100여 건</span>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </div>
-          </section>
-
-          {/* Club Information */}
-          <section className="py-16 bg-gray-50 rounded-lg">
-            <div className="max-w-6xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-8">클럽 정보</h2>
-
-              {/* Club Info Cards Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* Club Information */}
-                <Card className="p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Building2 className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-bold">클럽 정보</h3>
-                    <span className="text-xs text-muted-foreground">(2025-26년도)</span>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="font-medium">현 회장:</span>
-                      <span>천상 天翔 최용환 (제22대)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">직전회장:</span>
-                      <span>천관 김용현</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">차기회장:</span>
-                      <span>미정</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">부회장:</span>
-                      <span>허동욱, 최태복</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">총무:</span>
-                      <span>호헌 박재열</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">재무:</span>
-                      <span>우함 손인익</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">부총무:</span>
-                      <span>문시영, 김원기</span>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Club Details */}
-                <Card className="p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Users className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-bold">클럽 현황</h3>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="font-medium">창립:</span>
-                      <span>2005년 1월 20일</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">회원:</span>
-                      <span>{currentMemberCount}명</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">지구:</span>
-                      <span>국제로타리3630지구</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">지역:</span>
-                      <span>경주시</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">정기모임:</span>
-                      <span className="text-xs">{nextMeetingDate}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">클럽회관:</span>
-                      <span className="text-xs">경주중앙로타리클럽 회관</span>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Contact Information */}
-                <Card className="p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Edit className="h-4 w-4 text-primary" />
-                    <h3 className="text-lg font-bold">연락처</h3>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="font-medium">GYEONGJU CENTRAL ROTARY CLUB:</span>
-                      <div className="mt-1">경주중앙로타리클럽</div>
-                    </div>
-                    <div>
-                      <span className="font-medium">ADDRESS:</span>
-                      <div className="mt-1">
-                        경주시 승삼1길 5-5, 4층(용강동)
-                        <br />
-                        <span className="text-xs text-muted-foreground">
-                          5-5, Seungsam 1-gil, Yonggang-dong, Gyeongju-si, Gyeongsangbuk-do, Republic of Korea
-                        </span>
+          <TabsContent value="presidents">
+            <Card>
+              <CardHeader>
+                <CardTitle>역대 회장</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {presidents.map((president) => (
+                    <Card key={president.term} className="p-4">
+                      <div className="text-center">
+                        <div className="font-bold text-lg text-primary">{president.term}</div>
+                        <div className="text-sm text-muted-foreground mb-2">{president.period}</div>
+                        <div className="font-semibold">{president.name}</div>
+                        <div className="text-sm text-muted-foreground">{president.nameHanja}</div>
                       </div>
-                    </div>
-                    <div>
-                      <span className="font-medium">TEL:</span> {clubContact.phone}
-                    </div>
-                    <div>
-                      <span className="font-medium">FAX:</span> {clubContact.fax}
-                    </div>
-                    <div>
-                      <span className="font-medium">E-MAIL:</span> ceo6141@gmail.com
-                    </div>
-                    <div>
-                      <span className="font-medium">우편번호(ZIP CODE) :</span> 38090
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingContact(true)}
-                    className="w-full mt-3 text-xs"
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    연락처 수정
-                  </Button>
-                </Card>
-              </div>
-
-              {/* Photos Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Club Building Photo */}
-                <div>
-                  <h4 className="text-lg font-semibold mb-3 text-center">클럽 회관</h4>
-                  <div className="relative h-[240px] max-w-[320px] mx-auto">
-                    <Image
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/KakaoTalk_20250823_174449340.jpg-puIILbLwSWvbEvXvsSuGAJoBAYO08v.jpeg"
-                      alt="경주중앙로타리클럽 회관"
-                      fill
-                      className="object-cover rounded-lg shadow-lg"
-                    />
-                  </div>
+                    </Card>
+                  ))}
                 </div>
-
-                {/* Group Photo */}
-                <div>
-                  <h4 className="text-lg font-semibold mb-3 text-center">단체 사진</h4>
-                  <div className="relative h-[240px] max-w-[400px] mx-auto">
-                    <Image
-                      src="/images/club-photo.png"
-                      alt="제 21대 22대 회장단 이취임식"
-                      fill
-                      className="object-cover rounded-lg shadow-lg"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Club History and Presidents */}
-          <section className="py-16 bg-gray-50 rounded-lg">
-            <div className="max-w-6xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-8">클럽 소개</h2>
-
-              <Tabs defaultValue="history" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-8">
-                  <TabsTrigger value="history" className="flex items-center gap-2">
-                    <History className="h-4 w-4" />
-                    클럽 연혁
-                  </TabsTrigger>
-                  <TabsTrigger value="presidents" className="flex items-center gap-2">
-                    <Crown className="h-4 w-4" />
-                    역대 회장
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="history" className="space-y-6">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold mb-4 text-primary">경주중앙로타리클럽 연혁</h3>
-                    <p className="text-lg text-muted-foreground">
-                      2005년 창립 이래 지역사회 발전과 국제친선을 위해 꾸준히 활동해온 우리 클럽의 발자취입니다.
-                    </p>
-                  </div>
-
-                  <div className="space-y-8">
-                    {historyByYear.map((yearData, index) => (
-                      <div
-                        key={index}
-                        className={`border-l-4 ${yearData.color} pl-6 bg-white p-6 rounded-lg shadow-sm`}
-                      >
-                        <h4 className={`text-xl font-bold ${yearData.textColor} mb-4`}>{yearData.year}</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {yearData.events.map((event, eventIndex) => (
-                            <div key={eventIndex} className="text-sm">
-                              • {event}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="presidents" className="space-y-6">
-                  <div className="text-center mb-8">
-                    <Crown className="h-16 w-16 text-primary mx-auto mb-4" />
-                    <h3 className="text-2xl font-semibold mb-4 text-primary">역대 회장</h3>
-                    <p className="text-lg text-muted-foreground">
-                      경주중앙로타리클럽을 이끌어온 역대 회장님들을 소개합니다.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {presidents.map((president, index) => (
-                      <Card key={index} className="hover:shadow-lg transition-shadow bg-white">
-                        <div className="text-center p-6">
-                          <div className="w-16 h-16 rounded-full overflow-hidden mx-auto mb-4 border-2 border-primary/20 bg-gray-100 flex items-center justify-center">
-                            <Crown className="h-8 w-8 text-primary/60" />
-                          </div>
-                          <Badge variant="outline" className="mb-2">
-                            {president.term}
-                          </Badge>
-                          <h4 className="text-lg font-semibold">{president.name}</h4>
-                          <p className="text-sm text-muted-foreground mb-2">{president.nameHanja}</p>
-                          <p className="text-sm font-medium text-primary">{president.period}</p>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </section>
-
-          {/* What is Rotary Club */}
-          <section className="py-16">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-12">로타리 클럽이란?</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">로타리의 역사</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    1905년 2월 23일 미국 시카고에서 폴 해리스(Paul Harris)에 의해 창설된 로타리는 세계 최초의
-                    봉사클럽입니다. 현재 전 세계 200여 개국에 35,000여 개 클럽, 120만 명의 회원이 활동하고 있습니다.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">로타리의 목적</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    로타리는 봉사의 이상을 장려하고 육성하며, 특히 직업을 통한 봉사의 이상을 장려합니다. 높은 윤리적
-                    기준을 바탕으로 한 직업인들의 친목을 도모하고, 세계 이해와 친선 및 평화를 증진시키는 것을 목적으로
-                    합니다.
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">4대 봉사 분야</h3>
-                  <ul className="text-muted-foreground space-y-2">
-                    <li>• 클럽 봉사 (Club Service)</li>
-                    <li>• 직업 봉사 (Vocational Service)</li>
-                    <li>• 사회 봉사 (Community Service)</li>
-                    <li>• 국제 봉사 (International Service)</li>
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">로타리 모토</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    "Service Above Self" (초아봉사)
-                    <br />
-                    자신보다 남을 먼저 생각하는 봉사정신을 바탕으로 더 나은 세상을 만들어가고 있습니다.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {/* Contact Edit Dialog */}
-      <Dialog open={isEditingContact} onOpenChange={setIsEditingContact}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>연락처 정보 수정</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">주소</label>
-              <Input
-                value={clubContact.address}
-                onChange={(e) => setClubContact({ ...clubContact, address: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">전화번호</label>
-              <Input
-                value={clubContact.phone}
-                onChange={(e) => setClubContact({ ...clubContact, phone: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">팩스</label>
-              <Input
-                value={clubContact.fax}
-                onChange={(e) => setClubContact({ ...clubContact, fax: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">이메일</label>
-              <Input
-                value={clubContact.email || "ceo6141@gmail.com"}
-                onChange={(e) => setClubContact({ ...clubContact, email: e.target.value })}
-                placeholder="이메일 주소를 입력하세요"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">우편번호(ZIP CODE)</label>
-              <Input
-                value={clubContact.postalCode}
-                onChange={(e) => setClubContact({ ...clubContact, postalCode: e.target.value })}
-              />
-            </div>
-            <div className="flex gap-2 pt-4">
-              <Button onClick={handleContactEdit} className="flex-1">
-                저장
-              </Button>
-              <Button variant="outline" onClick={() => setIsEditingContact(false)} className="flex-1">
-                취소
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
