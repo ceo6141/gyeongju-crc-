@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+import Navigation from "@/components/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -44,8 +45,8 @@ export default function ActivitiesPage() {
   const loadData = () => {
     console.log("[v0] 봉사활동 데이터 로딩 시작")
     try {
-      const savedActivities = localStorage.getItem("gjrc-activities-final")
-      const savedMemberNews = localStorage.getItem("gjrc-member-news-final")
+      const savedActivities = localStorage.getItem("homepage-activities")
+      const savedMemberNews = localStorage.getItem("homepage-news")
 
       const activitiesData = savedActivities ? JSON.parse(savedActivities) : []
       const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : []
@@ -69,8 +70,8 @@ export default function ActivitiesPage() {
 
   const saveData = (newActivities: Activity[], newMemberNews: MemberNews[]) => {
     try {
-      localStorage.setItem("gjrc-activities-final", JSON.stringify(newActivities))
-      localStorage.setItem("gjrc-member-news-final", JSON.stringify(newMemberNews))
+      localStorage.setItem("homepage-activities", JSON.stringify(newActivities))
+      localStorage.setItem("homepage-news", JSON.stringify(newMemberNews))
 
       setActivities([...newActivities])
       setMemberNews([...newMemberNews])
@@ -336,7 +337,8 @@ export default function ActivitiesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8">
+      <Navigation />
+      <div className="container mx-auto px-4 py-8 pt-24">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">봉사활동</h1>
           <p className="text-lg text-gray-600">경주중앙로타리클럽의 봉사활동과 회원소식을 확인하세요.</p>

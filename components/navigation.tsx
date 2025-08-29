@@ -7,7 +7,7 @@ import { Menu, X, ExternalLink, Youtube, Camera } from "lucide-react"
 import Image from "next/image"
 import { NaverBandLink } from "@/components/naver-band-link"
 
-export function Navigation() {
+const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   const navItems = [
@@ -138,3 +138,6 @@ export function Navigation() {
     </>
   )
 }
+
+export { Navigation }
+export default Navigation
