@@ -41,32 +41,25 @@ export default function ActivitiesPage() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
-  const getDefaultActivities = (): Activity[] => []
-  const getDefaultMemberNews = (): MemberNews[] => []
-
   const loadData = () => {
     console.log("[v0] 봉사활동 데이터 로딩 시작")
     try {
-      const savedActivities = localStorage.getItem("gjrc-activities-v2")
-      const savedMemberNews = localStorage.getItem("gjrc-member-news-v2")
+      const savedActivities = localStorage.getItem("gjrc-activities-final")
+      const savedMemberNews = localStorage.getItem("gjrc-member-news-final")
 
-      if (savedActivities) {
-        const activitiesData = JSON.parse(savedActivities)
-        setActivities(activitiesData)
-        console.log("[v0] 저장된 봉사활동 로드:", activitiesData.length, "개")
-      } else {
-        setActivities([])
-        console.log("[v0] 빈 봉사활동 배열로 시작")
-      }
+      const activitiesData = savedActivities ? JSON.parse(savedActivities) : []
+      const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : []
 
-      if (savedMemberNews) {
-        const memberNewsData = JSON.parse(savedMemberNews)
-        setMemberNews(memberNewsData)
-        console.log("[v0] 저장된 회원소식 로드:", memberNewsData.length, "개")
-      } else {
-        setMemberNews([])
-        console.log("[v0] 빈 회원소식 배열로 시작")
-      }
+      setActivities(activitiesData)
+      setMemberNews(memberNewsData)
+
+      console.log(
+        "[v0] 데이터 로딩 완료 - 봉사활동:",
+        activitiesData.length,
+        "개, 회원소식:",
+        memberNewsData.length,
+        "개",
+      )
     } catch (error) {
       console.error("[v0] 데이터 로딩 오류:", error)
       setActivities([])
@@ -74,26 +67,18 @@ export default function ActivitiesPage() {
     }
   }
 
-  const saveActivities = (data: Activity[]) => {
+  const saveData = (newActivities: Activity[], newMemberNews: MemberNews[]) => {
     try {
-      localStorage.setItem("gjrc-activities-v2", JSON.stringify(data))
-      setActivities([...data])
-      console.log("[v0] 봉사활동 저장 완료:", data.length, "개")
-      return true
-    } catch (error) {
-      console.error("[v0] 봉사활동 저장 오류:", error)
-      return false
-    }
-  }
+      localStorage.setItem("gjrc-activities-final", JSON.stringify(newActivities))
+      localStorage.setItem("gjrc-member-news-final", JSON.stringify(newMemberNews))
 
-  const saveMemberNews = (data: MemberNews[]) => {
-    try {
-      localStorage.setItem("gjrc-member-news-v2", JSON.stringify(data))
-      setMemberNews([...data])
-      console.log("[v0] 회원소식 저장 완료:", data.length, "개")
+      setActivities([...newActivities])
+      setMemberNews([...newMemberNews])
+
+      console.log("[v0] 데이터 저장 및 상태 업데이트 완료")
       return true
     } catch (error) {
-      console.error("[v0] 회원소식 저장 오류:", error)
+      console.error("[v0] 데이터 저장 오류:", error)
       return false
     }
   }
@@ -126,16 +111,6 @@ export default function ActivitiesPage() {
   useEffect(() => {
     loadData()
     console.log("[v0] 봉사활동 페이지 초기화 완료")
-
-    const handleFocus = () => {
-      console.log("[v0] 페이지 포커스 - 데이터 다시 로드하지 않음")
-    }
-
-    window.addEventListener("focus", handleFocus)
-
-    return () => {
-      window.removeEventListener("focus", handleFocus)
-    }
   }, [])
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -202,15 +177,12 @@ export default function ActivitiesPage() {
       const activity = activities.find((a) => a.id === id)
       if (activity && confirm(`"${activity.title}" 봉사활동을 삭제하시겠습니까?`)) {
         console.log("[v0] 봉사활동 삭제 시작:", activity.title)
-        const updated = activities.filter((a) => a.id !== id)
 
-        if (saveActivities(updated)) {
-          // 삭제 상태를 localStorage에 명시적으로 저장
-          localStorage.setItem("gjrc-activities-deleted", "true")
-          console.log("[v0] 봉사활동 삭제 완료, 새로고침 시작")
+        const newActivities = activities.filter((a) => a.id !== id)
+
+        if (saveData(newActivities, memberNews)) {
+          console.log("[v0] 봉사활동 삭제 완료")
           alert("봉사활동이 삭제되었습니다.")
-          // 강제 새로고침으로 확실한 상태 업데이트
-          window.location.reload()
         } else {
           alert("삭제 중 오류가 발생했습니다.")
         }
@@ -253,15 +225,12 @@ export default function ActivitiesPage() {
       const news = memberNews.find((n) => n.id === id)
       if (news && confirm(`"${news.title}" 회원소식을 삭제하시겠습니까?`)) {
         console.log("[v0] 회원소식 삭제 시작:", news.title)
-        const updated = memberNews.filter((n) => n.id !== id)
 
-        if (saveMemberNews(updated)) {
-          // 삭제 상태를 localStorage에 명시적으로 저장
-          localStorage.setItem("gjrc-member-news-deleted", "true")
-          console.log("[v0] 회원소식 삭제 완료, 새로고침 시작")
+        const newMemberNews = memberNews.filter((n) => n.id !== id)
+
+        if (saveData(activities, newMemberNews)) {
+          console.log("[v0] 회원소식 삭제 완료")
           alert("회원소식이 삭제되었습니다.")
-          // 강제 새로고침으로 확실한 상태 업데이트
-          window.location.reload()
         } else {
           alert("삭제 중 오류가 발생했습니다.")
         }
@@ -290,16 +259,16 @@ export default function ActivitiesPage() {
       image: formData.image,
     }
 
-    let updated: Activity[]
+    let newActivities: Activity[]
     if (isEditing) {
-      updated = activities.map((a) => (a.id === editingId ? newActivity : a))
+      newActivities = activities.map((a) => (a.id === editingId ? newActivity : a))
       console.log("[v0] 봉사활동 수정:", newActivity.title)
     } else {
-      updated = [newActivity, ...activities]
+      newActivities = [newActivity, ...activities]
       console.log("[v0] 봉사활동 추가:", newActivity.title)
     }
 
-    if (saveActivities(updated)) {
+    if (saveData(newActivities, memberNews)) {
       setIsDialogOpen(false)
       alert(isEditing ? "봉사활동이 성공적으로 수정되었습니다!" : "봉사활동이 성공적으로 추가되었습니다!")
     } else {
@@ -324,16 +293,16 @@ export default function ActivitiesPage() {
       type: memberNewsFormData.type,
     }
 
-    let updated: MemberNews[]
+    let newMemberNews: MemberNews[]
     if (isEditing) {
-      updated = memberNews.map((n) => (n.id === editingId ? newNews : n))
+      newMemberNews = memberNews.map((n) => (n.id === editingId ? newNews : n))
       console.log("[v0] 회원소식 수정:", newNews.title)
     } else {
-      updated = [newNews, ...memberNews]
+      newMemberNews = [newNews, ...memberNews]
       console.log("[v0] 회원소식 추가:", newNews.title)
     }
 
-    if (saveMemberNews(updated)) {
+    if (saveData(activities, newMemberNews)) {
       setIsMemberNewsDialogOpen(false)
       alert(isEditing ? "회원소식이 성공적으로 수정되었습니다!" : "회원소식이 성공적으로 추가되었습니다!")
     } else {

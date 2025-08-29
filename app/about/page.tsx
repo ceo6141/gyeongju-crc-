@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getMemberCount } from "@/lib/members-data"
 import { Navigation } from "@/components/navigation"
+import Image from "next/image"
 
 const presidents = [
   { term: "초대", period: "2005", name: "이암 최병준", nameHanja: "李殷 최炳俊" },
@@ -399,11 +400,247 @@ export default function AboutPage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8">클럽소개</h1>
 
-        <Tabs defaultValue="history" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="status" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="status">클럽현황</TabsTrigger>
+            <TabsTrigger value="info">클럽정보</TabsTrigger>
+            <TabsTrigger value="clubhouse">클럽회관</TabsTrigger>
             <TabsTrigger value="history">클럽 연혁</TabsTrigger>
-            <TabsTrigger value="presidents">역대 회장</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="status">
+            <Card>
+              <CardHeader>
+                <CardTitle>클럽현황</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                      <span className="font-medium">창립</span>
+                      <span>2005년 1월 20일</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                      <span className="font-medium">회원</span>
+                      <span>{currentMemberCount}명</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                      <span className="font-medium">지구</span>
+                      <span>국제로타리3630지구</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                      <span className="font-medium">지역</span>
+                      <span>경주시</span>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                      <span className="font-medium">정기모임</span>
+                      <span className="text-sm">매월 첫째, 셋째주 목요일 오후 7시</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                      <span className="font-medium">장소</span>
+                      <span>본 클럽 회관</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                      <span className="font-medium">이사회</span>
+                      <span>매월 넷째주 목요일</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                      <span className="font-medium">다음 모임</span>
+                      <span className="text-sm">{nextMeetingDate}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="info">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>창립정보</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="p-4 border rounded-lg">
+                        <h3 className="font-semibold text-primary mb-2">창립일</h3>
+                        <p className="text-lg font-medium">2005년 1월 20일</p>
+                        <p className="text-sm text-muted-foreground">경주 힐튼호텔에서 창립총회 개최</p>
+                      </div>
+                      <div className="p-4 border rounded-lg">
+                        <h3 className="font-semibold text-primary mb-2">스폰서 클럽</h3>
+                        <p className="text-lg font-medium">경주선덕로타리클럽</p>
+                        <p className="text-sm text-muted-foreground">창립을 후원한 모클럽</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="p-4 border rounded-lg">
+                        <h3 className="font-semibold text-primary mb-2">초대 회장</h3>
+                        <p className="text-lg font-medium">이암 최병준</p>
+                        <p className="text-sm text-muted-foreground">李殷 최炳俊 (2005년)</p>
+                      </div>
+                      <div className="p-4 border rounded-lg">
+                        <h3 className="font-semibold text-primary mb-2">창립 회원수</h3>
+                        <p className="text-lg font-medium">창립 1주년 시 101명</p>
+                        <p className="text-sm text-muted-foreground">2006년 1월 20일 기준</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-6 p-4 bg-muted rounded-lg">
+                    <h3 className="font-semibold mb-2">창립 의의</h3>
+                    <p className="text-sm">
+                      경주중앙로타리클럽은 2005년 1월 20일 경주선덕로타리클럽의 스폰서로 창립되어, 경주 지역의
+                      봉사활동과 국제친선을 위한 새로운 장을 열었습니다. 창립 이후 지속적인 성장을 통해 현재 68명의
+                      회원이 활동하고 있으며, 지역사회 발전과 국제 로타리의 이상 실현을 위해 노력하고 있습니다.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>로타리의 목적</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="mb-4">
+                    로타리의 목적은 의미 있는 사업과 전문직업의 기초가 되는 봉사 이상을 장려하고 육성하는 데 있으며,
+                    구체적으로는 다음과 같다:
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2">
+                    <li>봉사의 기회로서 친목과 상호부조의 발전을 도모한다.</li>
+                    <li>
+                      사업과 전문직업에 있어서 높은 윤리적 표준을 장려하고, 모든 유용한 업무의 존엄성을 인식하며, 각자의
+                      직업을 통하여 사회에 봉사하는 로타리안의 가치를 높인다.
+                    </li>
+                    <li>모든 로타리안이 개인생활, 사업생활 및 사회생활에 있어서 봉사 이상을 적용하도록 장려한다.</li>
+                    <li>
+                      봉사 이상으로 결합된 사업인과 전문직업인의 세계적 친목을 통하여 국제간의 이해와 친선과 평화를
+                      증진한다.
+                    </li>
+                  </ol>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>로타리의 핵심가치</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="font-semibold text-primary mb-2">봉사 (Service)</h3>
+                      <p className="text-sm">우리의 직업적 기술과 에너지를 인류를 위해 사용합니다.</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="font-semibold text-primary mb-2">친목 (Fellowship)</h3>
+                      <p className="text-sm">다양성 속에서 지속적인 우정을 만들어 갑니다.</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="font-semibold text-primary mb-2">다양성 (Diversity)</h3>
+                      <p className="text-sm">우리의 차이점을 소중히 여기고 포용합니다.</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="font-semibold text-primary mb-2">고결성 (Integrity)</h3>
+                      <p className="text-sm">정직하고 공정하며 윤리적으로 행동합니다.</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="font-semibold text-primary mb-2">리더십 (Leadership)</h3>
+                      <p className="text-sm">긍정적인 변화를 이끌어내는 리더가 됩니다.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>네가지 표준</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="mb-4">우리가 생각하고 말하고 행동하는 모든 것에 대하여:</p>
+                  <ol className="list-decimal list-inside space-y-2">
+                    <li>진실한가?</li>
+                    <li>모든 관련자에게 공정한가?</li>
+                    <li>선의와 우정을 증진하는가?</li>
+                    <li>모든 관련자에게 유익한가?</li>
+                  </ol>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="clubhouse">
+            <Card>
+              <CardHeader>
+                <CardTitle>경주중앙로타리클럽 회관</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="lg:w-1/2">
+                      <div className="relative w-full h-96 lg:h-[500px] rounded-lg overflow-hidden border">
+                        <Image
+                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/KakaoTalk_20250823_174449340.jpg-r53eGeCN5qIDRf5cctlVXcqw2fnVHV.jpeg"
+                          alt="경주중앙로타리클럽 회관 건물"
+                          fill
+                          className="object-cover"
+                          priority
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-3">
+                          <p className="text-sm font-medium">경주중앙로타리클럽 회관 (4층)</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="lg:w-1/2 space-y-6">
+                      <div>
+                        <h3 className="font-semibold text-lg mb-3">회관 정보</h3>
+                        <div className="space-y-3">
+                          <div className="p-3 bg-muted rounded-lg">
+                            <span className="text-sm text-muted-foreground block">주소</span>
+                            <span className="font-medium">경주시 승삼1길 5-5, 4층(용강동)</span>
+                            <span className="text-xs text-muted-foreground block mt-1">
+                              5-5, Seungsam 1-gil, Yonggang-dong, Gyeongju-si
+                            </span>
+                          </div>
+                          <div className="p-3 bg-muted rounded-lg">
+                            <span className="text-sm text-muted-foreground block">우편번호</span>
+                            <span className="font-medium">38090</span>
+                          </div>
+                          <div className="p-3 bg-muted rounded-lg">
+                            <span className="text-sm text-muted-foreground block">용도</span>
+                            <span className="font-medium">정기모임, 이사회, 각종 행사</span>
+                          </div>
+                          <div className="p-3 bg-muted rounded-lg">
+                            <span className="text-sm text-muted-foreground block">수용인원</span>
+                            <span className="font-medium">약 100명</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg mb-3">연락처 정보</h3>
+                        <div className="space-y-3">
+                          <div className="p-3 bg-muted rounded-lg">
+                            <span className="text-sm text-muted-foreground block">전화번호</span>
+                            <span className="font-medium">054-773-7676</span>
+                          </div>
+                          <div className="p-3 bg-muted rounded-lg">
+                            <span className="text-sm text-muted-foreground block">팩스</span>
+                            <span className="font-medium">054-773-7673</span>
+                          </div>
+                          <div className="p-3 bg-muted rounded-lg">
+                            <span className="text-sm text-muted-foreground block">이메일</span>
+                            <span className="font-medium">ceo6141@gmail.com</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="history">
             <Card>
@@ -421,28 +658,6 @@ export default function AboutPage() {
                         ))}
                       </ul>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="presidents">
-            <Card>
-              <CardHeader>
-                <CardTitle>역대 회장</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {presidents.map((president) => (
-                    <Card key={president.term} className="p-4">
-                      <div className="text-center">
-                        <div className="font-bold text-lg text-primary">{president.term}</div>
-                        <div className="text-sm text-muted-foreground mb-2">{president.period}</div>
-                        <div className="font-semibold">{president.name}</div>
-                        <div className="text-sm text-muted-foreground">{president.nameHanja}</div>
-                      </div>
-                    </Card>
                   ))}
                 </div>
               </CardContent>
