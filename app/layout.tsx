@@ -69,6 +69,18 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
+        <title>경주중앙로타리클럽 | 국제로타리 제3630지구</title>
+        <meta name="title" content="경주중앙로타리클럽 | 국제로타리 제3630지구" />
+        <meta
+          name="description"
+          content="경주중앙로타리클럽 공식 웹사이트 - 봉사를 통한 지역사회 발전. 국제로타리 제3630지구 소속으로 경주 지역의 봉사활동과 친목을 도모합니다."
+        />
+        <meta
+          name="keywords"
+          content="경주중앙로타리클럽, 경주로타리클럽, 로타리클럽, 경주, 봉사활동, 국제로타리, 제3630지구, 로타리, 경주중앙RC, 경주 로타리, 경주 봉사단체, 로타리 경주"
+        />
+        <meta name="author" content="경주중앙로타리클럽" />
+
         <meta
           httpEquiv="Cache-Control"
           content="no-cache, no-store, must-revalidate, max-age=0, s-maxage=0, proxy-revalidate"
