@@ -58,17 +58,6 @@ export default function GalleryPage() {
     console.log("[v0] 갤러리 이미지 설정 완료:", userImages.length, "개")
   }, [])
 
-  const saveImages = (newImages: GalleryImage[]) => {
-    try {
-      localStorage.setItem("gallery-images", JSON.stringify(newImages))
-      setImages(newImages)
-      console.log("[v0] 갤러리 이미지 저장 완료:", newImages.length, "개")
-    } catch (error) {
-      console.error("갤러리 이미지 저장 오류:", error)
-      alert("이미지 저장 중 오류가 발생했습니다. 이미지 크기를 줄여보세요.")
-    }
-  }
-
   const processImage = (file: File): Promise<{ dataUrl: string; width: number; height: number }> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -78,11 +67,34 @@ export default function GalleryPage() {
 
         const img = new window.Image()
         img.onload = () => {
-          resolve({
-            dataUrl: result,
-            width: img.naturalWidth,
-            height: img.naturalHeight,
-          })
+          const canvas = document.createElement("canvas")
+          const ctx = canvas.getContext("2d")
+
+          const maxWidth = 1920
+          const maxHeight = 1080
+          let { width, height } = img
+
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height)
+            width = width * ratio
+            height = height * ratio
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height)
+            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8) // 80% 품질로 압축
+
+            resolve({
+              dataUrl: compressedDataUrl,
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+            })
+          } else {
+            reject(new Error("Canvas context 생성 실패"))
+          }
         }
         img.onerror = () => reject(new Error("이미지 로드 실패"))
         img.src = result
@@ -91,6 +103,37 @@ export default function GalleryPage() {
       reader.onerror = () => reject(new Error("파일 읽기 실패"))
       reader.readAsDataURL(file)
     })
+  }
+
+  const saveImages = (newImages: GalleryImage[]) => {
+    try {
+      const dataString = JSON.stringify(newImages)
+      const dataSize = new Blob([dataString]).size
+      console.log("[v0] 갤러리 데이터 크기:", Math.round(dataSize / 1024), "KB")
+
+      if (dataSize > 4.5 * 1024 * 1024) {
+        // 4.5MB 제한
+        throw new Error("데이터 크기가 너무 큽니다. 이미지 수를 줄이거나 크기를 줄여주세요.")
+      }
+
+      localStorage.setItem("gallery-images", dataString)
+
+      const savedData = localStorage.getItem("gallery-images")
+      if (!savedData || JSON.parse(savedData).length !== newImages.length) {
+        throw new Error("데이터 저장 검증 실패")
+      }
+
+      setImages(newImages)
+      console.log("[v0] 갤러리 이미지 저장 및 검증 완료:", newImages.length, "개")
+
+      if (newImages.length > 0) {
+        console.log("[v0] 갤러리 데이터 지속성 확인됨")
+      }
+    } catch (error) {
+      console.error("[v0] 갤러리 이미지 저장 오류:", error)
+      alert(`이미지 저장 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}`)
+      throw error
+    }
   }
 
   const handleAddImageClick = () => {
@@ -227,6 +270,25 @@ export default function GalleryPage() {
       setIsEditMode(!isEditMode)
     })
   }
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (images.length > 0) {
+        try {
+          localStorage.setItem("gallery-images", JSON.stringify(images))
+          console.log("[v0] 페이지 언로드 시 갤러리 데이터 저장")
+        } catch (error) {
+          console.error("[v0] 페이지 언로드 시 저장 오류:", error)
+        }
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+    }
+  }, [images])
 
   return (
     <div className="min-h-screen bg-gray-50">

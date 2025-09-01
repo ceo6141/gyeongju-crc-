@@ -266,7 +266,7 @@ export default function HomePage() {
         const dateA = parseDate(a.details?.date)
         const dateB = parseDate(b.details?.date)
 
-        return dateA - dateB // Sort by earliest date first
+        return dateB - dateA // Sort by latest date first
       })
 
       const latestThree = sortedNotices.slice(0, 3)

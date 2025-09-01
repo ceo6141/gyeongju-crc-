@@ -22,7 +22,26 @@ export default function NoticesPage() {
 
   const syncNotices = () => {
     const allNotices = syncNoticesData()
-    const noticesWithIcons = allNotices
+
+    const currentDate = new Date()
+    const filteredNotices = allNotices.filter((notice) => {
+      const noticeDate = notice.details?.date || notice.date
+      if (!noticeDate) return true // 날짜가 없는 경우는 표시
+
+      // Convert date strings to comparable format
+      const parseDate = (dateStr) => {
+        if (!dateStr) return new Date(0)
+        // Handle formats like "2025.09.04목" or "2025.08.28.목"
+        const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
+        return new Date(cleanDate.replace(/\./g, "-"))
+      }
+
+      const parsedNoticeDate = parseDate(noticeDate)
+      // 공지사항 날짜가 현재 날짜 이후이거나 같은 경우만 표시
+      return parsedNoticeDate >= currentDate.setHours(0, 0, 0, 0)
+    })
+
+    const noticesWithIcons = filteredNotices
       .map((notice) => ({
         ...notice,
         icon: notice.type === "중요" ? <Bell className="h-4 w-4" /> : <Calendar className="h-4 w-4" />,
@@ -39,7 +58,7 @@ export default function NoticesPage() {
           return new Date(cleanDate.replace(/\./g, "-"))
         }
 
-        return parseDate(dateA) - parseDate(dateB)
+        return parseDate(dateB) - parseDate(dateA)
       })
 
     setNotices(noticesWithIcons)
