@@ -245,7 +245,32 @@ export default function HomePage() {
 
     const syncNotices = () => {
       const allNotices = syncNoticesData()
-      const sortedNotices = allNotices.sort((a, b) => {
+
+      const currentDate = new Date()
+      const filteredNotices = allNotices.filter((notice) => {
+        const parseDate = (dateStr) => {
+          if (!dateStr) return new Date(0)
+
+          // Handle Korean date format like "2025.09.04목" or "2025.08.28.목"
+          const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
+          const parts = cleanDate.split(".")
+
+          if (parts.length >= 3) {
+            const year = Number.parseInt(parts[0])
+            const month = Number.parseInt(parts[1]) - 1
+            const day = Number.parseInt(parts[2])
+            return new Date(year, month, day)
+          }
+
+          return new Date(dateStr)
+        }
+
+        const noticeDate = parseDate(notice.details?.date || notice.date)
+        // Only show notices from today onwards
+        return noticeDate >= new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
+      })
+
+      const sortedNotices = filteredNotices.sort((a, b) => {
         const parseDate = (dateStr) => {
           if (!dateStr) return new Date(0)
 

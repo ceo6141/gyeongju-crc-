@@ -25,20 +25,25 @@ export default function NoticesPage() {
 
     const currentDate = new Date()
     const filteredNotices = allNotices.filter((notice) => {
-      const noticeDate = notice.details?.date || notice.date
-      if (!noticeDate) return true // 날짜가 없는 경우는 표시
-
-      // Convert date strings to comparable format
       const parseDate = (dateStr) => {
         if (!dateStr) return new Date(0)
         // Handle formats like "2025.09.04목" or "2025.08.28.목"
         const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
+        const parts = cleanDate.split(".")
+
+        if (parts.length >= 3) {
+          const year = Number.parseInt(parts[0])
+          const month = Number.parseInt(parts[1]) - 1
+          const day = Number.parseInt(parts[2])
+          return new Date(year, month, day)
+        }
+
         return new Date(cleanDate.replace(/\./g, "-"))
       }
 
-      const parsedNoticeDate = parseDate(noticeDate)
-      // 공지사항 날짜가 현재 날짜 이후이거나 같은 경우만 표시
-      return parsedNoticeDate >= currentDate.setHours(0, 0, 0, 0)
+      const noticeDate = parseDate(notice.details?.date || notice.date)
+      // Only show notices from today onwards
+      return noticeDate >= new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
     })
 
     const noticesWithIcons = filteredNotices
@@ -115,7 +120,9 @@ export default function NoticesPage() {
   }
 
   const handleEditNotice = (notice) => {
+    console.log("[v0] 공지사항 수정 버튼 클릭됨:", notice.title)
     requireAuth(() => {
+      console.log("[v0] 관리자 인증 성공, 수정 모드 진입")
       setIsEditing(true)
       setEditingNotice(notice)
       setFormData({
@@ -127,14 +134,19 @@ export default function NoticesPage() {
         location: notice.details?.location || "",
       })
       setIsDialogOpen(true)
+      console.log("[v0] 수정 폼 데이터 설정 완료:", formData)
     })
   }
 
   const handleDeleteNotice = (id) => {
+    console.log("[v0] 공지사항 삭제 버튼 클릭됨:", id)
     requireAuth(() => {
+      console.log("[v0] 관리자 인증 성공, 삭제 진행")
       if (confirm("이 공지사항을 삭제하시겠습니까?")) {
         const updatedNotices = notices.filter((notice) => notice.id !== id)
         saveNotices(updatedNotices)
+        console.log("[v0] 공지사항 삭제 완료")
+        alert("공지사항이 삭제되었습니다.")
       }
     })
   }
@@ -167,6 +179,8 @@ export default function NoticesPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    console.log("[v0] 공지사항 폼 제출 시작:", formData)
+
     const currentDate = new Date().toISOString().split("T")[0].replace(/-/g, ".")
 
     const newNotice = {
@@ -188,13 +202,18 @@ export default function NoticesPage() {
 
     let updatedNotices
     if (isEditing) {
+      console.log("[v0] 공지사항 수정 모드:", editingNotice.id)
       updatedNotices = notices.map((notice) => (notice.id === editingNotice.id ? newNotice : notice))
     } else {
+      console.log("[v0] 공지사항 추가 모드")
       updatedNotices = [newNotice, ...notices]
     }
 
     saveNotices(updatedNotices)
     setIsDialogOpen(false)
+
+    alert(isEditing ? "공지사항이 수정되었습니다." : "공지사항이 추가되었습니다.")
+    console.log("[v0] 공지사항 저장 완료:", isEditing ? "수정" : "추가")
   }
 
   const importantNotices = notices.filter((notice) => notice.type === "중요")
