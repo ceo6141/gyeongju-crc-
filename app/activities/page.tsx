@@ -42,14 +42,55 @@ export default function ActivitiesPage() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
+  const getDefaultActivities = (): Activity[] => [
+    {
+      id: 1,
+      title: "지역사회 기부금 전달",
+      date: "2025.01.15",
+      location: "경주시청",
+      description: "경주중앙로타리클럽에서 지역사회 발전을 위한 기부금을 전달했습니다.",
+      amount: "200만원",
+      participants: "15명",
+      type: "기부활동",
+      image: "/placeholder.svg?height=300&width=400",
+    },
+    {
+      id: 2,
+      title: "환경정화 봉사활동",
+      date: "2025.01.20",
+      location: "대릉원 일대",
+      description: "경주 대릉원 주변 환경정화 활동을 통해 깨끗한 관광지 조성에 기여했습니다.",
+      participants: "20명",
+      type: "환경보호",
+      image: "/placeholder.svg?height=300&width=400",
+    },
+  ]
+
+  const getDefaultMemberNews = (): MemberNews[] => [
+    {
+      id: 1,
+      title: "신입회원 환영식",
+      date: "2025년 1월 10일",
+      content: "새로운 회원들을 맞이하는 환영식을 개최했습니다. 앞으로 함께 봉사활동에 참여하게 될 것입니다.",
+      type: "회원소식",
+    },
+    {
+      id: 2,
+      title: "정기총회 개최",
+      date: "2025년 1월 25일",
+      content: "2025년도 정기총회를 개최하여 올해 사업계획과 예산을 승인했습니다.",
+      type: "회원소식",
+    },
+  ]
+
   const loadData = () => {
     console.log("[v0] 봉사활동 데이터 로딩 시작")
     try {
       const savedActivities = localStorage.getItem("homepage-activities")
       const savedMemberNews = localStorage.getItem("homepage-news")
 
-      const activitiesData = savedActivities ? JSON.parse(savedActivities) : []
-      const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : []
+      const activitiesData = savedActivities ? JSON.parse(savedActivities) : getDefaultActivities()
+      const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : getDefaultMemberNews()
 
       setActivities(activitiesData)
       setMemberNews(memberNewsData)
@@ -63,8 +104,8 @@ export default function ActivitiesPage() {
       )
     } catch (error) {
       console.error("[v0] 데이터 로딩 오류:", error)
-      setActivities([])
-      setMemberNews([])
+      setActivities(getDefaultActivities())
+      setMemberNews(getDefaultMemberNews())
     }
   }
 
