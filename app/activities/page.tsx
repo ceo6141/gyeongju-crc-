@@ -70,8 +70,19 @@ export default function ActivitiesPage() {
 
   const saveData = (newActivities: Activity[], newMemberNews: MemberNews[]) => {
     try {
-      localStorage.setItem("homepage-activities", JSON.stringify(newActivities))
-      localStorage.setItem("homepage-news", JSON.stringify(newMemberNews))
+      const activitiesJson = JSON.stringify(newActivities)
+      const newsJson = JSON.stringify(newMemberNews)
+
+      // localStorage 용량 체크 (5MB 제한)
+      const totalSize = activitiesJson.length + newsJson.length
+      if (totalSize > 5 * 1024 * 1024) {
+        console.error("[v0] localStorage 용량 초과:", Math.round(totalSize / 1024), "KB")
+        alert("데이터 용량이 너무 큽니다. 이미지 크기를 줄여주세요.")
+        return false
+      }
+
+      localStorage.setItem("homepage-activities", activitiesJson)
+      localStorage.setItem("homepage-news", newsJson)
 
       setActivities([...newActivities])
       setMemberNews([...newMemberNews])
@@ -84,25 +95,49 @@ export default function ActivitiesPage() {
           const parsedActivities = JSON.parse(savedActivities)
           const parsedNews = JSON.parse(savedNews)
 
+          // 강제로 상태 재설정
+          setActivities([...parsedActivities])
+          setMemberNews([...parsedNews])
+
           if (parsedActivities.length === newActivities.length && parsedNews.length === newMemberNews.length) {
-            console.log("[v0] 데이터 저장 및 검증 완료")
+            console.log(
+              "[v0] 데이터 저장 및 검증 완료 - 봉사활동:",
+              parsedActivities.length,
+              "개, 회원소식:",
+              parsedNews.length,
+              "개",
+            )
 
             // 다른 페이지에 데이터 변경 알림
             window.dispatchEvent(
               new CustomEvent("activitiesUpdated", {
-                detail: { activities: newActivities, news: newMemberNews },
+                detail: { activities: parsedActivities, news: parsedNews },
               }),
             )
-          } else {
-            console.error("[v0] 데이터 저장 검증 실패")
-          }
-        }
-      }, 100)
 
-      console.log("[v0] 데이터 저장 및 상태 업데이트 완료")
+            window.dispatchEvent(new Event("storage"))
+          } else {
+            console.error("[v0] 데이터 저장 검증 실패 - 예상:", newActivities.length, "실제:", parsedActivities.length)
+            // 재시도
+            loadData()
+          }
+        } else {
+          console.error("[v0] localStorage 저장 실패")
+          loadData()
+        }
+      }, 200)
+
+      console.log(
+        "[v0] 데이터 저장 시작 - 봉사활동:",
+        newActivities.length,
+        "개, 회원소식:",
+        newMemberNews.length,
+        "개",
+      )
       return true
     } catch (error) {
       console.error("[v0] 데이터 저장 오류:", error)
+      alert("데이터 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
       return false
     }
   }
@@ -369,16 +404,55 @@ export default function ActivitiesPage() {
 
     console.log("[v0] 사진 업로드 시작:", file.name, "크기:", Math.round(file.size / 1024), "KB")
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB 이하여야 합니다.")
+    if (file.size > 5 * 1024 * 1024) {
+      alert("파일 크기는 5MB 이하여야 합니다.")
       return
     }
 
     const reader = new FileReader()
     reader.onload = (e) => {
       const result = e.target?.result as string
-      setFormData({ ...formData, image: result })
-      console.log("[v0] 사진 업로드 완료")
+
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement("canvas")
+        const ctx = canvas.getContext("2d")
+
+        // 최대 크기 800x600으로 제한
+        const maxWidth = 800
+        const maxHeight = 600
+        let { width, height } = img
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width
+            width = maxWidth
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height
+            height = maxHeight
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        ctx?.drawImage(img, 0, 0, width, height)
+
+        // 압축된 이미지를 base64로 변환 (품질 0.8)
+        const compressedImage = canvas.toDataURL("image/jpeg", 0.8)
+
+        setFormData({ ...formData, image: compressedImage })
+        console.log(
+          "[v0] 사진 압축 완료 - 원본:",
+          Math.round(result.length / 1024),
+          "KB, 압축:",
+          Math.round(compressedImage.length / 1024),
+          "KB",
+        )
+      }
+      img.src = result
     }
     reader.onerror = () => {
       console.error("[v0] 사진 업로드 실패")

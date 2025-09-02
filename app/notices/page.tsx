@@ -139,11 +139,27 @@ export default function NoticesPage() {
     console.log("[v0] 공지사항 삭제 버튼 클릭됨:", id)
     requireAuth(() => {
       console.log("[v0] 관리자 인증 성공, 삭제 진행")
-      if (confirm("이 공지사항을 삭제하시겠습니까?")) {
-        const updatedNotices = notices.filter((notice) => notice.id !== id)
-        saveNotices(updatedNotices)
-        console.log("[v0] 공지사항 삭제 완료")
-        alert("공지사항이 삭제되었습니다.")
+
+      const noticeToDelete = notices.find((notice) => notice.id === id)
+      const confirmMessage = noticeToDelete
+        ? `"${noticeToDelete.title}" 공지사항을 삭제하시겠습니까?`
+        : "이 공지사항을 삭제하시겠습니까?"
+
+      if (confirm(confirmMessage)) {
+        try {
+          const updatedNotices = notices.filter((notice) => notice.id !== id)
+          saveNotices(updatedNotices)
+          console.log("[v0] 공지사항 삭제 완료:", noticeToDelete?.title || id)
+
+          const successMessage = noticeToDelete
+            ? `"${noticeToDelete.title}" 공지사항이 성공적으로 삭제되었습니다.`
+            : "공지사항이 성공적으로 삭제되었습니다."
+
+          alert(successMessage)
+        } catch (error) {
+          console.error("[v0] 공지사항 삭제 오류:", error)
+          alert("삭제 중 오류가 발생했습니다. 다시 시도해주세요.")
+        }
       }
     })
   }
@@ -188,6 +204,11 @@ export default function NoticesPage() {
     e.preventDefault()
     console.log("[v0] 공지사항 폼 제출 시작:", formData)
 
+    if (!formData.title.trim() || !formData.content.trim()) {
+      alert("제목과 내용을 모두 입력해주세요.")
+      return
+    }
+
     const currentDate = new Date().toISOString().split("T")[0].replace(/-/g, ".")
 
     const newNotice = {
@@ -216,11 +237,29 @@ export default function NoticesPage() {
       updatedNotices = [newNotice, ...notices]
     }
 
-    saveNotices(updatedNotices)
-    setIsDialogOpen(false)
+    try {
+      saveNotices(updatedNotices)
+      setIsDialogOpen(false)
 
-    alert(isEditing ? "공지사항이 수정되었습니다." : "공지사항이 추가되었습니다.")
-    console.log("[v0] 공지사항 저장 완료:", isEditing ? "수정" : "추가")
+      const actionText = isEditing ? "수정" : "추가"
+      const successMessage = `공지사항이 성공적으로 ${actionText}되었습니다!\n\n제목: ${formData.title}\n유형: ${formData.type}`
+
+      alert(successMessage)
+      console.log("[v0] 공지사항 저장 완료:", actionText, "- 제목:", formData.title)
+
+      // Reset form data after successful submission
+      setFormData({
+        title: "",
+        content: "",
+        type: "일반",
+        date: "",
+        time: "",
+        location: "",
+      })
+    } catch (error) {
+      console.error("[v0] 공지사항 저장 오류:", error)
+      alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.")
+    }
   }
 
   const importantNotices = notices.filter((notice) => notice.type === "중요")

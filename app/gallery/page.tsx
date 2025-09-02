@@ -22,7 +22,32 @@ interface GalleryImage {
   originalHeight?: number
 }
 
-const defaultImages: GalleryImage[] = []
+const defaultImages: GalleryImage[] = [
+  {
+    id: "default-1",
+    title: "경주중앙로타리클럽 정기모임",
+    description: "매월 첫째, 셋째주 목요일 정기모임 모습",
+    date: "2025-01-16",
+    location: "경주중앙로타리클럽 회관",
+    imageUrl: "/placeholder.svg?height=400&width=600",
+  },
+  {
+    id: "default-2",
+    title: "봉사활동 - 지역사회 기부금 전달",
+    description: "경주 지역 소외계층을 위한 기부금 전달식",
+    date: "2025-01-10",
+    location: "경주시청",
+    imageUrl: "/placeholder.svg?height=400&width=600",
+  },
+  {
+    id: "default-3",
+    title: "신입회원 환영식",
+    description: "새로운 회원들을 환영하는 특별한 시간",
+    date: "2025-01-05",
+    location: "경주중앙로타리클럽 회관",
+    imageUrl: "/placeholder.svg?height=400&width=600",
+  },
+]
 
 export default function GalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>([])
@@ -54,8 +79,9 @@ export default function GalleryPage() {
       }
     }
 
-    setImages(userImages)
-    console.log("[v0] 갤러리 이미지 설정 완료:", userImages.length, "개")
+    const finalImages = userImages.length > 0 ? userImages : defaultImages
+    setImages(finalImages)
+    console.log("[v0] 갤러리 이미지 설정 완료:", finalImages.length, "개")
 
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "gallery-images") {
