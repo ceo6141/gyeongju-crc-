@@ -23,30 +23,7 @@ export default function NoticesPage() {
   const syncNotices = () => {
     const allNotices = syncNoticesData()
 
-    const currentDate = new Date()
-    const filteredNotices = allNotices.filter((notice) => {
-      const parseDate = (dateStr) => {
-        if (!dateStr) return new Date(0)
-        // Handle formats like "2025.09.04목" or "2025.08.28.목"
-        const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
-        const parts = cleanDate.split(".")
-
-        if (parts.length >= 3) {
-          const year = Number.parseInt(parts[0])
-          const month = Number.parseInt(parts[1]) - 1
-          const day = Number.parseInt(parts[2])
-          return new Date(year, month, day)
-        }
-
-        return new Date(cleanDate.replace(/\./g, "-"))
-      }
-
-      const noticeDate = parseDate(notice.details?.date || notice.date)
-      // Only show notices from today onwards
-      return noticeDate >= new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
-    })
-
-    const noticesWithIcons = filteredNotices
+    const noticesWithIcons = allNotices
       .map((notice) => ({
         ...notice,
         icon: notice.type === "중요" ? <Bell className="h-4 w-4" /> : <Calendar className="h-4 w-4" />,
@@ -154,14 +131,24 @@ export default function NoticesPage() {
   const saveNotices = (newNotices) => {
     const noticesForStorage = newNotices.map(({ icon, ...notice }) => notice)
     if (saveNoticesData(noticesForStorage)) {
-      setNotices(newNotices)
+      setNotices(
+        newNotices.map((notice) => ({
+          ...notice,
+          icon: notice.type === "중요" ? <Bell className="h-4 w-4" /> : <Calendar className="h-4 w-4" />,
+        })),
+      )
       setNoticesVersion((prev) => prev + 1)
+
+      setTimeout(() => {
+        syncNotices()
+      }, 100)
+
       window.dispatchEvent(
         new CustomEvent("noticesUpdated", {
           detail: { notices: noticesForStorage },
         }),
       )
-      console.log("[v0] 공지사항 저장 완료:", noticesForStorage.length, "개")
+      console.log("[v0] 공지사항 저장 및 즉시 업데이트 완료:", noticesForStorage.length, "개")
     }
   }
 

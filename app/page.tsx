@@ -246,48 +246,24 @@ export default function HomePage() {
     const syncNotices = () => {
       const allNotices = syncNoticesData()
 
-      const currentDate = new Date()
-      const filteredNotices = allNotices.filter((notice) => {
-        const parseDate = (dateStr) => {
-          if (!dateStr) return new Date(0)
+      const parseDate = (dateStr) => {
+        if (!dateStr) return new Date(0)
 
-          // Handle Korean date format like "2025.09.04목" or "2025.08.28.목"
-          const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
-          const parts = cleanDate.split(".")
+        // Handle Korean date format like "2025.09.04목" or "2025.08.28.목"
+        const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
+        const parts = cleanDate.split(".")
 
-          if (parts.length >= 3) {
-            const year = Number.parseInt(parts[0])
-            const month = Number.parseInt(parts[1]) - 1
-            const day = Number.parseInt(parts[2])
-            return new Date(year, month, day)
-          }
-
-          return new Date(dateStr)
+        if (parts.length >= 3) {
+          const year = Number.parseInt(parts[0])
+          const month = Number.parseInt(parts[1]) - 1
+          const day = Number.parseInt(parts[2])
+          return new Date(year, month, day)
         }
 
-        const noticeDate = parseDate(notice.details?.date || notice.date)
-        // Only show notices from today onwards
-        return noticeDate >= new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
-      })
+        return new Date(dateStr)
+      }
 
-      const sortedNotices = filteredNotices.sort((a, b) => {
-        const parseDate = (dateStr) => {
-          if (!dateStr) return new Date(0)
-
-          // Handle Korean date format like "2025.09.04목" or "2025.08.28.목"
-          const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
-          const parts = cleanDate.split(".")
-
-          if (parts.length >= 3) {
-            const year = Number.parseInt(parts[0])
-            const month = Number.parseInt(parts[1]) - 1
-            const day = Number.parseInt(parts[2])
-            return new Date(year, month, day)
-          }
-
-          return new Date(dateStr)
-        }
-
+      const sortedNotices = allNotices.sort((a, b) => {
         const dateA = parseDate(a.details?.date)
         const dateB = parseDate(b.details?.date)
 
@@ -297,6 +273,7 @@ export default function HomePage() {
       const latestThree = sortedNotices.slice(0, 3)
       setLatestNotices(latestThree)
       setNoticesVersion((prev) => prev + 1)
+      console.log("[v0] 저장된 공지사항 데이터 사용:", allNotices.length, "개")
       console.log("[v0] 공지사항 동기화 완료:", latestThree.length, "개")
     }
 
