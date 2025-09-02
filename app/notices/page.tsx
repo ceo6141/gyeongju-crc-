@@ -84,19 +84,12 @@ export default function NoticesPage() {
       syncNotices()
     }
 
-    const handleFocus = () => {
-      console.log("[v0] 공지사항 페이지 포커스, 재동기화")
-      syncNotices()
-    }
-
     window.addEventListener("storage", handleStorageChange)
     window.addEventListener("noticesUpdated", handleNoticesUpdate)
-    window.addEventListener("focus", handleFocus)
 
     return () => {
       window.removeEventListener("storage", handleStorageChange)
       window.removeEventListener("noticesUpdated", handleNoticesUpdate)
-      window.removeEventListener("focus", handleFocus)
     }
   }, [])
 
@@ -174,10 +167,6 @@ export default function NoticesPage() {
         })),
       )
       setNoticesVersion((prev) => prev + 1)
-
-      setTimeout(() => {
-        syncNotices()
-      }, 100)
 
       window.dispatchEvent(
         new CustomEvent("noticesUpdated", {

@@ -69,46 +69,74 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
         <title>경주중앙로타리클럽 | 국제로타리 제3630지구</title>
-        <meta name="title" content="경주중앙로타리클럽 | 국제로타리 제3630지구" />
         <meta
           name="description"
           content="경주중앙로타리클럽 공식 웹사이트 - 봉사를 통한 지역사회 발전. 국제로타리 제3630지구 소속으로 경주 지역의 봉사활동과 친목을 도모합니다."
         />
+
+        {/* Open Graph - 네이버가 우선적으로 확인하는 태그들 */}
+        <meta property="og:title" content="경주중앙로타리클럽 | 국제로타리 제3630지구" />
+        <meta
+          property="og:description"
+          content="경주중앙로타리클럽 공식 웹사이트 - 봉사를 통한 지역사회 발전. 국제로타리 제3630지구 소속으로 경주 지역의 봉사활동과 친목을 도모합니다."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://gjcrotaryclub.vercel.app/" />
+        <meta property="og:image" content="https://gjcrotaryclub.vercel.app/rotary-international-logo.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="경주중앙로타리클럽 로고" />
+        <meta property="og:site_name" content="경주중앙로타리클럽" />
+        <meta property="og:locale" content="ko_KR" />
+
+        {/* 추가 메타 태그들 */}
         <meta
           name="keywords"
           content="경주중앙로타리클럽, 경주로타리클럽, 로타리클럽, 경주, 봉사활동, 국제로타리, 제3630지구, 로타리, 경주중앙RC, 경주 로타리, 경주 봉사단체, 로타리 경주"
         />
         <meta name="author" content="경주중앙로타리클럽" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="Korean" />
+        <meta name="revisit-after" content="1 days" />
 
-        <meta
-          httpEquiv="Cache-Control"
-          content="no-cache, no-store, must-revalidate, max-age=0, s-maxage=0, proxy-revalidate"
-        />
-        <meta httpEquiv="Pragma" content="no-cache" />
-        <meta httpEquiv="Expires" content="0" />
-        <meta name="cache-control" content="no-cache, no-store, must-revalidate, max-age=0" />
-        <meta name="version" content={`v2025-${Date.now()}`} />
-        <meta name="last-modified" content={new Date().toISOString()} />
-        <meta name="etag" content={`"${Date.now()}"`} />
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="경주중앙로타리클럽 | 국제로타리 제3630지구" />
+        <meta name="twitter:description" content="경주중앙로타리클럽 공식 웹사이트 - 봉사를 통한 지역사회 발전" />
+        <meta name="twitter:image" content="https://gjcrotaryclub.vercel.app/rotary-international-logo.png" />
 
+        {/* 검색엔진 인증 */}
         <meta name="google-site-verification" content="FC16dXl-lBiw-am_va-sxaFm091Sylo7aNOUjjRhyHQ" />
         <meta name="naver-site-verification" content="7ea6ce43416a296cb40ec2aae371286de917d64b" />
-        <meta name="msvalidate.01" content="your-bing-verification-code" />
+
+        {/* 캐시 제어 - 네이버가 최신 버전을 읽도록 */}
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+        <meta name="version" content={`naver-seo-${Date.now()}`} />
+        <meta name="last-modified" content={new Date().toISOString()} />
+
+        {/* 지역 정보 */}
         <meta name="geo.region" content="KR-47" />
         <meta name="geo.placename" content="경주시" />
         <meta name="geo.position" content="35.8562;129.2247" />
         <meta name="ICBM" content="35.8562, 129.2247" />
 
+        <link rel="canonical" href="https://gjcrotaryclub.vercel.app/" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon-192.png" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
-        <link rel="canonical" href="https://gjcrotaryclub.vercel.app" />
+
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="경주중앙RC" />
         <meta name="mobile-web-app-capable" content="yes" />
 
+        {/* 구조화된 데이터 */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -157,189 +185,72 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                const CURRENT_VERSION = 'v2025-${Date.now()}';
-                const LAST_VERSION_KEY = 'site-version';
-                const FORCE_RELOAD_KEY = 'force-reload-done';
-                
-                function clearAllCaches() {
-                  console.log('[v0] ULTRA-AGGRESSIVE cache clearing for complete version replacement');
+                // 네이버 크롤러 감지 및 메타 태그 강제 설정
+                function forceNaverMetaTags() {
+                  console.log('[NAVER SEO] 네이버 서치어드바이저용 메타 태그 강제 설정 시작');
                   
-                  if ('caches' in window) {
-                    caches.keys().then(names => {
-                      names.forEach(name => {
-                        caches.delete(name);
-                        console.log('[v0] Deleted cache:', name);
-                      });
-                    });
-                  }
+                  // 페이지 제목 강제 설정
+                  document.title = '경주중앙로타리클럽 | 국제로타리 제3630지구';
                   
-                  if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then(registrations => {
-                      registrations.forEach(reg => {
-                        reg.unregister();
-                        console.log('[v0] Unregistered service worker');
-                      });
-                    });
-                  }
-                  
-                  if (window.applicationCache) {
-                    window.applicationCache.update();
-                    window.applicationCache.swapCache();
-                  }
-                  
-                  const timestamp = Date.now();
-                  const cacheMetaTags = [
-                    { httpEquiv: 'Cache-Control', content: 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0, proxy-revalidate' },
-                    { httpEquiv: 'Pragma', content: 'no-cache' },
-                    { httpEquiv: 'Expires', content: '0' },
-                    { name: 'cache-control', content: 'no-cache, no-store, must-revalidate' },
-                    { name: 'timestamp', content: timestamp.toString() },
-                    { name: 'version-force', content: CURRENT_VERSION },
+                  // 필수 메타 태그들을 강제로 생성/업데이트
+                  const requiredMetas = [
+                    { selector: 'meta[name="description"]', name: 'description', content: '경주중앙로타리클럽 공식 웹사이트 - 봉사를 통한 지역사회 발전. 국제로타리 제3630지구 소속으로 경주 지역의 봉사활동과 친목을 도모합니다.' },
+                    { selector: 'meta[property="og:title"]', property: 'og:title', content: '경주중앙로타리클럽 | 국제로타리 제3630지구' },
+                    { selector: 'meta[property="og:description"]', property: 'og:description', content: '경주중앙로타리클럽 공식 웹사이트 - 봉사를 통한 지역사회 발전. 국제로타리 제3630지구 소속으로 경주 지역의 봉사활동과 친목을 도모합니다.' },
+                    { selector: 'meta[property="og:type"]', property: 'og:type', content: 'website' },
+                    { selector: 'meta[property="og:url"]', property: 'og:url', content: 'https://gjcrotaryclub.vercel.app/' },
+                    { selector: 'meta[property="og:image"]', property: 'og:image', content: 'https://gjcrotaryclub.vercel.app/rotary-international-logo.png' }
                   ];
                   
-                  cacheMetaTags.forEach(tag => {
-                    const meta = document.createElement('meta');
-                    if (tag.httpEquiv) meta.httpEquiv = tag.httpEquiv;
-                    if (tag.name) meta.name = tag.name;
-                    meta.content = tag.content;
-                    document.head.appendChild(meta);
-                  });
-                  
-                  const links = document.querySelectorAll('link[rel="stylesheet"], script[src]');
-                  links.forEach(link => {
-                    if (link.href || link.src) {
-                      const url = new URL(link.href || link.src);
-                      url.searchParams.set('v', timestamp.toString());
-                      if (link.href) link.href = url.toString();
-                      if (link.src) link.src = url.toString();
+                  requiredMetas.forEach(meta => {
+                    let element = document.querySelector(meta.selector);
+                    
+                    if (!element) {
+                      element = document.createElement('meta');
+                      if (meta.name) element.setAttribute('name', meta.name);
+                      if (meta.property) element.setAttribute('property', meta.property);
+                      document.head.insertBefore(element, document.head.firstChild);
+                      console.log('[NAVER SEO] 생성된 메타 태그:', meta.selector);
                     }
-                  });
-                }
-                
-                function detectAccessMethod() {
-                  const referrer = document.referrer;
-                  const userAgent = navigator.userAgent;
-                  const isNaverAccess = referrer && (referrer.includes('naver.com') || referrer.includes('search.naver.com'));
-                  const isGoogleAccess = referrer && (referrer.includes('google.com') || referrer.includes('google.co.kr'));
-                  const isSearchEngineAccess = isNaverAccess || isGoogleAccess || referrer.includes('bing.com') || referrer.includes('daum.net');
-                  const isExternalAccess = referrer && !referrer.includes(window.location.hostname);
-                  const isDirectAccess = !referrer;
-                  const isMobileAccess = /Mobile|Android|iPhone|iPad/.test(userAgent);
-                  
-                  console.log('[v0] Access detection for version replacement:', {
-                    referrer,
-                    isNaverAccess,
-                    isGoogleAccess,
-                    isSearchEngineAccess,
-                    isExternalAccess,
-                    isDirectAccess,
-                    isMobileAccess
+                    
+                    element.setAttribute('content', meta.content);
+                    console.log('[NAVER SEO] 설정된 메타 태그:', meta.selector, '=', meta.content);
                   });
                   
-                  return {
-                    isSearchEngineAccess,
-                    isExternalAccess,
-                    isDirectAccess,
-                    shouldClearCache: true // Always clear cache for complete version replacement
-                  };
+                  // 네이버 크롤러 전용 추가 태그
+                  const naverSpecific = document.createElement('meta');
+                  naverSpecific.setAttribute('name', 'naver-site-title');
+                  naverSpecific.setAttribute('content', '경주중앙로타리클럽 | 국제로타리 제3630지구');
+                  document.head.appendChild(naverSpecific);
+                  
+                  console.log('[NAVER SEO] 네이버 서치어드바이저용 메타 태그 설정 완료');
                 }
                 
-                const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
-                const isNewVersion = lastVersion !== CURRENT_VERSION;
-                const forceReloadDone = sessionStorage.getItem(FORCE_RELOAD_KEY);
-                const accessInfo = detectAccessMethod();
+                // 즉시 실행
+                forceNaverMetaTags();
                 
-                console.log('[v0] COMPLETE VERSION REPLACEMENT check:', {
-                  lastVersion,
-                  currentVersion: CURRENT_VERSION,
-                  isNewVersion,
-                  forceReloadDone,
-                  accessInfo
+                // DOM 로드 후에도 실행
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', forceNaverMetaTags);
+                } else {
+                  setTimeout(forceNaverMetaTags, 100);
+                }
+                
+                // 페이지 포커스 시에도 실행 (네이버 크롤러 재방문 대비)
+                window.addEventListener('focus', function() {
+                  setTimeout(forceNaverMetaTags, 50);
                 });
-                
-                if (isNewVersion || !lastVersion || accessInfo.shouldClearCache) {
-                  console.log('[v0] FORCING complete version replacement');
-                  
-                  clearAllCaches();
-                  
-                  const essentialKeys = ['rotary-notices', 'rotary-members', 'rotary-attendance-rate', 'gallery-images', 'activities-data'];
-                  const tempData = {};
-                  essentialKeys.forEach(key => {
-                    const data = localStorage.getItem(key);
-                    if (data) tempData[key] = data;
-                  });
-                  
-                  localStorage.clear();
-                  sessionStorage.clear(); // Also clear session storage
-                  
-                  // Restore essential data
-                  Object.keys(tempData).forEach(key => {
-                    localStorage.setItem(key, tempData[key]);
-                  });
-                  
-                  // Set new version
-                  localStorage.setItem(LAST_VERSION_KEY, CURRENT_VERSION);
-                  
-                  if (!forceReloadDone) {
-                    console.log('[v0] FORCING immediate page reload for version replacement');
-                    sessionStorage.setItem(FORCE_RELOAD_KEY, 'true');
-                    const reloadUrl = window.location.href + 
-                      (window.location.search ? '&' : '?') + 
-                      'v=' + Date.now() + '&refresh=1&force=1&source=' + 
-                      (accessInfo.isSearchEngineAccess ? 'search' : 'direct');
-                    window.location.replace(reloadUrl);
-                    return;
-                  }
-                }
-                
-                let versionCheckInterval;
-                
-                function checkVersion() {
-                  const currentStoredVersion = localStorage.getItem(LAST_VERSION_KEY);
-                  if (currentStoredVersion !== CURRENT_VERSION) {
-                    console.log('[v0] Version mismatch detected - forcing replacement');
-                    clearAllCaches();
-                    localStorage.setItem(LAST_VERSION_KEY, CURRENT_VERSION);
-                    window.location.reload(true);
-                  }
-                }
                 
                 document.addEventListener('visibilitychange', function() {
                   if (!document.hidden) {
-                    console.log('[v0] Page became visible, checking for version replacement');
-                    setTimeout(checkVersion, 50); // Faster response time
+                    setTimeout(forceNaverMetaTags, 50);
                   }
                 });
-                
-                window.addEventListener('focus', function() {
-                  console.log('[v0] Window focused, checking for version replacement');
-                  setTimeout(checkVersion, 50); // Faster response time
-                });
-                
-                versionCheckInterval = setInterval(checkVersion, 5000); // Check every 5 seconds
-                
-                setTimeout(() => {
-                  if (window.location.search || window.location.hash) {
-                    const cleanUrl = window.location.origin + window.location.pathname;
-                    window.history.replaceState({}, document.title, cleanUrl);
-                  }
-                }, 500); // Faster cleanup
-                
-                if (performance.navigation.type === 1) {
-                  sessionStorage.removeItem(FORCE_RELOAD_KEY);
-                }
-                
-                window.addEventListener('beforeunload', function() {
-                  if (versionCheckInterval) {
-                    clearInterval(versionCheckInterval);
-                  }
-                });
-                
-                console.log('[v0] COMPLETE VERSION REPLACEMENT system initialized successfully');
               })();
             `,
           }}
         />
+
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};
