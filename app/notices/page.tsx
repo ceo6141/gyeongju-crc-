@@ -23,7 +23,35 @@ export default function NoticesPage() {
   const syncNotices = () => {
     const allNotices = syncNoticesData()
 
-    const noticesWithIcons = allNotices
+    const currentDate = new Date()
+    const parseDate = (dateStr) => {
+      if (!dateStr) return new Date(0)
+      // Handle formats like "2025.09.04목" or "2025.08.28.목"
+      const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
+      return new Date(cleanDate.replace(/\./g, "-"))
+    }
+
+    const filteredNotices = allNotices.filter((notice) => {
+      // 중요 공지사항인 경우 날짜 확인
+      if (notice.type === "중요") {
+        const noticeDate = parseDate(notice.details?.date || notice.date)
+        // 현재 날짜보다 과거인 중요 공지사항은 제거
+        if (noticeDate < currentDate) {
+          console.log("[v0] 과거 날짜의 중요 공지사항 제거:", notice.title, notice.details?.date || notice.date)
+          return false
+        }
+      }
+      return true
+    })
+
+    // 필터링된 데이터를 다시 저장 (과거 중요 공지사항이 제거됨)
+    if (filteredNotices.length !== allNotices.length) {
+      const noticesForStorage = filteredNotices.map(({ icon, ...notice }) => notice)
+      saveNoticesData(noticesForStorage)
+      console.log("[v0] 과거 중요 공지사항 삭제 후 저장 완료:", filteredNotices.length, "개")
+    }
+
+    const noticesWithIcons = filteredNotices
       .map((notice) => ({
         ...notice,
         icon: notice.type === "중요" ? <Bell className="h-4 w-4" /> : <Calendar className="h-4 w-4" />,
@@ -31,14 +59,6 @@ export default function NoticesPage() {
       .sort((a, b) => {
         const dateA = a.details?.date || a.date
         const dateB = b.details?.date || b.date
-
-        // Convert date strings to comparable format (YYYY.MM.DD)
-        const parseDate = (dateStr) => {
-          if (!dateStr) return new Date(0)
-          // Handle formats like "2025.09.04목" or "2025.08.28.목"
-          const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
-          return new Date(cleanDate.replace(/\./g, "-"))
-        }
 
         return parseDate(dateB) - parseDate(dateA)
       })

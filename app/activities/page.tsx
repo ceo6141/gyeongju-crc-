@@ -76,6 +76,29 @@ export default function ActivitiesPage() {
       setActivities([...newActivities])
       setMemberNews([...newMemberNews])
 
+      setTimeout(() => {
+        const savedActivities = localStorage.getItem("homepage-activities")
+        const savedNews = localStorage.getItem("homepage-news")
+
+        if (savedActivities && savedNews) {
+          const parsedActivities = JSON.parse(savedActivities)
+          const parsedNews = JSON.parse(savedNews)
+
+          if (parsedActivities.length === newActivities.length && parsedNews.length === newMemberNews.length) {
+            console.log("[v0] 데이터 저장 및 검증 완료")
+
+            // 다른 페이지에 데이터 변경 알림
+            window.dispatchEvent(
+              new CustomEvent("activitiesUpdated", {
+                detail: { activities: newActivities, news: newMemberNews },
+              }),
+            )
+          } else {
+            console.error("[v0] 데이터 저장 검증 실패")
+          }
+        }
+      }, 100)
+
       console.log("[v0] 데이터 저장 및 상태 업데이트 완료")
       return true
     } catch (error) {
@@ -112,6 +135,35 @@ export default function ActivitiesPage() {
   useEffect(() => {
     loadData()
     console.log("[v0] 봉사활동 페이지 초기화 완료")
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "homepage-activities" || e.key === "homepage-news") {
+        console.log("[v0] 봉사활동 페이지 Storage 변경 감지, 재로드")
+        loadData()
+      }
+    }
+
+    const handleFocus = () => {
+      console.log("[v0] 봉사활동 페이지 포커스, 데이터 재로드")
+      loadData()
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log("[v0] 봉사활동 페이지 가시성 변경, 데이터 재로드")
+        loadData()
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("focus", handleFocus)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("focus", handleFocus)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
   }, [])
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)

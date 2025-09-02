@@ -56,6 +56,52 @@ export default function GalleryPage() {
 
     setImages(userImages)
     console.log("[v0] 갤러리 이미지 설정 완료:", userImages.length, "개")
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "gallery-images") {
+        console.log("[v0] 갤러리 페이지 Storage 변경 감지, 재로드")
+        const newImages = e.newValue ? JSON.parse(e.newValue) : []
+        setImages(newImages)
+      }
+    }
+
+    const handleFocus = () => {
+      console.log("[v0] 갤러리 페이지 포커스, 데이터 재로드")
+      const currentImages = localStorage.getItem("gallery-images")
+      if (currentImages) {
+        try {
+          const parsedImages = JSON.parse(currentImages)
+          setImages(parsedImages)
+        } catch (error) {
+          console.error("[v0] 갤러리 포커스 시 데이터 로드 오류:", error)
+        }
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log("[v0] 갤러리 페이지 가시성 변경, 데이터 재로드")
+        const currentImages = localStorage.getItem("gallery-images")
+        if (currentImages) {
+          try {
+            const parsedImages = JSON.parse(currentImages)
+            setImages(parsedImages)
+          } catch (error) {
+            console.error("[v0] 갤러리 가시성 변경 시 데이터 로드 오류:", error)
+          }
+        }
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("focus", handleFocus)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("focus", handleFocus)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+    }
   }, [])
 
   const processImage = (file: File): Promise<{ dataUrl: string; width: number; height: number }> => {
@@ -112,19 +158,35 @@ export default function GalleryPage() {
       console.log("[v0] 갤러리 데이터 크기:", Math.round(dataSize / 1024), "KB")
 
       if (dataSize > 4.5 * 1024 * 1024) {
-        // 4.5MB 제한
         throw new Error("데이터 크기가 너무 큽니다. 이미지 수를 줄이거나 크기를 줄여주세요.")
       }
 
       localStorage.setItem("gallery-images", dataString)
 
-      const savedData = localStorage.getItem("gallery-images")
-      if (!savedData || JSON.parse(savedData).length !== newImages.length) {
-        throw new Error("데이터 저장 검증 실패")
-      }
+      setTimeout(() => {
+        const savedData = localStorage.getItem("gallery-images")
+        if (savedData) {
+          try {
+            const parsedData = JSON.parse(savedData)
+            if (parsedData.length === newImages.length) {
+              setImages(newImages)
+              console.log("[v0] 갤러리 이미지 저장 및 검증 완료:", newImages.length, "개")
 
-      setImages(newImages)
-      console.log("[v0] 갤러리 이미지 저장 및 검증 완료:", newImages.length, "개")
+              // 다른 페이지에 데이터 변경 알림
+              window.dispatchEvent(
+                new CustomEvent("galleryUpdated", {
+                  detail: { images: newImages },
+                }),
+              )
+            } else {
+              throw new Error("데이터 저장 검증 실패")
+            }
+          } catch (error) {
+            console.error("[v0] 갤러리 저장 검증 오류:", error)
+            throw error
+          }
+        }
+      }, 100)
 
       if (newImages.length > 0) {
         console.log("[v0] 갤러리 데이터 지속성 확인됨")
