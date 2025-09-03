@@ -56,7 +56,7 @@ const defaultImages: GalleryImage[] = [
     description: "매월 첫째, 셋째주 목요일 정기모임 모습",
     date: "2025-01-16",
     location: "경주중앙로타리클럽 회관",
-    imageUrl: "/images/club-photo.png",
+    imageUrl: "/placeholder.svg?height=300&width=400",
   },
   {
     id: "default-2",
@@ -64,7 +64,7 @@ const defaultImages: GalleryImage[] = [
     description: "국제 유소년 축구대회에서 일본팀을 응원하며 국제친선에 기여",
     date: "2025-01-20",
     location: "경주월드컵경기장",
-    imageUrl: "/images/apec-youth-soccer.jpg",
+    imageUrl: "/placeholder.svg?height=300&width=400",
   },
   {
     id: "default-3",
@@ -72,7 +72,7 @@ const defaultImages: GalleryImage[] = [
     description: "경주 지역 소외계층을 위한 기부금 전달 봉사활동",
     date: "2025-01-15",
     location: "경주시청",
-    imageUrl: "/images/donation-ceremony.jpg",
+    imageUrl: "/placeholder.svg?height=300&width=400",
   },
   {
     id: "default-4",
@@ -80,7 +80,7 @@ const defaultImages: GalleryImage[] = [
     description: "새로운 회원들을 환영하는 특별한 시간",
     date: "2025-01-10",
     location: "경주중앙로타리클럽 회관",
-    imageUrl: "/gyeongju-rotary-president.png",
+    imageUrl: "/placeholder.svg?height=300&width=400",
   },
 ]
 
@@ -860,7 +860,7 @@ export default function GalleryPage() {
                       <CardContent className="p-0">
                         <div className="relative">
                           <Image
-                            src={image.imageUrl || "/placeholder.svg?height=300&width=400&query=gallery"}
+                            src={image.imageUrl || "/placeholder.svg?height=300&width=400"}
                             alt={image.title}
                             width={400}
                             height={300}

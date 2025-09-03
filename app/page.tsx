@@ -86,10 +86,14 @@ export default function HomePage() {
     })
 
     const latestThree = sortedNotices.slice(0, 3)
-    setNotices(latestThree)
-    setNoticesVersion((prev) => prev + 1)
-    console.log("[v0] 저장된 공지사항 데이터 사용:", allNotices.length, "개")
-    console.log("[v0] 공지사항 동기화 완료:", latestThree.length, "개")
+
+    setNotices((prev) => {
+      if (JSON.stringify(prev) !== JSON.stringify(latestThree)) {
+        console.log("[v0] 공지사항 데이터 업데이트:", latestThree.length, "개")
+        return latestThree
+      }
+      return prev
+    })
   }
 
   const handleEditNotice = (notice) => {
@@ -310,14 +314,11 @@ export default function HomePage() {
                 <div className="lg:col-span-2 relative flex justify-center">
                   <div className="w-full h-[350px] lg:h-[400px] relative rounded-2xl shadow-2xl overflow-hidden">
                     <Image
-                      src={backgroundImage || "/placeholder.svg"}
+                      src="/placeholder.svg?height=400&width=600"
                       alt="경주중앙로타리클럽 제21대 22대 회장단 이취임식 - 천상 天翔 최용환 회장"
                       fill
                       className="object-cover"
                       priority
-                      onError={(e) => {
-                        e.currentTarget.src = "/images/club-photo.png"
-                      }}
                     />
                   </div>
                 </div>
