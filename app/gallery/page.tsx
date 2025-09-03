@@ -46,6 +46,7 @@ interface MemberNews {
   date: string
   content: string
   type: string
+  author?: string
 }
 
 const defaultImages: GalleryImage[] = [
@@ -80,6 +81,43 @@ const defaultImages: GalleryImage[] = [
     date: "2025-01-10",
     location: "경주중앙로타리클럽 회관",
     imageUrl: "/gyeongju-rotary-president.png",
+  },
+]
+
+const defaultActivities: Activity[] = [
+  {
+    id: "default-activity-1",
+    title: "APEC 회원국 초청 국제 유소년대회 일본 테소로팀 응원 봉사",
+    description: "국제 유소년 축구대회에서 일본팀을 응원하며 국제친선에 기여하는 봉사활동을 진행했습니다.",
+    date: "2025-01-20",
+    location: "경주월드컵경기장",
+    type: "국제친선",
+    participants: "회원 25명",
+    amount: "후원금 200만원",
+    image: "/images/apec-youth-soccer.jpg",
+  },
+  {
+    id: "default-activity-2",
+    title: "지역사회 기부금 전달식",
+    description: "경주 지역 소외계층을 위한 기부금 전달 봉사활동을 실시했습니다.",
+    date: "2025-01-15",
+    location: "경주시청",
+    type: "지역봉사",
+    participants: "회원 15명",
+    amount: "기부금 500만원",
+    image: "/images/donation-ceremony.jpg",
+  },
+]
+
+const defaultMemberNews: MemberNews[] = [
+  {
+    id: "default-news-1",
+    title: "신입회원 환영식 개최",
+    content:
+      "새로운 회원들을 환영하는 특별한 시간을 가졌습니다. 로타리 정신을 함께 실천할 동반자들을 맞이하게 되어 기쁩니다.",
+    date: "2025-01-10",
+    author: "총무 최병준",
+    image: "/gyeongju-rotary-president.png",
   },
 ]
 
@@ -127,8 +165,8 @@ export default function GalleryPage() {
       const savedActivities = localStorage.getItem("homepage-activities")
       const savedMemberNews = localStorage.getItem("homepage-news")
 
-      const activitiesData = savedActivities ? JSON.parse(savedActivities) : []
-      const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : []
+      const activitiesData = savedActivities ? JSON.parse(savedActivities) : defaultActivities
+      const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : defaultMemberNews
 
       setActivities(activitiesData)
       setMemberNews(memberNewsData)
@@ -142,8 +180,8 @@ export default function GalleryPage() {
       )
     } catch (error) {
       console.error("[v0] 갤러리 페이지 봉사활동 데이터 로딩 오류:", error)
-      setActivities([])
-      setMemberNews([])
+      setActivities(defaultActivities)
+      setMemberNews(defaultMemberNews)
     }
   }
 
