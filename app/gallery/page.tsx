@@ -255,7 +255,8 @@ export default function GalleryPage() {
       if (e.key === "gallery-images") {
         console.log("[v0] 갤러리 페이지 Storage 변경 감지, 재로드")
         const newImages = e.newValue ? JSON.parse(e.newValue) : []
-        setImages(newImages)
+        const finalNewImages = newImages.length > 0 ? [...defaultImages, ...newImages] : defaultImages
+        setImages(finalNewImages)
       }
       if (e.key === "homepage-activities" || e.key === "homepage-news") {
         console.log("[v0] 갤러리 페이지 봉사활동 Storage 변경 감지, 재로드")
@@ -263,44 +264,10 @@ export default function GalleryPage() {
       }
     }
 
-    const handleFocus = () => {
-      console.log("[v0] 갤러리 페이지 포커스, 데이터 재로드")
-      const currentImages = localStorage.getItem("gallery-images")
-      if (currentImages) {
-        try {
-          const parsedImages = JSON.parse(currentImages)
-          setImages(parsedImages)
-        } catch (error) {
-          console.error("[v0] 갤러리 포커스 시 데이터 로드 오류:", error)
-        }
-      }
-      loadActivitiesData()
-    }
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log("[v0] 갤러리 페이지 가시성 변경, 데이터 재로드")
-        const currentImages = localStorage.getItem("gallery-images")
-        if (currentImages) {
-          try {
-            const parsedImages = JSON.parse(currentImages)
-            setImages(parsedImages)
-          } catch (error) {
-            console.error("[v0] 갤러리 가시성 변경 시 데이터 로드 오류:", error)
-          }
-        }
-        loadActivitiesData()
-      }
-    }
-
     window.addEventListener("storage", handleStorageChange)
-    window.addEventListener("focus", handleFocus)
-    document.addEventListener("visibilitychange", handleVisibilityChange)
 
     return () => {
       window.removeEventListener("storage", handleStorageChange)
-      window.removeEventListener("focus", handleFocus)
-      document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
   }, [])
 
