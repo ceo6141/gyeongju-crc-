@@ -45,6 +45,17 @@ export default function ActivitiesPage() {
   const getDefaultActivities = (): Activity[] => [
     {
       id: 1,
+      title: "APEC 회원국 초청 국제 유소년대회 일본 테소로팀 응원 봉사",
+      date: "2025.01.20",
+      location: "경주월드컵경기장",
+      description:
+        "APEC 회원국 초청 국제 유소년 축구대회에서 일본 테소로팀을 응원하며 국제친선과 스포츠 교류에 기여했습니다.",
+      participants: "25명",
+      type: "국제교류",
+      image: "/images/apec-youth-soccer.jpg",
+    },
+    {
+      id: 2,
       title: "지역사회 기부금 전달",
       date: "2025.01.15",
       location: "경주시청",
@@ -52,17 +63,7 @@ export default function ActivitiesPage() {
       amount: "200만원",
       participants: "15명",
       type: "기부활동",
-      image: "/placeholder.svg?height=300&width=400",
-    },
-    {
-      id: 2,
-      title: "환경정화 봉사활동",
-      date: "2025.01.20",
-      location: "대릉원 일대",
-      description: "경주 대릉원 주변 환경정화 활동을 통해 깨끗한 관광지 조성에 기여했습니다.",
-      participants: "20명",
-      type: "환경보호",
-      image: "/placeholder.svg?height=300&width=400",
+      image: "/images/donation-ceremony.jpg",
     },
   ]
 
@@ -714,6 +715,7 @@ export default function ActivitiesPage() {
                     <SelectItem value="기부활동">기부활동</SelectItem>
                     <SelectItem value="장학사업">장학사업</SelectItem>
                     <SelectItem value="환경보호">환경보호</SelectItem>
+                    <SelectItem value="국제교류">국제교류</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

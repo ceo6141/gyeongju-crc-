@@ -400,13 +400,97 @@ export default function AboutPage() {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8">클럽소개</h1>
 
-        <Tabs defaultValue="status" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="president" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="president">회장인사말</TabsTrigger>
             <TabsTrigger value="status">클럽현황</TabsTrigger>
             <TabsTrigger value="info">클럽정보</TabsTrigger>
             <TabsTrigger value="clubhouse">클럽회관</TabsTrigger>
             <TabsTrigger value="history">클럽 연혁</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="president">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center text-2xl">제22대 회장 인사말</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="flex flex-col lg:flex-row gap-6 items-center">
+                    <div className="lg:w-1/3 flex justify-center">
+                      <div className="relative w-64 h-80 rounded-lg overflow-hidden border shadow-lg">
+                        <Image
+                          src="/president-choi-yong-hwan.png"
+                          alt="천상 天翔 최용환 회장"
+                          fill
+                          className="object-cover"
+                          priority
+                        />
+                      </div>
+                    </div>
+                    <div className="lg:w-2/3 space-y-4">
+                      <div className="text-center lg:text-left">
+                        <h2 className="text-2xl font-bold text-primary mb-2">천상 天翔 최용환</h2>
+                        <p className="text-lg text-muted-foreground">제22대 회장 (2025-2026)</p>
+                        <p className="text-sm text-muted-foreground">경주중앙로타리클럽</p>
+                      </div>
+
+                      <div className="space-y-4 text-gray-700 leading-relaxed">
+                        <p className="text-lg font-medium">
+                          안녕하십니까. 경주중앙로타리클럽 제22대 회장 천상 天翔 최용환입니다.
+                        </p>
+
+                        <p>
+                          2025-26년도 경주중앙로타리클럽 제22대 회장으로 취임하게 되어 무한한 영광과 함께 막중한
+                          책임감을 느낍니다. 지난 20년간 경주 지역사회 발전과 국제친선을 위해 헌신해 온 우리 클럽의
+                          전통과 명예를 이어받아 더욱 발전시켜 나가겠습니다.
+                        </p>
+
+                        <p>
+                          로타리의 핵심가치인 봉사, 친목, 다양성, 고결성, 리더십을 바탕으로 지역사회의 어려운 이웃들과
+                          함께하는 따뜻한 봉사활동을 펼쳐나가겠습니다. 특히 창립 20주년을 맞는 뜻깊은 해에 우리 클럽의
+                          위상을 더욱 높이고, 회원 상호간의 친목을 도모하며, 지역사회에 실질적인 도움이 되는 봉사
+                          프로젝트를 추진하겠습니다.
+                        </p>
+
+                        <p>
+                          "봉사를 통한 지역사회 발전과 국제친선"이라는 우리 클럽의 모토 아래, 모든 회원님들과 함께 손을
+                          맞잡고 더 나은 세상을 만들어가는 데 최선을 다하겠습니다. 여러분의 변함없는 관심과 성원을
+                          부탁드립니다.
+                        </p>
+
+                        <div className="pt-4 border-t">
+                          <p className="text-right font-medium">
+                            경주중앙로타리클럽 제22대 회장
+                            <br />
+                            천상 天翔 최용환 배상
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 p-6 bg-blue-50 rounded-lg">
+                    <h3 className="font-semibold text-lg mb-3 text-blue-800">2025-26년도 회장 운영방침</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-blue-700">• 지역사회 봉사 확대</h4>
+                        <p className="text-sm text-gray-600">취약계층 지원 및 교육 봉사활동 강화</p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-blue-700">• 회원 친목 증진</h4>
+                        <p className="text-sm text-gray-600">다양한 친목 활동 및 가족 행사 확대</p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-blue-700">• 국제 교류 활성화</h4>
+                        <p className="text-sm text-gray-600">자매클럽과의 교류 및 국제 봉사 참여</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="status">
             <Card>
@@ -484,8 +568,8 @@ export default function AboutPage() {
                       </div>
                       <div className="p-4 border rounded-lg">
                         <h3 className="font-semibold text-primary mb-2">창립 회원수</h3>
-                        <p className="text-lg font-medium">창립 1주년 시 101명</p>
-                        <p className="text-sm text-muted-foreground">2006년 1월 20일 기준</p>
+                        <p className="text-lg font-medium">68명</p>
+                        <p className="text-sm text-muted-foreground">2005년 1월 20일 기준</p>
                       </div>
                     </div>
                   </div>

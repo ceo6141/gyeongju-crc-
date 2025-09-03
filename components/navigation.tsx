@@ -15,8 +15,6 @@ const Navigation = () => {
     { href: "/about", label: "클럽소개" },
     { href: "/members", label: "회원명부" },
     { href: "/gallery", label: "갤러리", icon: Camera },
-    { href: "/activities", label: "봉사활동" },
-    { href: "/notices", label: "공지사항" },
     { href: "/rotary-news", label: "로타리 소식" },
     { href: "/organization", label: "조직도" },
     { href: "/plans", label: "사업계획" },

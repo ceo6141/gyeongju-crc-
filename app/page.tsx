@@ -10,43 +10,39 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Heart, Award, BookOpen, History, Calendar, Clock, MapPin, Plus, Edit, Trash2, Banknote } from "lucide-react"
+import { Heart, Award, BookOpen, History, Calendar, Clock, MapPin, Plus, Edit, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { AdminPanel } from "@/components/admin-panel"
 import PWAInstall from "@/components/pwa-install"
 import { CacheBuster } from "@/components/cache-buster"
-import { syncNoticesData } from "@/lib/notices-data"
+import { syncNoticesData, saveNoticesData } from "@/lib/notices-data"
 
 export default function HomePage() {
-  const [latestNotices, setLatestNotices] = useState([])
+  const [notices, setNotices] = useState([])
   const [noticesVersion, setNoticesVersion] = useState(0)
-
-  const [activities, setActivities] = useState([])
+  const [isEditingNotices, setIsEditingNotices] = useState(false)
+  const [isAddNoticeOpen, setIsAddNoticeOpen] = useState(false)
+  const [editingNotice, setEditingNotice] = useState(null)
   const [memberNews, setMemberNews] = useState([])
-  const [isAddActivityOpen, setIsAddActivityOpen] = useState(false)
   const [isAddNewsOpen, setIsAddNewsOpen] = useState(false)
-  const [editingActivity, setEditingActivity] = useState(null)
   const [editingNews, setEditingNews] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  const [activityForm, setActivityForm] = useState({
-    title: "",
-    date: "",
-    location: "",
-    description: "",
-    amount: "",
-    participants: "",
-    type: "봉사활동",
-    image: "",
-  })
 
   const [newsForm, setNewsForm] = useState({
     title: "",
     date: "",
     content: "",
     category: "일반소식",
+  })
+
+  const [noticeForm, setNoticeForm] = useState({
+    title: "",
+    content: "",
+    date: "",
+    type: "일반",
+    details: "",
   })
 
   const [backgroundImage, setBackgroundImage] = useState("/images/club-photo.png")
@@ -62,33 +58,84 @@ export default function HomePage() {
     return false
   }
 
+  const syncNotices = () => {
+    const allNotices = syncNoticesData()
+
+    const parseDate = (dateStr) => {
+      if (!dateStr) return new Date(0)
+
+      // Handle Korean date format like "2025.09.04목" or "2025.08.28.목"
+      const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
+      const parts = cleanDate.split(".")
+
+      if (parts.length >= 3) {
+        const year = Number.parseInt(parts[0])
+        const month = Number.parseInt(parts[1]) - 1
+        const day = Number.parseInt(parts[2])
+        return new Date(year, month, day)
+      }
+
+      return new Date(dateStr)
+    }
+
+    const sortedNotices = allNotices.sort((a, b) => {
+      const dateA = parseDate(a.details?.date)
+      const dateB = parseDate(b.details?.date)
+
+      return dateB - dateA // Sort by latest date first
+    })
+
+    const latestThree = sortedNotices.slice(0, 3)
+    setNotices(latestThree)
+    setNoticesVersion((prev) => prev + 1)
+    console.log("[v0] 저장된 공지사항 데이터 사용:", allNotices.length, "개")
+    console.log("[v0] 공지사항 동기화 완료:", latestThree.length, "개")
+  }
+
+  const handleEditNotice = (notice) => {
+    if (!requireAuth()) return
+    setEditingNotice(notice)
+  }
+
+  const handleDeleteNotice = (noticeId) => {
+    if (!requireAuth()) return
+    if (confirm("이 공지사항을 삭제하시겠습니까?")) {
+      const allNotices = syncNoticesData()
+      const updatedNotices = allNotices.filter((notice) => notice.id !== noticeId)
+      saveNoticesData(updatedNotices)
+      syncNotices()
+      alert("공지사항이 삭제되었습니다.")
+    }
+  }
+
+  const handleAddNotice = (noticeData) => {
+    const allNotices = syncNoticesData()
+    const newNotice = {
+      id: Date.now().toString(),
+      ...noticeData,
+      date: new Date().toLocaleDateString("ko-KR"),
+    }
+    const updatedNotices = [newNotice, ...allNotices]
+    saveNoticesData(updatedNotices)
+    syncNotices()
+    setIsAddNoticeOpen(false)
+    alert("공지사항이 추가되었습니다.")
+  }
+
+  const handleUpdateNotice = (noticeData) => {
+    const allNotices = syncNoticesData()
+    const updatedNotices = allNotices.map((notice) =>
+      notice.id === editingNotice.id ? { ...notice, ...noticeData } : notice,
+    )
+    saveNoticesData(updatedNotices)
+    syncNotices()
+    setEditingNotice(null)
+    alert("공지사항이 수정되었습니다.")
+  }
+
   const loadData = () => {
     try {
-      const savedActivities = localStorage.getItem("homepage-activities")
       const savedNews = localStorage.getItem("homepage-news")
-
-      if (savedActivities) {
-        const parsed = JSON.parse(savedActivities)
-        setActivities(parsed)
-        console.log("[v0] 홈페이지 봉사활동 로드:", parsed.length, "개")
-      } else {
-        // 기본 데이터
-        const defaultActivities = [
-          {
-            id: 1,
-            title: "지역사회 기부금 전달",
-            date: "2025년 7월 22일",
-            location: "경북장애인자립생활센터",
-            description: "지역 취약계층 지원을 위한 기부금 전달",
-            amount: "200만원",
-            participants: "6명",
-            type: "기부활동",
-            image: "/images/donation-activity.png",
-          },
-        ]
-        setActivities(defaultActivities)
-        localStorage.setItem("homepage-activities", JSON.stringify(defaultActivities))
-      }
 
       if (savedNews) {
         const parsed = JSON.parse(savedNews)
@@ -113,16 +160,7 @@ export default function HomePage() {
     }
   }
 
-  const saveActivities = (data) => {
-    try {
-      localStorage.setItem("homepage-activities", JSON.stringify(data))
-      console.log("[v0] 홈페이지 봉사활동 저장:", data.length, "개")
-    } catch (error) {
-      console.error("[v0] 봉사활동 저장 오류:", error)
-    }
-  }
-
-  const saveNews = (data) => {
+  const saveMemberNews = (data) => {
     try {
       localStorage.setItem("homepage-news", JSON.stringify(data))
       console.log("[v0] 홈페이지 회원소식 저장:", data.length, "개")
@@ -131,62 +169,28 @@ export default function HomePage() {
     }
   }
 
-  const handleSaveActivity = () => {
-    if (!activityForm.title || !activityForm.date) {
-      alert("제목과 날짜는 필수입니다.")
-      return
-    }
-
-    const newActivity = {
-      id: editingActivity ? editingActivity.id : Date.now(),
-      ...activityForm,
-    }
-
-    let updatedActivities
-    if (editingActivity) {
-      updatedActivities = activities.map((a) => (a.id === editingActivity.id ? newActivity : a))
-    } else {
-      updatedActivities = [...activities, newActivity]
-    }
-
-    setActivities(updatedActivities)
-    saveActivities(updatedActivities)
-
-    setIsAddActivityOpen(false)
-    setEditingActivity(null)
-    setActivityForm({
-      title: "",
-      date: "",
-      location: "",
-      description: "",
-      amount: "",
-      participants: "",
-      type: "봉사활동",
-      image: "",
-    })
-  }
-
   const handleSaveNews = () => {
-    if (!newsForm.title || !newsForm.date) {
-      alert("제목과 날짜는 필수입니다.")
+    if (!newsForm.title.trim() || !newsForm.date.trim()) {
+      alert("제목과 날짜를 입력해주세요.")
       return
     }
 
-    const newNews = {
+    const newsData = {
       id: editingNews ? editingNews.id : Date.now(),
       ...newsForm,
     }
 
     let updatedNews
     if (editingNews) {
-      updatedNews = memberNews.map((n) => (n.id === editingNews.id ? newNews : n))
+      updatedNews = memberNews.map((news) => (news.id === editingNews.id ? newsData : news))
+      alert("회원소식이 성공적으로 수정되었습니다!")
     } else {
-      updatedNews = [...memberNews, newNews]
+      updatedNews = [...memberNews, newsData]
+      alert("회원소식이 성공적으로 추가되었습니다!")
     }
 
     setMemberNews(updatedNews)
-    saveNews(updatedNews)
-
+    saveMemberNews(updatedNews)
     setIsAddNewsOpen(false)
     setEditingNews(null)
     setNewsForm({
@@ -197,31 +201,6 @@ export default function HomePage() {
     })
   }
 
-  const handleDeleteActivity = (id) => {
-    if (!requireAuth()) return
-    if (confirm("정말 삭제하시겠습니까?")) {
-      const updatedActivities = activities.filter((a) => a.id !== id)
-      setActivities(updatedActivities)
-      saveActivities(updatedActivities)
-    }
-  }
-
-  const handleDeleteNews = (id) => {
-    if (!requireAuth()) return
-    if (confirm("정말 삭제하시겠습니까?")) {
-      const updatedNews = memberNews.filter((n) => n.id !== id)
-      setMemberNews(updatedNews)
-      saveNews(updatedNews)
-    }
-  }
-
-  const handleEditActivity = (activity) => {
-    if (!requireAuth()) return
-    setEditingActivity(activity)
-    setActivityForm(activity)
-    setIsAddActivityOpen(true)
-  }
-
   const handleEditNews = (news) => {
     if (!requireAuth()) return
     setEditingNews(news)
@@ -229,54 +208,18 @@ export default function HomePage() {
     setIsAddNewsOpen(true)
   }
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setActivityForm((prev) => ({ ...prev, image: e.target.result }))
-      }
-      reader.readAsDataURL(file)
+  const handleDeleteNews = (id) => {
+    if (!requireAuth()) return
+    if (confirm("이 회원소식을 삭제하시겠습니까?")) {
+      const updatedNews = memberNews.filter((news) => news.id !== id)
+      setMemberNews(updatedNews)
+      saveMemberNews(updatedNews)
+      alert("회원소식이 삭제되었습니다.")
     }
   }
 
   useEffect(() => {
     loadData()
-
-    const syncNotices = () => {
-      const allNotices = syncNoticesData()
-
-      const parseDate = (dateStr) => {
-        if (!dateStr) return new Date(0)
-
-        // Handle Korean date format like "2025.09.04목" or "2025.08.28.목"
-        const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
-        const parts = cleanDate.split(".")
-
-        if (parts.length >= 3) {
-          const year = Number.parseInt(parts[0])
-          const month = Number.parseInt(parts[1]) - 1
-          const day = Number.parseInt(parts[2])
-          return new Date(year, month, day)
-        }
-
-        return new Date(dateStr)
-      }
-
-      const sortedNotices = allNotices.sort((a, b) => {
-        const dateA = parseDate(a.details?.date)
-        const dateB = parseDate(b.details?.date)
-
-        return dateB - dateA // Sort by latest date first
-      })
-
-      const latestThree = sortedNotices.slice(0, 3)
-      setLatestNotices(latestThree)
-      setNoticesVersion((prev) => prev + 1)
-      console.log("[v0] 저장된 공지사항 데이터 사용:", allNotices.length, "개")
-      console.log("[v0] 공지사항 동기화 완료:", latestThree.length, "개")
-    }
-
     syncNotices()
 
     const handleStorageChange = (e) => {
@@ -291,19 +234,12 @@ export default function HomePage() {
       syncNotices()
     }
 
-    const handleFocus = () => {
-      syncNotices()
-      loadData()
-    }
-
     window.addEventListener("storage", handleStorageChange)
     window.addEventListener("noticesUpdated", handleNoticesUpdate)
-    window.addEventListener("focus", handleFocus)
 
     return () => {
       window.removeEventListener("storage", handleStorageChange)
       window.removeEventListener("noticesUpdated", handleNoticesUpdate)
-      window.removeEventListener("focus", handleFocus)
     }
   }, [])
 
@@ -401,8 +337,8 @@ export default function HomePage() {
               </div>
 
               <div className="space-y-1 max-w-4xl mx-auto">
-                {latestNotices.length > 0 ? (
-                  latestNotices.map((notice) => (
+                {notices.length > 0 ? (
+                  notices.map((notice) => (
                     <Card
                       key={`${notice.id}-${noticesVersion}`}
                       className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-r from-white to-gray-50"
@@ -463,234 +399,49 @@ export default function HomePage() {
               </div>
 
               <div className="text-center mt-3">
-                <Button
-                  variant="outline"
-                  asChild
-                  className="font-semibold px-3 py-1 text-sm rounded-full border-2 border-blue-200 hover:bg-blue-50 transition-all bg-transparent"
-                >
-                  <Link href="/notices">모든 공지사항 보기</Link>
-                </Button>
-              </div>
-            </div>
-          </section>
-
-          <section className="py-16 bg-gray-50" aria-labelledby="activities-heading">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 id="activities-heading" className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-                  최근 봉사활동
-                </h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  경주중앙로타리클럽의 지역사회를 위한 다양한 봉사활동을 소개합니다.
-                </p>
-                <div className="mt-6">
-                  <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        onClick={() => {
-                          if (!requireAuth()) return
-                          setEditingActivity(null)
-                          setActivityForm({
-                            title: "",
-                            date: "",
-                            location: "",
-                            description: "",
-                            amount: "",
-                            participants: "",
-                            type: "봉사활동",
-                            image: "",
-                          })
-                        }}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />새 봉사활동 추가
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle>{editingActivity ? "봉사활동 수정" : "새 봉사활동 추가"}</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="title">제목 *</Label>
-                          <Input
-                            id="title"
-                            value={activityForm.title}
-                            onChange={(e) => setActivityForm((prev) => ({ ...prev, title: e.target.value }))}
-                            placeholder="봉사활동 제목을 입력하세요"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="date">날짜 *</Label>
-                            <Input
-                              id="date"
-                              value={activityForm.date}
-                              onChange={(e) => setActivityForm((prev) => ({ ...prev, date: e.target.value }))}
-                              placeholder="2025년 1월 1일"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="type">유형</Label>
-                            <Select
-                              value={activityForm.type}
-                              onValueChange={(value) => setActivityForm((prev) => ({ ...prev, type: value }))}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="봉사활동">봉사활동</SelectItem>
-                                <SelectItem value="기부활동">기부활동</SelectItem>
-                                <SelectItem value="교육지원">교육지원</SelectItem>
-                                <SelectItem value="환경보호">환경보호</SelectItem>
-                                <SelectItem value="장학사업">장학사업</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="location">장소</Label>
-                          <Input
-                            id="location"
-                            value={activityForm.location}
-                            onChange={(e) => setActivityForm((prev) => ({ ...prev, location: e.target.value }))}
-                            placeholder="활동 장소를 입력하세요"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="description">설명</Label>
-                          <Textarea
-                            id="description"
-                            value={activityForm.description}
-                            onChange={(e) => setActivityForm((prev) => ({ ...prev, description: e.target.value }))}
-                            placeholder="봉사활동에 대한 설명을 입력하세요"
-                            rows={3}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="amount">기부금액</Label>
-                            <Input
-                              id="amount"
-                              value={activityForm.amount}
-                              onChange={(e) => setActivityForm((prev) => ({ ...prev, amount: e.target.value }))}
-                              placeholder="200만원"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="participants">참가자 수</Label>
-                            <Input
-                              id="participants"
-                              value={activityForm.participants}
-                              onChange={(e) => setActivityForm((prev) => ({ ...prev, participants: e.target.value }))}
-                              placeholder="10명"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="image">사진</Label>
-                          <div className="space-y-2">
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              className="cursor-pointer"
-                            />
-                            <Input
-                              value={activityForm.image}
-                              onChange={(e) => setActivityForm((prev) => ({ ...prev, image: e.target.value }))}
-                              placeholder="또는 이미지 URL을 입력하세요"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" onClick={() => setIsAddActivityOpen(false)}>
-                            취소
-                          </Button>
-                          <Button onClick={handleSaveActivity}>{editingActivity ? "수정" : "추가"}</Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                <div className="flex justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingNotices(!isEditingNotices)}
+                    className="font-semibold px-3 py-1 text-sm rounded-full border-2 border-blue-200 hover:bg-blue-50 transition-all bg-transparent"
+                  >
+                    {isEditingNotices ? "편집 완료" : "공지사항 관리"}
+                  </Button>
+                  {isEditingNotices && (
+                    <Button
+                      onClick={() => setIsAddNoticeOpen(true)}
+                      className="font-semibold px-3 py-1 text-sm rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      새 공지사항 추가
+                    </Button>
+                  )}
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {activities.map((activity) => (
-                  <Card key={activity.id} className="hover:shadow-xl transition-all duration-300 overflow-hidden">
-                    <div className="relative">
-                      {activity.image && (
-                        <div className="h-48 relative">
-                          <Image
-                            src={activity.image || "/placeholder.svg"}
-                            alt={activity.title}
-                            fill
-                            className="object-cover"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg?height=200&width=400"
-                            }}
-                          />
-                        </div>
-                      )}
-                      <div className="absolute top-2 right-2 flex gap-1">
+                {isEditingNotices && notices.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {notices.map((notice) => (
+                      <div key={notice.id} className="flex justify-center gap-2">
                         <Button
+                          variant="outline"
                           size="sm"
-                          variant="secondary"
-                          onClick={() => handleEditActivity(activity)}
-                          className="h-8 w-8 p-0 bg-white/80 hover:bg-white"
+                          onClick={() => handleEditNotice(notice)}
+                          className="text-xs"
                         >
-                          <Edit className="h-3 w-3" />
+                          "{notice.title}" 수정
                         </Button>
                         <Button
-                          size="sm"
                           variant="destructive"
-                          onClick={() => handleDeleteActivity(activity.id)}
-                          className="h-8 w-8 p-0 bg-red-500/80 hover:bg-red-600"
+                          size="sm"
+                          onClick={() => handleDeleteNotice(notice.id)}
+                          className="text-xs"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          삭제
                         </Button>
                       </div>
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                          {activity.type}
-                        </Badge>
-                        <span className="text-sm text-gray-500">{activity.date}</span>
-                      </div>
-                      <h3 className="text-xl font-bold mb-3 text-gray-900">{activity.title}</h3>
-                      <p className="text-gray-600 mb-4 line-clamp-3">{activity.description}</p>
-                      <div className="space-y-2 text-sm">
-                        {activity.location && (
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <MapPin className="h-4 w-4" />
-                            <span>{activity.location}</span>
-                          </div>
-                        )}
-                        {activity.amount && (
-                          <div className="flex items-center gap-2 text-green-600 font-semibold">
-                            <Banknote className="h-4 w-4" />
-                            <span>{activity.amount}</span>
-                          </div>
-                        )}
-                        {activity.participants && (
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <span>👥 {activity.participants}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    ))}
+                  </div>
+                )}
               </div>
-
-              {activities.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">아직 등록된 봉사활동이 없습니다.</p>
-                  <p className="text-gray-400 text-sm mt-2">새 봉사활동을 추가해보세요.</p>
-                </div>
-              )}
             </div>
           </section>
 
@@ -1107,6 +858,127 @@ export default function HomePage() {
 
       <Footer />
       <AdminPanel />
+
+      <Dialog open={isAddNoticeOpen} onOpenChange={setIsAddNoticeOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>새 공지사항 추가</DialogTitle>
+          </DialogHeader>
+          <NoticeForm onSubmit={handleAddNotice} onCancel={() => setIsAddNoticeOpen(false)} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editingNotice} onOpenChange={() => setEditingNotice(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>공지사항 수정</DialogTitle>
+          </DialogHeader>
+          <NoticeForm notice={editingNotice} onSubmit={handleUpdateNotice} onCancel={() => setEditingNotice(null)} />
+        </DialogContent>
+      </Dialog>
     </div>
+  )
+}
+
+function NoticeForm({ notice, onSubmit, onCancel }) {
+  const [formData, setFormData] = useState({
+    title: notice?.title || "",
+    content: notice?.content || "",
+    type: notice?.type || "일반",
+    details: {
+      date: notice?.details?.date || "",
+      time: notice?.details?.time || "",
+      location: notice?.details?.location || "",
+    },
+  })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!formData.title.trim() || !formData.content.trim()) {
+      alert("제목과 내용을 입력해주세요.")
+      return
+    }
+    onSubmit(formData)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="notice-title">제목</Label>
+        <Input
+          id="notice-title"
+          type="text"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          placeholder="공지사항 제목을 입력하세요"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="notice-content">내용</Label>
+        <Textarea
+          id="notice-content"
+          value={formData.content}
+          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+          placeholder="공지사항 내용을 입력하세요"
+          rows={4}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="notice-type">유형</Label>
+        <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="일반">일반</SelectItem>
+            <SelectItem value="중요">중요</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label htmlFor="notice-date">날짜</Label>
+          <Input
+            id="notice-date"
+            type="text"
+            value={formData.details.date}
+            onChange={(e) => setFormData({ ...formData, details: { ...formData.details, date: e.target.value } })}
+            placeholder="2025.01.15"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="notice-time">시간</Label>
+          <Input
+            id="notice-time"
+            type="text"
+            value={formData.details.time}
+            onChange={(e) => setFormData({ ...formData, details: { ...formData.details, time: e.target.value } })}
+            placeholder="오후 7시"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="notice-location">장소</Label>
+          <Input
+            id="notice-location"
+            type="text"
+            value={formData.details.location}
+            onChange={(e) => setFormData({ ...formData, details: { ...formData.details, location: e.target.value } })}
+            placeholder="클럽회관"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          취소
+        </Button>
+        <Button type="submit">{notice ? "수정" : "추가"}</Button>
+      </div>
+    </form>
   )
 }
