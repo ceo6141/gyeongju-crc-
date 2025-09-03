@@ -314,11 +314,14 @@ export default function HomePage() {
                 <div className="lg:col-span-2 relative flex justify-center">
                   <div className="w-full h-[350px] lg:h-[400px] relative rounded-2xl shadow-2xl overflow-hidden">
                     <Image
-                      src="/placeholder.svg?height=400&width=600"
+                      src="/images/club-photo.png"
                       alt="경주중앙로타리클럽 제21대 22대 회장단 이취임식 - 천상 天翔 최용환 회장"
                       fill
                       className="object-cover"
                       priority
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg?height=400&width=600&text=경주중앙로타리클럽+단체사진"
+                      }}
                     />
                   </div>
                 </div>
