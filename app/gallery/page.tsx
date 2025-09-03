@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Edit, Trash2, Camera, Settings, X, Search, Calendar, MapPin, Users, Banknote } from "lucide-react"
+import { Plus, Edit, Trash2, Camera, X, Search, Calendar, MapPin, Users, Banknote } from "lucide-react"
 import Image from "next/image"
 import { Navigation } from "@/components/navigation"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
@@ -408,15 +408,18 @@ export default function GalleryPage() {
   }
 
   const handleEditClick = (image: GalleryImage) => {
+    console.log("[v0] 수정 요청:", image.title)
     requireAuth(() => openEditDialog(image))
   }
 
   const handleDeleteClick = (id: string) => {
     requireAuth(() => {
+      console.log("[v0] 삭제 요청:", id)
       if (confirm("이 사진을 삭제하시겠습니까?")) {
         const updatedImages = images.filter((img) => img.id !== id)
         saveImages(updatedImages)
         console.log("[v0] 이미지 삭제 완료:", id)
+        alert("사진이 성공적으로 삭제되었습니다!")
       }
     })
   }
@@ -497,6 +500,11 @@ export default function GalleryPage() {
     requireAuth(() => {
       console.log("[v0] 편집모드 변경:", !isEditMode)
       setIsEditMode(!isEditMode)
+      if (!isEditMode) {
+        alert("편집 모드가 활성화되었습니다. 이제 사진을 수정하거나 삭제할 수 있습니다.")
+      } else {
+        alert("편집 모드가 비활성화되었습니다.")
+      }
     })
   }
 
@@ -737,14 +745,19 @@ export default function GalleryPage() {
             <TabsContent value="gallery">
               <div className="mb-8 text-center flex justify-center gap-4">
                 <Button
-                  variant={isEditMode ? "default" : "outline"}
-                  size="lg"
-                  className="gap-2"
                   onClick={handleEditModeToggle}
+                  variant={isEditMode ? "destructive" : "default"}
+                  className="mb-4"
                 >
-                  <Settings className="h-5 w-5" />
-                  {isEditMode ? "편집모드 종료" : "편집모드"}
+                  {isEditMode ? "편집 모드 종료" : "사진 편집하기 (관리자)"}
                 </Button>
+                {isEditMode && (
+                  <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg">
+                    <p className="text-yellow-800 font-medium">
+                      📝 편집 모드 활성화됨 - 각 사진의 수정/삭제 버튼을 클릭하세요
+                    </p>
+                  </div>
+                )}
 
                 {isEditMode && (
                   <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
