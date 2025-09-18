@@ -9,6 +9,8 @@ import { Edit, Trash2, Save, X, Shield } from "lucide-react"
 import Image from "next/image"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
+import { AdminTestPanel } from "@/components/admin-test-panel"
+import { DataBackup } from "@/components/data-backup"
 
 export function AdminPanel() {
   const { isAuthenticated, showLogin, setShowLogin, requireAuth, handleLoginSuccess, logout } = useAdminAuth()
@@ -112,6 +114,14 @@ export function AdminPanel() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div>
+            <h3 className="font-semibold mb-3">관리자 도구</h3>
+            <div className="flex flex-wrap gap-2">
+              <AdminTestPanel />
+              <DataBackup />
+            </div>
+          </div>
+
           <div>
             <h3 className="font-semibold mb-3">배경 이미지 관리</h3>
 

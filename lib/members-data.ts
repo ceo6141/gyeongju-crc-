@@ -285,16 +285,6 @@ export const membersData: Member[] = [
     birthDate: "1979.09.06",
   },
   {
-    name: "윤대한",
-    nameHanja: "尹大漢",
-    memberNo: "10622670",
-    company: "(주)경주이엔씨",
-    phone: "010-2932-5820",
-    joinDate: "2019.06.20",
-    nickname: "",
-    birthDate: "1979.06.20",
-  },
-  {
     name: "윤태열",
     nameHanja: "尹泰烈",
     memberNo: "6337314",
@@ -425,6 +415,16 @@ export const membersData: Member[] = [
     birthDate: "1973.07.02",
   },
   {
+    name: "정연철",
+    nameHanja: "鄭鉛鐵",
+    memberNo: "9171000",
+    company: "소마루",
+    phone: "010-9972-7388",
+    joinDate: "2015.01.20",
+    nickname: "",
+    birthDate: "1971.01.20",
+  },
+  {
     name: "정재근",
     nameHanja: "鄭在根",
     memberNo: "6337300",
@@ -471,8 +471,7 @@ export const membersData: Member[] = [
     company: "영남산업(주)",
     phone: "010-2126-9775",
     joinDate: "2005.05.20",
-    nickname: "천상",
-    title: "제22대 회장",
+    nickname: "",
     birthDate: "1967.05.20",
   },
   {
@@ -504,16 +503,6 @@ export const membersData: Member[] = [
     joinDate: "2021.07.01",
     nickname: "",
     birthDate: "1983.07.01",
-  },
-  {
-    name: "최지호",
-    nameHanja: "",
-    memberNo: "8624754",
-    company: "우영건설/우영스틸",
-    phone: "010-8349-5567",
-    joinDate: "2012.07.01",
-    nickname: "",
-    birthDate: "1960.07.01",
   },
   {
     name: "최태복",
@@ -569,7 +558,7 @@ export const membersData: Member[] = [
     name: "황영석",
     nameHanja: "黃瑛晳",
     memberNo: "9671628",
-    company: "경주시외버스터미널,경주벼룩시장",
+    company: "경주시외버스터미널, 경주벼룩시장",
     phone: "010-4506-0660",
     joinDate: "2016.07.21",
     nickname: "",
@@ -678,22 +667,22 @@ export const membersData: Member[] = [
   {
     name: "엄만섭",
     nameHanja: "",
-    memberNo: "",
-    company: "",
-    phone: "",
-    joinDate: "2025.08.21",
+    memberNo: "12412833",
+    company: "엄만섭법무사",
+    phone: "010-6578-3205",
+    joinDate: "2025.08.01",
     nickname: "",
-    birthDate: "1971.08.21",
+    birthDate: "1971.08.01",
   },
   {
     name: "남태연",
     nameHanja: "",
-    memberNo: "",
+    memberNo: "12378007",
     company: "손님올까",
     phone: "010-4734-8556",
-    joinDate: "2025.06.19",
+    joinDate: "2025.07.01",
     nickname: "",
-    birthDate: "1971.06.19",
+    birthDate: "1971.07.01",
   },
 ]
 
@@ -723,7 +712,7 @@ export const getAverageAge = () => {
 export const resetMembersToDefault = () => {
   if (typeof window !== "undefined") {
     localStorage.removeItem("gyeongju-rotary-members")
-    console.log("[v0] Reset members data to default - 69 members")
+    console.log("[v0] Reset members data to default - 67 members")
   }
 }
 

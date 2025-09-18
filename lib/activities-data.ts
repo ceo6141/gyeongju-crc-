@@ -44,6 +44,50 @@ const getDefaultActivitiesData = (): Activity[] => [
     type: "봉사활동",
     image: "/placeholder.svg?height=300&width=400",
   },
+  {
+    id: 3,
+    title: "독거노인 도시락 배달",
+    date: "2025.05.30",
+    location: "경주시 전역",
+    description: "독거노인분들께 따뜻한 도시락을 배달했습니다.",
+    amount: "",
+    participants: "15명",
+    type: "봉사활동",
+    image: "/placeholder.svg?height=300&width=400",
+  },
+  {
+    id: 4,
+    title: "장학금 전달식",
+    date: "2025.04.20",
+    location: "경주고등학교",
+    description: "우수한 학생들에게 장학금을 전달했습니다.",
+    amount: "500만원",
+    participants: "8명",
+    type: "교육지원",
+    image: "/placeholder.svg?height=300&width=400",
+  },
+  {
+    id: 5,
+    title: "의료봉사활동",
+    date: "2025.03.15",
+    location: "경주시 보건소",
+    description: "지역주민들을 위한 무료 건강검진을 실시했습니다.",
+    amount: "",
+    participants: "25명",
+    type: "의료봉사",
+    image: "/placeholder.svg?height=300&width=400",
+  },
+  {
+    id: 6,
+    title: "어린이집 후원",
+    date: "2025.02.28",
+    location: "햇살어린이집",
+    description: "지역 어린이집에 교육용품과 간식을 후원했습니다.",
+    amount: "150만원",
+    participants: "10명",
+    type: "아동지원",
+    image: "/placeholder.svg?height=300&width=400",
+  },
 ]
 
 const getDefaultMemberNewsData = (): MemberNews[] => [
@@ -107,7 +151,6 @@ export const saveActivitiesData = (activities: Activity[]): boolean => {
   try {
     localStorage.setItem(ACTIVITIES_STORAGE_KEY, JSON.stringify(activities))
     console.log("[v0] 봉사활동 데이터 저장 완료:", activities.length, "개")
-    console.log("[v0] 봉사활동 데이터:", activities)
     return true
   } catch (error) {
     console.error("[v0] 봉사활동 데이터 저장 오류:", error)
@@ -119,7 +162,6 @@ export const saveMemberNewsData = (memberNews: MemberNews[]): boolean => {
   try {
     localStorage.setItem(MEMBER_NEWS_STORAGE_KEY, JSON.stringify(memberNews))
     console.log("[v0] 회원소식 데이터 저장 완료:", memberNews.length, "개")
-    console.log("[v0] 회원소식 데이터:", memberNews)
     return true
   } catch (error) {
     console.error("[v0] 회원소식 데이터 저장 오류:", error)

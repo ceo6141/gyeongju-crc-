@@ -12,7 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Edit, Calendar, MapPin, Users, Banknote, Trash2 } from "lucide-react"
 
 interface Activity {
   id: number
@@ -42,204 +41,138 @@ export default function ActivitiesPage() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
-  const getDefaultActivities = (): Activity[] => [
-    {
-      id: 1,
-      title: "APEC 회원국 초청 국제 유소년대회 일본 테소로팀 응원 봉사",
-      date: "2025.01.20",
-      location: "경주월드컵경기장",
-      description:
-        "APEC 회원국 초청 국제 유소년 축구대회에서 일본 테소로팀을 응원하며 국제친선과 스포츠 교류에 기여했습니다.",
-      participants: "25명",
-      type: "국제교류",
-      image: "/images/apec-youth-soccer.jpg",
-    },
-    {
-      id: 2,
-      title: "지역사회 기부금 전달",
-      date: "2025.01.15",
-      location: "경주시청",
-      description: "경주중앙로타리클럽에서 지역사회 발전을 위한 기부금을 전달했습니다.",
-      amount: "200만원",
-      participants: "15명",
-      type: "기부활동",
-      image: "/images/donation-ceremony.jpg",
-    },
-  ]
-
-  const getDefaultMemberNews = (): MemberNews[] => [
-    {
-      id: 1,
-      title: "신입회원 환영식",
-      date: "2025년 1월 10일",
-      content: "새로운 회원들을 맞이하는 환영식을 개최했습니다. 앞으로 함께 봉사활동에 참여하게 될 것입니다.",
-      type: "회원소식",
-    },
-    {
-      id: 2,
-      title: "정기총회 개최",
-      date: "2025년 1월 25일",
-      content: "2025년도 정기총회를 개최하여 올해 사업계획과 예산을 승인했습니다.",
-      type: "회원소식",
-    },
-  ]
-
-  const loadData = () => {
-    console.log("[v0] 봉사활동 데이터 로딩 시작")
-    try {
-      const savedActivities = localStorage.getItem("homepage-activities")
-      const savedMemberNews = localStorage.getItem("homepage-news")
-
-      const activitiesData = savedActivities ? JSON.parse(savedActivities) : getDefaultActivities()
-      const memberNewsData = savedMemberNews ? JSON.parse(savedMemberNews) : getDefaultMemberNews()
-
-      setActivities(activitiesData)
-      setMemberNews(memberNewsData)
-
-      console.log(
-        "[v0] 데이터 로딩 완료 - 봉사활동:",
-        activitiesData.length,
-        "개, 회원소식:",
-        memberNewsData.length,
-        "개",
-      )
-    } catch (error) {
-      console.error("[v0] 데이터 로딩 오류:", error)
-      setActivities(getDefaultActivities())
-      setMemberNews(getDefaultMemberNews())
-    }
-  }
-
   const saveData = (newActivities: Activity[], newMemberNews: MemberNews[]) => {
+    console.log("[v0] 데이터 저장:", { activities: newActivities.length, news: newMemberNews.length })
+
     try {
-      const activitiesJson = JSON.stringify(newActivities)
-      const newsJson = JSON.stringify(newMemberNews)
+      const activitiesData = JSON.stringify(newActivities)
+      const newsData = JSON.stringify(newMemberNews)
 
-      // localStorage 용량 체크 (5MB 제한)
-      const totalSize = activitiesJson.length + newsJson.length
-      if (totalSize > 5 * 1024 * 1024) {
-        console.error("[v0] localStorage 용량 초과:", Math.round(totalSize / 1024), "KB")
-        alert("데이터 용량이 너무 큽니다. 이미지 크기를 줄여주세요.")
-        return false
-      }
-
-      localStorage.setItem("homepage-activities", activitiesJson)
-      localStorage.setItem("homepage-news", newsJson)
+      localStorage.setItem("rotary-activities", activitiesData)
+      localStorage.setItem("rotary-member-news", newsData)
+      localStorage.setItem("rotary-lastUpdated", Date.now().toString())
 
       setActivities([...newActivities])
       setMemberNews([...newMemberNews])
 
-      setTimeout(() => {
-        const savedActivities = localStorage.getItem("homepage-activities")
-        const savedNews = localStorage.getItem("homepage-news")
+      console.log("[v0] localStorage 저장 성공:", {
+        activitiesSize: `${(activitiesData.length / 1024).toFixed(2)}KB`,
+        newsSize: `${(newsData.length / 1024).toFixed(2)}KB`,
+      })
 
-        if (savedActivities && savedNews) {
-          const parsedActivities = JSON.parse(savedActivities)
-          const parsedNews = JSON.parse(savedNews)
-
-          // 강제로 상태 재설정
-          setActivities([...parsedActivities])
-          setMemberNews([...parsedNews])
-
-          if (parsedActivities.length === newActivities.length && parsedNews.length === newMemberNews.length) {
-            console.log(
-              "[v0] 데이터 저장 및 검증 완료 - 봉사활동:",
-              parsedActivities.length,
-              "개, 회원소식:",
-              parsedNews.length,
-              "개",
-            )
-
-            // 다른 페이지에 데이터 변경 알림
-            window.dispatchEvent(
-              new CustomEvent("activitiesUpdated", {
-                detail: { activities: parsedActivities, news: parsedNews },
-              }),
-            )
-
-            window.dispatchEvent(new Event("storage"))
-          } else {
-            console.error("[v0] 데이터 저장 검증 실패 - 예상:", newActivities.length, "실제:", parsedActivities.length)
-            // 재시도
-            loadData()
-          }
-        } else {
-          console.error("[v0] localStorage 저장 실패")
-          loadData()
-        }
-      }, 200)
-
-      console.log(
-        "[v0] 데이터 저장 시작 - 봉사활동:",
-        newActivities.length,
-        "개, 회원소식:",
-        newMemberNews.length,
-        "개",
-      )
+      console.log("[v0] 데이터 저장 완료")
       return true
     } catch (error) {
-      console.error("[v0] 데이터 저장 오류:", error)
-      alert("데이터 저장 중 오류가 발생했습니다. 다시 시도해주세요.")
-      return false
+      console.error("[v0] localStorage 저장 실패:", error)
+      setActivities([...newActivities])
+      setMemberNews([...newMemberNews])
+      console.log("[v0] 메모리 저장소로 폴백")
+      return true
     }
   }
 
-  const requireAuth = (action: () => void) => {
-    if (isAuthenticated) {
-      action()
-    } else {
-      setPendingAction(() => action)
-      setShowPasswordDialog(true)
-    }
-  }
+  const loadData = () => {
+    console.log("[v0] 데이터 로딩 시작")
 
-  const handlePasswordSubmit = () => {
-    if (password === "1234") {
-      setIsAuthenticated(true)
-      setShowPasswordDialog(false)
-      setPassword("")
-      if (pendingAction) {
-        pendingAction()
-        setPendingAction(null)
+    if (activities.length > 0 || memberNews.length > 0) {
+      console.log("[v0] 메모리에 기존 데이터 존재 - 로딩 건너뛰기:", {
+        activities: activities.length,
+        news: memberNews.length,
+      })
+      return
+    }
+
+    try {
+      const savedActivities = localStorage.getItem("rotary-activities")
+      const savedNews = localStorage.getItem("rotary-member-news")
+      const lastUpdated = localStorage.getItem("rotary-lastUpdated")
+
+      if (savedActivities && savedNews) {
+        const activities = JSON.parse(savedActivities)
+        const news = JSON.parse(savedNews)
+
+        console.log("[v0] localStorage에서 데이터 복원:", {
+          activities: activities.length,
+          news: news.length,
+          lastUpdated: lastUpdated ? new Date(Number.parseInt(lastUpdated)).toLocaleString() : "알 수 없음",
+        })
+
+        setActivities(activities)
+        setMemberNews(news)
+      } else {
+        const defaultActivities = [
+          {
+            id: 1,
+            title: "지역사회 기부금 전달",
+            date: "2025.07.22",
+            location: "경주시청",
+            description: "경주 지역 소외계층을 위한 기부금을 전달했습니다.",
+            amount: "200만원",
+            participants: "12명",
+            type: "기부활동",
+            image: "/placeholder.svg?height=300&width=400",
+          },
+          {
+            id: 2,
+            title: "환경정화 봉사활동",
+            date: "2025.06.15",
+            location: "대릉원 일대",
+            description: "경주 대릉원 주변 환경정화 활동을 실시했습니다.",
+            amount: "",
+            participants: "20명",
+            type: "봉사활동",
+            image: "/placeholder.svg?height=300&width=400",
+          },
+        ]
+
+        const defaultNews = [
+          {
+            id: 1,
+            title: "신입회원 환영식",
+            date: "2025년 8월 10일",
+            content: "새로운 회원들을 환영하는 시간을 가졌습니다.",
+            type: "회원소식",
+          },
+          {
+            id: 2,
+            title: "정기총회 개최",
+            date: "2025년 7월 25일",
+            content: "2025-26년도 정기총회가 성공적으로 개최되었습니다.",
+            type: "회원소식",
+          },
+        ]
+
+        console.log("[v0] 기본 데이터로 초기화")
+        setActivities(defaultActivities)
+        setMemberNews(defaultNews)
+        saveData(defaultActivities, defaultNews)
       }
-      console.log("[v0] 관리자 인증 성공")
-    } else {
-      alert("비밀번호가 틀렸습니다.")
-      console.log("[v0] 관리자 인증 실패")
+    } catch (error) {
+      console.error("[v0] localStorage 로딩 실패:", error)
+      console.log("[v0] 빈 데이터로 초기화")
+      setActivities([])
+      setMemberNews([])
     }
+
+    console.log("[v0] 데이터 로딩 완료")
   }
 
   useEffect(() => {
     loadData()
-    console.log("[v0] 봉사활동 페이지 초기화 완료")
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "homepage-activities" || e.key === "homepage-news") {
-        console.log("[v0] 봉사활동 페이지 Storage 변경 감지, 재로드")
-        loadData()
-      }
-    }
-
-    const handleFocus = () => {
-      console.log("[v0] 봉사활동 페이지 포커스, 데이터 재로드")
-      loadData()
-    }
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log("[v0] 봉사활동 페이지 가시성 변경, 데이터 재로드")
-        loadData()
+        console.log("[v0] 페이지 포커스 복귀 - 메모리 데이터 유지")
+        // loadData() 호출 제거 - 메모리 데이터를 보존
       }
     }
 
-    window.addEventListener("storage", handleStorageChange)
-    window.addEventListener("focus", handleFocus)
     document.addEventListener("visibilitychange", handleVisibilityChange)
+    window.addEventListener("focus", handleVisibilityChange)
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange)
-      window.removeEventListener("focus", handleFocus)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
+      window.removeEventListener("focus", handleVisibilityChange)
     }
   }, [])
 
@@ -279,7 +212,6 @@ export default function ActivitiesPage() {
         image: "",
       })
       setIsDialogOpen(true)
-      console.log("[v0] 봉사활동 추가 다이얼로그 열기")
     })
   }
 
@@ -298,7 +230,6 @@ export default function ActivitiesPage() {
         image: activity.image || "",
       })
       setIsDialogOpen(true)
-      console.log("[v0] 봉사활동 수정 다이얼로그 열기:", activity.title)
     })
   }
 
@@ -306,63 +237,9 @@ export default function ActivitiesPage() {
     requireAuth(() => {
       const activity = activities.find((a) => a.id === id)
       if (activity && confirm(`"${activity.title}" 봉사활동을 삭제하시겠습니까?`)) {
-        console.log("[v0] 봉사활동 삭제 시작:", activity.title)
-
         const newActivities = activities.filter((a) => a.id !== id)
-
         if (saveData(newActivities, memberNews)) {
-          console.log("[v0] 봉사활동 삭제 완료")
           alert("봉사활동이 삭제되었습니다.")
-        } else {
-          alert("삭제 중 오류가 발생했습니다.")
-        }
-      }
-    })
-  }
-
-  const handleAddMemberNews = () => {
-    requireAuth(() => {
-      setIsEditing(false)
-      setEditingId(null)
-      setMemberNewsFormData({
-        title: "",
-        date: "",
-        content: "",
-        type: "회원소식",
-      })
-      setIsMemberNewsDialogOpen(true)
-      console.log("[v0] 회원소식 추가 다이얼로그 열기")
-    })
-  }
-
-  const handleEditMemberNews = (news: MemberNews) => {
-    requireAuth(() => {
-      setIsEditing(true)
-      setEditingId(news.id)
-      setMemberNewsFormData({
-        title: news.title,
-        date: news.date,
-        content: news.content,
-        type: news.type,
-      })
-      setIsMemberNewsDialogOpen(true)
-      console.log("[v0] 회원소식 수정 다이얼로그 열기:", news.title)
-    })
-  }
-
-  const handleDeleteMemberNews = (id: number) => {
-    requireAuth(() => {
-      const news = memberNews.find((n) => n.id === id)
-      if (news && confirm(`"${news.title}" 회원소식을 삭제하시겠습니까?`)) {
-        console.log("[v0] 회원소식 삭제 시작:", news.title)
-
-        const newMemberNews = memberNews.filter((n) => n.id !== id)
-
-        if (saveData(activities, newMemberNews)) {
-          console.log("[v0] 회원소식 삭제 완료")
-          alert("회원소식이 삭제되었습니다.")
-        } else {
-          alert("삭제 중 오류가 발생했습니다.")
         }
       }
     })
@@ -370,7 +247,6 @@ export default function ActivitiesPage() {
 
   const handleSubmitActivity = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] 봉사활동 저장 시작")
 
     if (!formData.title || !formData.date) {
       alert("제목과 날짜는 필수입니다.")
@@ -392,23 +268,58 @@ export default function ActivitiesPage() {
     let newActivities: Activity[]
     if (isEditing) {
       newActivities = activities.map((a) => (a.id === editingId ? newActivity : a))
-      console.log("[v0] 봉사활동 수정:", newActivity.title)
     } else {
       newActivities = [newActivity, ...activities]
-      console.log("[v0] 봉사활동 추가:", newActivity.title)
     }
 
     if (saveData(newActivities, memberNews)) {
       setIsDialogOpen(false)
-      alert(isEditing ? "봉사활동이 성공적으로 수정되었습니다!" : "봉사활동이 성공적으로 추가되었습니다!")
-    } else {
-      alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.")
+      alert(isEditing ? "봉사활동이 수정되었습니다!" : "봉사활동이 추가되었습니다!")
     }
+  }
+
+  const handleAddMemberNews = () => {
+    requireAuth(() => {
+      setIsEditing(false)
+      setEditingId(null)
+      setMemberNewsFormData({
+        title: "",
+        date: "",
+        content: "",
+        type: "회원소식",
+      })
+      setIsMemberNewsDialogOpen(true)
+    })
+  }
+
+  const handleEditMemberNews = (news: MemberNews) => {
+    requireAuth(() => {
+      setIsEditing(true)
+      setEditingId(news.id)
+      setMemberNewsFormData({
+        title: news.title,
+        date: news.date,
+        content: news.content,
+        type: news.type,
+      })
+      setIsMemberNewsDialogOpen(true)
+    })
+  }
+
+  const handleDeleteMemberNews = (id: number) => {
+    requireAuth(() => {
+      const news = memberNews.find((n) => n.id === id)
+      if (news && confirm(`"${news.title}" 회원소식을 삭제하시겠습니까?`)) {
+        const newMemberNews = memberNews.filter((n) => n.id !== id)
+        if (saveData(activities, newMemberNews)) {
+          alert("회원소식이 삭제되었습니다.")
+        }
+      }
+    })
   }
 
   const handleSubmitMemberNews = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] 회원소식 저장 시작")
 
     if (!memberNewsFormData.title || !memberNewsFormData.date || !memberNewsFormData.content) {
       alert("모든 필드를 입력해주세요.")
@@ -426,17 +337,13 @@ export default function ActivitiesPage() {
     let newMemberNews: MemberNews[]
     if (isEditing) {
       newMemberNews = memberNews.map((n) => (n.id === editingId ? newNews : n))
-      console.log("[v0] 회원소식 수정:", newNews.title)
     } else {
       newMemberNews = [newNews, ...memberNews]
-      console.log("[v0] 회원소식 추가:", newNews.title)
     }
 
     if (saveData(activities, newMemberNews)) {
       setIsMemberNewsDialogOpen(false)
-      alert(isEditing ? "회원소식이 성공적으로 수정되었습니다!" : "회원소식이 성공적으로 추가되었습니다!")
-    } else {
-      alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.")
+      alert(isEditing ? "회원소식이 수정되었습니다!" : "회원소식이 추가되었습니다!")
     }
   }
 
@@ -444,23 +351,39 @@ export default function ActivitiesPage() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    console.log("[v0] 사진 업로드 시작:", file.name, "크기:", Math.round(file.size / 1024), "KB")
+    console.log("[v0] 이미지 업로드 시작:", {
+      fileName: file.name,
+      fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`,
+      fileType: file.type,
+    })
 
     if (file.size > 5 * 1024 * 1024) {
       alert("파일 크기는 5MB 이하여야 합니다.")
       return
     }
 
+    if (!file.type.startsWith("image/")) {
+      alert("이미지 파일만 업로드할 수 있습니다.")
+      return
+    }
+
     const reader = new FileReader()
     reader.onload = (e) => {
       const result = e.target?.result as string
+      console.log("[v0] 파일 읽기 완료:", {
+        dataSize: `${(result.length / 1024).toFixed(2)}KB`,
+      })
 
       const img = new Image()
       img.onload = () => {
+        console.log("[v0] 이미지 로드 완료:", {
+          originalWidth: img.width,
+          originalHeight: img.height,
+        })
+
         const canvas = document.createElement("canvas")
         const ctx = canvas.getContext("2d")
 
-        // 최대 크기 800x600으로 제한
         const maxWidth = 800
         const maxHeight = 600
         let { width, height } = img
@@ -479,28 +402,72 @@ export default function ActivitiesPage() {
 
         canvas.width = width
         canvas.height = height
-
         ctx?.drawImage(img, 0, 0, width, height)
 
-        // 압축된 이미지를 base64로 변환 (품질 0.8)
         const compressedImage = canvas.toDataURL("image/jpeg", 0.8)
 
-        setFormData({ ...formData, image: compressedImage })
-        console.log(
-          "[v0] 사진 압축 완료 - 원본:",
-          Math.round(result.length / 1024),
-          "KB, 압축:",
-          Math.round(compressedImage.length / 1024),
-          "KB",
-        )
+        console.log("[v0] 이미지 압축 완료:", {
+          finalWidth: width,
+          finalHeight: height,
+          compressedSize: `${(compressedImage.length / 1024).toFixed(2)}KB`,
+        })
+
+        try {
+          const testData = { ...formData, image: compressedImage }
+          const testJson = JSON.stringify(testData)
+
+          if (testJson.length > 1024 * 1024) {
+            alert("압축된 이미지가 너무 큽니다. 더 작은 이미지를 사용해주세요.")
+            return
+          }
+
+          setFormData({ ...formData, image: compressedImage })
+          console.log("[v0] 이미지 업로드 성공")
+          alert("이미지가 성공적으로 업로드되었습니다!")
+        } catch (error) {
+          console.error("[v0] 이미지 처리 오류:", error)
+          alert("이미지 처리 중 오류가 발생했습니다.")
+        }
       }
+
+      img.onerror = () => {
+        console.error("[v0] 이미지 로드 실패")
+        alert("이미지를 로드할 수 없습니다. 다른 이미지를 시도해주세요.")
+      }
+
       img.src = result
     }
+
     reader.onerror = () => {
-      console.error("[v0] 사진 업로드 실패")
-      alert("사진 업로드 중 오류가 발생했습니다.")
+      console.error("[v0] 파일 읽기 실패")
+      alert("파일을 읽을 수 없습니다.")
     }
+
     reader.readAsDataURL(file)
+  }
+
+  const requireAuth = (action: () => void) => {
+    if (isAuthenticated) {
+      action()
+    } else {
+      setPendingAction(() => action)
+      setShowPasswordDialog(true)
+    }
+  }
+
+  const handlePasswordSubmit = () => {
+    if (password === "1234") {
+      setIsAuthenticated(true)
+      setShowPasswordDialog(false)
+      setPassword("")
+      if (pendingAction) {
+        pendingAction()
+        setPendingAction(null)
+      }
+      console.log("[v0] 관리자 인증 성공")
+    } else {
+      alert("비밀번호가 틀렸습니다.")
+    }
   }
 
   return (
@@ -521,106 +488,103 @@ export default function ActivitiesPage() {
           <TabsContent value="activities">
             <div className="flex justify-center mb-6">
               <Button onClick={handleAddActivity} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />새 봉사활동 추가
+                ➕ 새 봉사활동 추가
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activities.map((activity) => (
-                <Card key={activity.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  {activity.image && (
-                    <div className="aspect-video overflow-hidden">
-                      <img
-                        src={activity.image || "/placeholder.svg"}
-                        alt={activity.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <Badge variant="secondary" className="mb-2">
-                        {activity.type}
-                      </Badge>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEditActivity(activity)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteActivity(activity.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+            {activities.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">등록된 봉사활동이 없습니다.</p>
+                <p className="text-gray-400">새 봉사활동을 추가해보세요.</p>
+                <div className="mt-4 text-xs text-gray-400">
+                  <p>현재 세션에서 {activities.length}개의 봉사활동이 등록되어 있습니다.</p>
+                  <p className="text-green-600">✅ 메모리 저장소 사용 중 (페이지 새로고침 시까지 데이터 유지)</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {activities.map((activity) => (
+                  <Card key={activity.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    {activity.image && (
+                      <div className="aspect-video overflow-hidden">
+                        <img
+                          src={activity.image || "/placeholder.svg"}
+                          alt={activity.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                    </div>
-                    <CardTitle className="text-lg">{activity.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        {activity.date}
+                    )}
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <Badge variant="secondary" className="mb-2">
+                          {activity.type}
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => handleEditActivity(activity)}>
+                            ✏️
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteActivity(activity.id)}>
+                            🗑️
+                          </Button>
+                        </div>
                       </div>
-                      {activity.location && (
-                        <div className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          {activity.location}
-                        </div>
-                      )}
-                      {activity.amount && (
-                        <div className="flex items-center">
-                          <Banknote className="w-4 h-4 mr-2" />
-                          {activity.amount}
-                        </div>
-                      )}
-                      {activity.participants && (
-                        <div className="flex items-center">
-                          <Users className="w-4 h-4 mr-2" />
-                          {activity.participants}
-                        </div>
-                      )}
-                    </div>
-                    {activity.description && <p className="text-sm text-gray-700 mt-3">{activity.description}</p>}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <CardTitle className="text-lg">{activity.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center">📅 {activity.date}</div>
+                        {activity.location && <div className="flex items-center">📍 {activity.location}</div>}
+                        {activity.amount && <div className="flex items-center">💰 {activity.amount}</div>}
+                        {activity.participants && <div className="flex items-center">👥 {activity.participants}</div>}
+                      </div>
+                      {activity.description && <p className="text-sm text-gray-700 mt-3">{activity.description}</p>}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="member-news">
             <div className="flex justify-center mb-6">
               <Button onClick={handleAddMemberNews} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />새 회원소식 추가
+                ➕ 새 회원소식 추가
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {memberNews.map((news) => (
-                <Card key={news.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <Badge variant="outline" className="mb-2">
-                        {news.type}
-                      </Badge>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEditMemberNews(news)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteMemberNews(news.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+            {memberNews.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">등록된 회원소식이 없습니다.</p>
+                <p className="text-gray-400">새 회원소식을 추가해보세요.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {memberNews.map((news) => (
+                  <Card key={news.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <Badge variant="outline" className="mb-2">
+                          {news.type}
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => handleEditMemberNews(news)}>
+                            ✏️
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDeleteMemberNews(news.id)}>
+                            🗑️
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <CardTitle className="text-lg">{news.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex items-center text-sm text-gray-600 mb-3">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {news.date}
-                    </div>
-                    <p className="text-sm text-gray-700">{news.content}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <CardTitle className="text-lg">{news.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center text-sm text-gray-600 mb-3">📅 {news.date}</div>
+                      <p className="text-sm text-gray-700">{news.content}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 
@@ -728,15 +692,27 @@ export default function ActivitiesPage() {
                 />
               </div>
               <div>
-                <Label>또는 파일 업로드</Label>
+                <Label>또는 파일 업로드 (최대 5MB)</Label>
                 <Input type="file" accept="image/*" onChange={handlePhotoUpload} />
                 {formData.image && (
                   <div className="mt-2">
                     <img
                       src={formData.image || "/placeholder.svg"}
                       alt="미리보기"
-                      className="w-32 h-24 object-cover rounded"
+                      className="w-32 h-24 object-cover rounded border"
                     />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 bg-transparent"
+                      onClick={() => {
+                        setFormData({ ...formData, image: "" })
+                        console.log("[v0] 이미지 제거됨")
+                      }}
+                    >
+                      이미지 제거
+                    </Button>
                   </div>
                 )}
               </div>

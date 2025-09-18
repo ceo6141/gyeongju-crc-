@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu, X, ExternalLink, Youtube, Camera } from "lucide-react"
+import { Menu, X, ExternalLink, Youtube } from "lucide-react"
 import Image from "next/image"
 import { NaverBandLink } from "@/components/naver-band-link"
 
@@ -14,7 +14,8 @@ const Navigation = () => {
     { href: "/", label: "홈" },
     { href: "/about", label: "클럽소개" },
     { href: "/members", label: "회원명부" },
-    { href: "/gallery", label: "갤러리", icon: Camera },
+    { href: "/activities", label: "봉사활동" },
+    { href: "/gallery", label: "클럽갤러리" },
     { href: "/rotary-news", label: "로타리 소식" },
     { href: "/organization", label: "조직도" },
     { href: "/plans", label: "사업계획" },
@@ -28,14 +29,14 @@ const Navigation = () => {
 
   return (
     <>
-      <nav className="bg-primary text-primary-foreground shadow-lg w-full fixed top-0 left-0 z-50">
+      <nav className="bg-blue-600 text-white shadow-lg w-full fixed top-0 left-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-                  <span className="text-secondary-foreground font-bold text-sm">RC</span>
+                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 font-bold text-sm">RC</span>
                 </div>
                 <Image
                   src="/rotary-international-logo.png"
@@ -60,7 +61,7 @@ const Navigation = () => {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
+                    className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
                     {item.icon && <item.icon className="h-4 w-4" />}
                     <span>{item.label}</span>
@@ -70,7 +71,7 @@ const Navigation = () => {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
+                    className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
                     {item.icon && <item.icon className="h-4 w-4" />}
                     <span>{item.label}</span>
@@ -88,7 +89,7 @@ const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-primary-foreground hover:bg-primary/80"
+                className="text-white hover:bg-blue-700"
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
@@ -98,7 +99,7 @@ const Navigation = () => {
 
         {/* Mobile Navigation Dropdown */}
         {isOpen && (
-          <div className="lg:hidden bg-primary border-t border-primary/20">
+          <div className="lg:hidden bg-blue-600 border-t border-blue-500">
             <div className="px-4 py-2 space-y-1">
               {navItems.map((item) =>
                 item.external ? (
@@ -107,7 +108,7 @@ const Navigation = () => {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.icon && <item.icon className="h-4 w-4" />}
@@ -118,7 +119,7 @@ const Navigation = () => {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-primary/80 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.icon && <item.icon className="h-4 w-4" />}

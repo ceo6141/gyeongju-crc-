@@ -1,36 +1,246 @@
 "use client"
 
-import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Heart, Award, BookOpen, History, Calendar, Clock, MapPin, Plus, Edit, Trash2 } from "lucide-react"
-import Link from "next/link"
-import { useState, useEffect } from "react"
+import { Heart, Award, BookOpen, History, MapPin, Plus, Edit, Trash2 } from "lucide-react"
 import Image from "next/image"
-import Head from "next/head"
+import { CacheBuster } from "@/components/cache-buster"
+import { useAdminAuth } from "@/hooks/use-admin-auth"
+import { AdminLogin } from "@/components/admin-login"
+import { Navigation } from "@/components/navigation"
+import { Footer } from "@/components/footer"
 import { AdminPanel } from "@/components/admin-panel"
 import PWAInstall from "@/components/pwa-install"
-import { CacheBuster } from "@/components/cache-buster"
-import { syncNoticesData, saveNoticesData } from "@/lib/notices-data"
+
+interface Notice {
+  id: string
+  title: string
+  content: string
+  date: string
+  type: string
+  details?: {
+    date?: string
+    time?: string
+    location?: string
+  }
+}
+
+interface MemberNews {
+  id: string
+  title: string
+  date: string
+  content: string
+  category: string
+}
 
 export default function HomePage() {
-  const [notices, setNotices] = useState([])
-  const [noticesVersion, setNoticesVersion] = useState(0)
-  const [isEditingNotices, setIsEditingNotices] = useState(false)
+  const [notices, setNotices] = useState<Notice[]>([])
+  const [memberNews, setMemberNews] = useState<MemberNews[]>([])
+  const [isEditMode, setIsEditMode] = useState(false)
   const [isAddNoticeOpen, setIsAddNoticeOpen] = useState(false)
-  const [editingNotice, setEditingNotice] = useState(null)
-  const [memberNews, setMemberNews] = useState([])
-  const [isAddNewsOpen, setIsAddNewsOpen] = useState(false)
-  const [editingNews, setEditingNews] = useState(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [cacheVersion, setCacheVersion] = useState(Date.now())
+  const [isEditNoticeOpen, setIsEditNoticeOpen] = useState(false)
+  const [editingNotice, setEditingNotice] = useState<Notice | null>(null)
+  const [noticeForm, setNoticeForm] = useState({
+    title: "",
+    content: "",
+    date: "",
+    time: "",
+    location: "",
+    type: "일반",
+  })
+  const { requireAuth, showLogin, setShowLogin, handleLoginSuccess } = useAdminAuth()
+
+  const defaultNotices: Notice[] = []
+
+  const defaultMemberNews: MemberNews[] = []
+
+  useEffect(() => {
+    loadNotices()
+    loadMemberNews()
+  }, [])
+
+  const loadNotices = () => {
+    try {
+      const savedNotices = localStorage.getItem("homepage-notices")
+      const userNotices = savedNotices ? JSON.parse(savedNotices) : []
+
+      const allNotices = [...userNotices]
+
+      const sortedNotices = allNotices
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(0, 3)
+
+      setNotices(sortedNotices)
+      console.log("[v0] 공지사항 로드 완료:", sortedNotices.length, "개")
+    } catch (error) {
+      console.error("[v0] 공지사항 로드 오류:", error)
+      setNotices([])
+    }
+  }
+
+  const loadMemberNews = () => {
+    try {
+      const savedNews = localStorage.getItem("homepage-news")
+      const userNews = savedNews ? JSON.parse(savedNews) : []
+
+      const allNews = [...userNews]
+
+      const sortedNews = allNews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3)
+
+      setMemberNews(sortedNews)
+      console.log("[v0] 회원소식 로드 완료:", sortedNews.length, "개")
+    } catch (error) {
+      console.error("[v0] 회원소식 로드 오류:", error)
+      setMemberNews([])
+    }
+  }
+
+  const saveNotices = (userNotices: Notice[]) => {
+    try {
+      localStorage.setItem("homepage-notices", JSON.stringify(userNotices))
+      console.log("[v0] 공지사항 저장 완료:", userNotices.length, "개")
+      loadNotices()
+      return true
+    } catch (error) {
+      console.error("[v0] 공지사항 저장 오류:", error)
+      alert("공지사항 저장 중 오류가 발생했습니다.")
+      return false
+    }
+  }
+
+  const handleEditModeToggle = () => {
+    if (isEditMode) {
+      setIsEditMode(false)
+    } else {
+      requireAuth(() => {
+        setIsEditMode(true)
+        console.log("[v0] 공지사항 편집 모드 활성화")
+      })
+    }
+  }
+
+  const handleAddNotice = () => {
+    if (!noticeForm.title.trim() || !noticeForm.content.trim()) {
+      alert("제목과 내용을 입력해주세요.")
+      return
+    }
+
+    const newNotice: Notice = {
+      id: `user-${Date.now()}`,
+      title: noticeForm.title,
+      content: noticeForm.content,
+      date: noticeForm.date || new Date().toISOString().split("T")[0],
+      type: noticeForm.type,
+      details: {
+        date: noticeForm.date,
+        time: noticeForm.time,
+        location: noticeForm.location,
+      },
+    }
+
+    const currentUserNotices = notices.filter((notice) => notice.id.startsWith("user-"))
+    const updatedUserNotices = [newNotice, ...currentUserNotices]
+
+    if (saveNotices(updatedUserNotices)) {
+      setNoticeForm({
+        title: "",
+        content: "",
+        date: "",
+        time: "",
+        location: "",
+        type: "일반",
+      })
+      setIsAddNoticeOpen(false)
+      alert("공지사항이 성공적으로 추가되었습니다!")
+    }
+  }
+
+  const handleEditNotice = () => {
+    if (!editingNotice || !noticeForm.title.trim() || !noticeForm.content.trim()) {
+      alert("제목과 내용을 입력해주세요.")
+      return
+    }
+
+    const updatedNotice: Notice = {
+      ...editingNotice,
+      title: noticeForm.title,
+      content: noticeForm.content,
+      date: noticeForm.date || editingNotice.date,
+      type: noticeForm.type,
+      details: {
+        date: noticeForm.date,
+        time: noticeForm.time,
+        location: noticeForm.location,
+      },
+    }
+
+    const currentUserNotices = notices.filter((notice) => notice.id.startsWith("user-"))
+    const updatedUserNotices = currentUserNotices.map((notice) =>
+      notice.id === editingNotice.id ? updatedNotice : notice,
+    )
+
+    if (saveNotices(updatedUserNotices)) {
+      setNoticeForm({
+        title: "",
+        content: "",
+        date: "",
+        time: "",
+        location: "",
+        type: "일반",
+      })
+      setIsEditNoticeOpen(false)
+      setEditingNotice(null)
+      alert("공지사항이 성공적으로 수정되었습니다!")
+    }
+  }
+
+  const handleDeleteNotice = (notice: Notice) => {
+    requireAuth(() => {
+      if (confirm(`"${notice.title}" 공지사항을 삭제하시겠습니까?`)) {
+        const currentUserNotices = notices.filter((n) => n.id.startsWith("user-"))
+        const updatedUserNotices = currentUserNotices.filter((n) => n.id !== notice.id)
+
+        if (saveNotices(updatedUserNotices)) {
+          console.log("[v0] 공지사항 삭제 완료:", notice.title)
+          alert("공지사항이 삭제되었습니다.")
+        }
+      }
+    })
+  }
+
+  const openEditDialog = (notice: Notice) => {
+    setEditingNotice(notice)
+    setNoticeForm({
+      title: notice.title,
+      content: notice.content,
+      date: notice.details?.date || notice.date,
+      time: notice.details?.time || "",
+      location: notice.details?.location || "",
+      type: notice.type,
+    })
+    setIsEditNoticeOpen(true)
+  }
+
+  const [backgroundImage, setBackgroundImage] = useState("/images/club-photo.png")
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
+
+  const formatDateShort = () => {
+    const today = new Date()
+    const year = today.getFullYear().toString().slice(-2)
+    const month = (today.getMonth() + 1).toString().padStart(2, "0")
+    const day = today.getDate().toString().padStart(2, "0")
+    return `${year}.${month}.${day}`
+  }
 
   const [newsForm, setNewsForm] = useState({
     title: "",
@@ -39,110 +249,11 @@ export default function HomePage() {
     category: "일반소식",
   })
 
-  const [noticeForm, setNoticeForm] = useState({
-    title: "",
-    content: "",
-    date: "",
-    type: "일반",
-    details: "",
-  })
-
-  const [backgroundImage, setBackgroundImage] = useState("/images/club-photo.png")
-
-  const requireAuth = () => {
-    if (isAuthenticated) return true
-    const password = prompt("관리자 비밀번호를 입력하세요:")
-    if (password === "1234") {
-      setIsAuthenticated(true)
-      return true
-    }
-    alert("비밀번호가 틀렸습니다.")
-    return false
-  }
-
-  const syncNotices = () => {
-    const allNotices = syncNoticesData()
-
-    const parseDate = (dateStr) => {
-      if (!dateStr) return new Date(0)
-
-      // Handle Korean date format like "2025.09.04목" or "2025.08.28.목"
-      const cleanDate = dateStr.replace(/[가-힣]/g, "").replace(/\.$/, "")
-      const parts = cleanDate.split(".")
-
-      if (parts.length >= 3) {
-        const year = Number.parseInt(parts[0])
-        const month = Number.parseInt(parts[1]) - 1
-        const day = Number.parseInt(parts[2])
-        return new Date(year, month, day)
-      }
-
-      return new Date(dateStr)
-    }
-
-    const sortedNotices = allNotices.sort((a, b) => {
-      const dateA = parseDate(a.details?.date)
-      const dateB = parseDate(b.details?.date)
-
-      return dateB - dateA // Sort by latest date first
-    })
-
-    const latestThree = sortedNotices.slice(0, 3)
-
-    setNotices((prev) => {
-      if (JSON.stringify(prev) !== JSON.stringify(latestThree)) {
-        console.log("[v0] 공지사항 데이터 업데이트:", latestThree.length, "개")
-        setCacheVersion(Date.now())
-        return latestThree
-      }
-      return prev
-    })
-  }
-
-  const handleEditNotice = (notice) => {
-    if (!requireAuth()) return
-    setEditingNotice(notice)
-  }
-
-  const handleDeleteNotice = (noticeId) => {
-    if (!requireAuth()) return
-    if (confirm("이 공지사항을 삭제하시겠습니까?")) {
-      const allNotices = syncNoticesData()
-      const updatedNotices = allNotices.filter((notice) => notice.id !== noticeId)
-      saveNoticesData(updatedNotices)
-      syncNotices()
-      alert("공지사항이 삭제되었습니다.")
-    }
-  }
-
-  const handleAddNotice = (noticeData) => {
-    const allNotices = syncNoticesData()
-    const newNotice = {
-      id: Date.now().toString(),
-      ...noticeData,
-      date: new Date().toLocaleDateString("ko-KR"),
-    }
-    const updatedNotices = [newNotice, ...allNotices]
-    saveNoticesData(updatedNotices)
-    syncNotices()
-    setIsAddNoticeOpen(false)
-    alert("공지사항이 추가되었습니다.")
-  }
-
-  const handleUpdateNotice = (noticeData) => {
-    const allNotices = syncNoticesData()
-    const updatedNotices = allNotices.map((notice) =>
-      notice.id === editingNotice.id ? { ...notice, ...noticeData } : notice,
-    )
-    saveNoticesData(updatedNotices)
-    syncNotices()
-    setEditingNotice(null)
-    alert("공지사항이 수정되었습니다.")
-  }
+  const [editingNews, setEditingNews] = useState(null)
+  const [isAddNewsOpen, setIsAddNewsOpen] = useState(false)
 
   const loadData = () => {
     try {
-      const cacheKey = `homepage-news-${Math.floor(Date.now() / 60000)}` // Update every minute
       const savedNews = localStorage.getItem("homepage-news")
 
       if (savedNews) {
@@ -150,18 +261,8 @@ export default function HomePage() {
         setMemberNews(parsed)
         console.log("[v0] 홈페이지 회원소식 로드:", parsed.length, "개")
       } else {
-        // 기본 데이터
-        const defaultNews = [
-          {
-            id: 1,
-            title: "천상 天翔 최용환 회장 취임",
-            date: "2025-07-01",
-            content: "제22대 회장으로 천상 天翔 최용환 회원이 취임했습니다.",
-            category: "임원소식",
-          },
-        ]
-        setMemberNews(defaultNews)
-        localStorage.setItem("homepage-news", JSON.stringify(defaultNews))
+        setMemberNews([])
+        localStorage.setItem("homepage-news", JSON.stringify([]))
       }
     } catch (error) {
       console.error("[v0] 데이터 로드 오류:", error)
@@ -229,22 +330,14 @@ export default function HomePage() {
   useEffect(() => {
     const forceRefresh = () => {
       loadData()
-      syncNotices()
-      setCacheVersion(Date.now())
     }
 
     forceRefresh()
 
     const handleStorageChange = (e) => {
-      if (e.key === "rotary-notices") {
-        syncNotices()
-      } else if (e.key === "homepage-activities" || e.key === "homepage-news") {
+      if (e.key === "homepage-activities" || e.key === "homepage-news") {
         loadData()
       }
-    }
-
-    const handleNoticesUpdate = () => {
-      syncNotices()
     }
 
     const handleVisibilityChange = () => {
@@ -254,764 +347,631 @@ export default function HomePage() {
     }
 
     window.addEventListener("storage", handleStorageChange)
-    window.addEventListener("noticesUpdated", handleNoticesUpdate)
     document.addEventListener("visibilitychange", handleVisibilityChange)
 
     return () => {
       window.removeEventListener("storage", handleStorageChange)
-      window.removeEventListener("noticesUpdated", handleNoticesUpdate)
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
   }, [])
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
-
   return (
-    <>
-      <Head>
-        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-        <meta httpEquiv="Pragma" content="no-cache" />
-        <meta httpEquiv="Expires" content="0" />
-        <meta name="cache-version" content={cacheVersion.toString()} />
-      </Head>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <CacheBuster />
 
-      <div className="min-h-screen bg-white">
-        <CacheBuster />
-        <Navigation />
-        <PWAInstall />
+      <Navigation />
+      <PWAInstall />
 
-        <div className="pt-16">
-          <main>
-            <section className="relative min-h-[60vh] flex items-center bg-white">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-                  {/* 좌측: 로고와 텍스트 */}
-                  <div className="flex flex-col items-start space-y-6">
-                    <Image
-                      src="/rotary-logo-official.png"
-                      alt="경주중앙로타리클럽 로고 - Gyeongju Central Rotary Club Logo"
-                      width={160}
-                      height={80}
-                      className="object-contain"
-                    />
-                    <div className="text-lg font-semibold text-blue-600 -mt-2">Gyeongju Central Rotary Club</div>
-                    <div className="space-y-4">
-                      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                        국제로타리3630지구
-                        <br />
-                        경주중앙로타리클럽
-                      </h1>
-                      <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
-                        봉사를 통한 지역사회 발전과 국제친선 - 경주 지역 최고의 봉사단체
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Button size="lg" asChild className="font-semibold px-6 py-3 rounded-full">
-                          <Link href="/about">클럽 소개</Link>
-                        </Button>
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          className="font-semibold px-6 py-3 rounded-full bg-transparent"
-                          asChild
-                        >
-                          <Link href="/activities">봉사활동 보기</Link>
-                        </Button>
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          className="font-semibold px-6 py-3 rounded-full bg-blue-900 border-2 border-blue-900 hover:bg-blue-800 text-white hover:text-white"
-                          asChild
-                        >
-                          <Link href="/gallery">클럽갤러리</Link>
-                        </Button>
+      {/* Hero Section */}
+      <section className="relative h-screen flex flex-col overflow-hidden bg-gray-900">
+        <div className="absolute inset-0 bg-black/30 z-10"></div>
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/club-photo.png"
+            alt="경주중앙로타리클럽 제21대 22대 회장단 이취임식 - 천상 天翔 최용환 회장"
+            fill
+            className="object-cover object-top"
+            priority
+            onError={() => setBackgroundImage("/placeholder.svg?height=400&width=600")}
+          />
+        </div>
+
+        <div className="relative z-20 text-center text-white px-4 max-w-4xl mx-auto pt-40 pb-8">
+          <h1
+            className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-balance text-white"
+            style={{
+              color: "#ffffff",
+              textShadow: "4px 4px 8px rgba(0,0,0,1), 2px 2px 4px rgba(0,0,0,1)",
+            }}
+          >
+            경주중앙로타리클럽
+          </h1>
+          <p
+            className="text-xl md:text-2xl mb-8 leading-relaxed text-balance text-white"
+            style={{
+              color: "#ffffff",
+              textShadow: "3px 3px 6px rgba(0,0,0,1), 1px 1px 2px rgba(0,0,0,1)",
+            }}
+          >
+            천상 天翔 최용환 회장과 함께하는 봉사의 여정
+          </p>
+        </div>
+
+        {/* 로타리클럽 소개 섹션 */}
+        <section className="py-24 bg-white" aria-labelledby="about-rotary-heading">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-20">
+              <h2 id="about-rotary-heading" className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight">
+                경주중앙로타리클럽이란?
+              </h2>
+              <p className="text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
+                로타리는 전 세계 200여 개국에서 120만 명 이상의 회원이 활동하는 국제적인 봉사단체입니다.
+                경주중앙로타리클럽은 경주 지역사회 발전과 국제친선을 위해 다양한 봉사활동을 펼치고 있습니다.
+              </p>
+            </div>
+
+            <div className="mb-16">
+              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-amber-50">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-amber-100 rounded-full">
+                      <MapPin className="h-8 w-8 text-amber-600" />
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">클럽현황</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-4">
+                    <div className="flex gap-4 items-center">
+                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">창립:</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">2005년 1월 20일</span>
+                    </div>
+                    <div className="flex gap-4 items-center">
+                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">회원:</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">68명</span>
+                    </div>
+                    <div className="flex gap-4 items-center">
+                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">지구:</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">국제로타리3630지구</span>
+                    </div>
+                    <div className="flex gap-4 items-center">
+                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">지역:</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">경주시</span>
+                    </div>
+                    <div className="flex gap-4 items-center">
+                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">정기모임:</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">매월 첫째, 셋째주 목요일 오후 7시</span>
+                    </div>
+                    <div className="flex gap-4 items-center">
+                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">장소:</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">본 클럽 회관</span>
+                    </div>
+                    <div className="flex gap-4 items-center">
+                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">이사회:</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">매월 넷째주 목요일</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-8">
+              <article className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-blue-50">
+                <Card>
+                  <CardHeader className="pb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-blue-100 rounded-full">
+                        <BookOpen className="h-8 w-8 text-blue-600" />
                       </div>
+                      <CardTitle className="text-2xl font-bold text-gray-900">경주중앙로타리클럽의 목적</CardTitle>
                     </div>
-                  </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <ol className="space-y-4">
+                      <li className="flex gap-4">
+                        <span className="font-bold text-blue-600 min-w-[32px] text-lg">1.</span>
+                        <span className="text-gray-700 leading-relaxed text-lg">
+                          친목을 도모하고 봉사의 기회로 삼는다
+                        </span>
+                      </li>
+                      <li className="flex gap-4">
+                        <span className="font-bold text-blue-600 min-w-[32px] text-lg">2.</span>
+                        <span className="text-gray-700 leading-relaxed text-lg">
+                          사업과 전문직업의 높은 윤리적 표준을 장려하고, 모든 유용한 업무의 품위를 인정하며, 각자의
+                          직업을 통하여 사회에 봉사하는 정신을 함양한다
+                        </span>
+                      </li>
+                      <li className="flex gap-4">
+                        <span className="font-bold text-blue-600 min-w-[32px] text-lg">3.</span>
+                        <span className="text-gray-700 leading-relaxed text-lg">
+                          모든 로타리안이 개인적으로나 사업 및 사회생활에 있어서 봉사 이상을 적용하도록 장려한다
+                        </span>
+                      </li>
+                      <li className="flex gap-4">
+                        <span className="font-bold text-blue-600 min-w-[32px] text-lg">4.</span>
+                        <span className="text-gray-700 leading-relaxed text-lg">
+                          봉사 이상으로 결합된 사업인과 전문직업인의 세계적 친목을 통하여 국제간의 이해와 친선과 평화를
+                          증진한다
+                        </span>
+                      </li>
+                    </ol>
+                  </CardContent>
+                </Card>
+              </article>
 
-                  {/* 우측: 배경 사진 */}
-                  <div className="lg:col-span-2 relative flex justify-center">
-                    <div className="w-full h-[350px] lg:h-[400px] relative rounded-2xl shadow-2xl overflow-hidden">
-                      <Image
-                        src="/images/club-photo.png"
-                        alt="경주중앙로타리클럽 제21대 22대 회장단 이취임식 - 천상 天翔 최용환 회장"
-                        fill
-                        className="object-cover"
-                        priority
-                        onError={(e) => {
-                          e.currentTarget.src = "/placeholder.svg?height=400&width=600&text=경주중앙로타리클럽+단체사진"
-                        }}
-                      />
+              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-indigo-100 rounded-full">
+                      <Award className="h-8 w-8 text-indigo-600" />
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">네가지 표준 (Four-Way Test)</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-gray-700 mb-6 text-lg leading-relaxed">
+                    우리가 생각하고 말하고 행동하는 모든 것에 대하여:
+                  </p>
+                  <ol className="space-y-4">
+                    <li className="flex gap-4">
+                      <span className="font-bold text-indigo-600 min-w-[32px] text-lg">1.</span>
+                      <span className="text-gray-700 leading-relaxed font-semibold text-lg">진실한가?</span>
+                    </li>
+                    <li className="flex gap-4">
+                      <span className="font-bold text-indigo-600 min-w-[32px] text-lg">2.</span>
+                      <span className="text-gray-700 leading-relaxed font-semibold text-lg">
+                        모든 관계자에게 공정한가?
+                      </span>
+                    </li>
+                    <li className="flex gap-4">
+                      <span className="font-bold text-indigo-600 min-w-[32px] text-lg">3.</span>
+                      <span className="text-gray-700 leading-relaxed font-semibold text-lg">
+                        선의와 우정을 증진하는가?
+                      </span>
+                    </li>
+                    <li className="flex gap-4">
+                      <span className="font-bold text-indigo-600 min-w-[32px] text-lg">4.</span>
+                      <span className="text-gray-700 leading-relaxed font-semibold text-lg">
+                        모든 관계자에게 이익이 되는가?
+                      </span>
+                    </li>
+                  </ol>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-purple-50">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-purple-100 rounded-full">
+                      <Heart className="h-8 w-8 text-purple-600" />
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">로타리 핵심가치</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <span className="text-purple-600 text-xl">•</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        <span className="font-semibold">봉사 (Service)</span> - 우리의 직업, 지역사회, 그리고 전 세계를
+                        위한 봉사
+                      </span>
+                    </div>
+                    <div className="flex gap-4">
+                      <span className="text-purple-600 text-xl">•</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        <span className="font-semibold">친목 (Fellowship)</span> - 지역적, 국가적, 국제적 차원에서의
+                        지속적인 우정
+                      </span>
+                    </div>
+                    <div className="flex gap-4">
+                      <span className="text-purple-600 text-xl">•</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        <span className="font-semibold">다양성 (Diversity)</span> - 다양한 직업, 문화, 관점을 가진
+                        사람들과의 협력
+                      </span>
+                    </div>
+                    <div className="flex gap-4">
+                      <span className="text-purple-600 text-xl">•</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        <span className="font-semibold">고결성 (Integrity)</span> - 우리의 행동과 관계에서 보여주는
+                        정직함
+                      </span>
+                    </div>
+                    <div className="flex gap-4">
+                      <span className="text-purple-600 text-xl">•</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        <span className="font-semibold">리더십 (Leadership)</span> - 지역사회와 직장에서의 리더십 개발
+                      </span>
                     </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-green-50">
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-100 rounded-full">
+                      <History className="h-8 w-8 text-green-600" />
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">로타리 역사</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-5">
+                    <div className="flex gap-6 items-start">
+                      <Badge
+                        variant="outline"
+                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
+                      >
+                        1905년
+                      </Badge>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        폴 해리스가 시카고에서 최초의 로타리클럽 창립
+                      </span>
+                    </div>
+                    <div className="flex gap-6 items-start">
+                      <Badge
+                        variant="outline"
+                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
+                      >
+                        1910년
+                      </Badge>
+                      <span className="text-gray-700 leading-relaxed text-lg">전국로타리클럽연합회 결성</span>
+                    </div>
+                    <div className="flex gap-6 items-start">
+                      <Badge
+                        variant="outline"
+                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
+                      >
+                        1922년
+                      </Badge>
+                      <span className="text-gray-700 leading-relaxed text-lg">국제로타리 명칭 채택</span>
+                    </div>
+                    <div className="flex gap-6 items-start">
+                      <Badge
+                        variant="outline"
+                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
+                      >
+                        1947년
+                      </Badge>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        한국 최초 로타리클럽(서울로타리클럽) 창립
+                      </span>
+                    </div>
+                    <div className="flex gap-6 items-start">
+                      <Badge
+                        variant="outline"
+                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-700 border-blue-200"
+                      >
+                        1985년
+                      </Badge>
+                      <span className="text-gray-700 leading-relaxed text-lg">폴리오플러스 프로그램 시작</span>
+                    </div>
+                    <div className="flex gap-6 items-start">
+                      <Badge
+                        variant="outline"
+                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-700 border-blue-200"
+                      >
+                        2005년
+                      </Badge>
+                      <span className="text-gray-700 leading-relaxed text-lg font-semibold text-blue-700">
+                        경주중앙로타리클럽 창립
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* 공지사항 섹션 */}
+        <div className="absolute bottom-2 left-0 right-0 z-20 px-4 max-w-5xl mx-auto">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-2 relative flex">
+            <div className="flex items-center justify-center bg-blue-600 text-white rounded-r-lg ml-2 px-0.5 py-6 min-w-[12px]">
+              <div className="writing-mode-vertical-rl text-orientation-mixed">
+                <span className="text-sm font-bold tracking-wider">공지사항</span>
               </div>
-            </section>
+            </div>
 
-            <section className="py-4 bg-white" aria-labelledby="notices-heading">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-4">
-                  <h2 id="notices-heading" className="text-xl md:text-2xl font-bold mb-2 text-gray-900 leading-tight">
-                    공지사항
-                  </h2>
-                  <p className="text-sm text-gray-600 leading-relaxed max-w-2xl mx-auto">
-                    클럽의 최신 소식과 공지사항을 확인하세요.
+            <div className="flex-1">
+              <div className="absolute top-2 right-2 z-10">
+                <Button
+                  onClick={handleEditModeToggle}
+                  variant={isEditMode ? "destructive" : "default"}
+                  className="bg-black/80 hover:bg-black text-white border-0 shadow-lg backdrop-blur-sm px-2 py-1 text-xs font-medium"
+                >
+                  {isEditMode ? "편집종료" : "관리"}
+                </Button>
+              </div>
+
+              {isEditMode && (
+                <div className="mb-2 p-1 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
+                  <p className="text-yellow-800 font-medium text-xs">
+                    📝 편집 모드 활성화됨 - 공지사항을 추가, 수정, 삭제할 수 있습니다
                   </p>
                 </div>
+              )}
 
-                <div className="space-y-1 max-w-4xl mx-auto">
-                  {notices.length > 0 ? (
-                    notices.map((notice) => (
-                      <Card
-                        key={`${notice.id}-${noticesVersion}`}
-                        className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-r from-white to-gray-50"
-                      >
-                        <CardContent className="p-2">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <h3 className="text-lg font-bold mb-2 text-blue-700 leading-tight">{notice.title}</h3>
-                              <p className="text-base font-semibold text-blue-600 leading-relaxed mb-1">
-                                {notice.content}
-                              </p>
-                              {notice.details && (
-                                <div className="flex flex-wrap gap-3 text-sm text-blue-500 font-medium mt-2">
-                                  {notice.details.date && (
-                                    <span className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3" />
-                                      {notice.details.date}
-                                    </span>
-                                  )}
-                                  {notice.details.time && (
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="h-3 w-3" />
-                                      {notice.details.time}
-                                    </span>
-                                  )}
-                                  {notice.details.location && (
-                                    <span className="flex items-center gap-1">
-                                      <MapPin className="h-3 w-3" />
-                                      {notice.details.location}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                              {!notice.details && notice.location && (
-                                <p className="text-sm text-blue-500 font-medium flex items-center gap-1">
-                                  <MapPin className="h-3 w-3" />
-                                  {notice.location}
-                                </p>
-                              )}
-                            </div>
-                            <Badge
-                              variant="secondary"
-                              className="text-xs font-normal bg-gray-100 text-gray-500 border-0 ml-4"
-                            >
-                              {notice.date}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  ) : (
-                    <Card className="border-0 shadow-sm bg-gradient-to-r from-white to-gray-50">
-                      <CardContent className="p-4 text-center">
-                        <p className="text-gray-500">공지사항을 불러오는 중...</p>
-                      </CardContent>
-                    </Card>
-                  )}
+              {isEditMode && (
+                <div className="text-center mb-2">
+                  <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-1 text-xs px-3 py-1">
+                    <Plus className="h-3 w-3" />새 공지사항 추가
+                  </Button>
                 </div>
+              )}
 
-                <div className="text-center mt-3">
-                  <div className="flex justify-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditingNotices(!isEditingNotices)}
-                      className="font-semibold px-3 py-1 text-sm rounded-full border-2 border-blue-200 hover:bg-blue-50 transition-all bg-transparent"
+              <div className="grid grid-cols-3 gap-2">
+                {notices.length > 0 ? (
+                  notices.slice(0, 3).map((notice) => (
+                    <Card
+                      key={notice.id}
+                      className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-r from-white to-gray-50"
                     >
-                      {isEditingNotices ? "편집 완료" : "공지사항 관리"}
-                    </Button>
-                    {isEditingNotices && (
-                      <Button
-                        onClick={() => setIsAddNoticeOpen(true)}
-                        className="font-semibold px-3 py-1 text-sm rounded-full bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        새 공지사항 추가
-                      </Button>
-                    )}
-                  </div>
+                      <CardContent className="p-1">
+                        <div className="flex flex-col h-full space-y-1">
+                          <h3 className="text-base font-bold text-blue-700 leading-tight line-clamp-1 text-center">
+                            {notice.title}
+                          </h3>
 
-                  {isEditingNotices && notices.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      {notices.map((notice) => (
-                        <div key={notice.id} className="flex justify-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditNotice(notice)}
-                            className="text-xs"
-                          >
-                            "{notice.title}" 수정
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteNotice(notice.id)}
-                            className="text-xs"
-                          >
-                            삭제
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-
-            <section className="py-16 bg-white" aria-labelledby="news-heading">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                  <h2 id="news-heading" className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-                    회원소식
-                  </h2>
-                  <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    클럽 회원들의 최신 소식과 활동을 전해드립니다.
-                  </p>
-                  <div className="mt-6">
-                    <Dialog open={isAddNewsOpen} onOpenChange={setIsAddNewsOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          onClick={() => {
-                            if (!requireAuth()) return
-                            setEditingNews(null)
-                            setNewsForm({
-                              title: "",
-                              date: "",
-                              content: "",
-                              category: "일반소식",
-                            })
-                          }}
-                          variant="outline"
-                          className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />새 회원소식 추가
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>{editingNews ? "회원소식 수정" : "새 회원소식 추가"}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="news-title">제목 *</Label>
-                            <Input
-                              id="news-title"
-                              value={newsForm.title}
-                              onChange={(e) => setNewsForm((prev) => ({ ...prev, title: e.target.value }))}
-                              placeholder="회원소식 제목을 입력하세요"
-                            />
+                          {/* 세부 정보를 가로로 배치 */}
+                          <div className="space-y-0.5">
+                            {notice.details?.date && (
+                              <div className="flex items-center gap-1 text-xs">
+                                <span className="font-medium text-gray-600 min-w-[30px]">일시:</span>
+                                <span className="text-blue-600 truncate">{notice.details.date}</span>
+                              </div>
+                            )}
+                            {notice.details?.time && (
+                              <div className="flex items-center gap-1 text-xs">
+                                <span className="font-medium text-gray-600 min-w-[30px]">시간:</span>
+                                <span className="text-blue-600 truncate">{notice.details.time}</span>
+                              </div>
+                            )}
+                            {notice.details?.location && (
+                              <div className="flex items-center gap-1 text-xs">
+                                <span className="font-medium text-gray-600 min-w-[30px]">장소:</span>
+                                <span className="text-blue-600 truncate">{notice.details.location}</span>
+                              </div>
+                            )}
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="news-date">날짜 *</Label>
-                              <Input
-                                id="news-date"
-                                type="date"
-                                value={newsForm.date}
-                                onChange={(e) => setNewsForm((prev) => ({ ...prev, date: e.target.value }))}
-                              />
+
+                          {/* 내용 */}
+                          <p className="text-xs text-gray-700 leading-relaxed line-clamp-2 flex-1">{notice.content}</p>
+
+                          {/* 하단 정보 */}
+                          <div className="flex justify-between items-end mt-1">
+                            <div className="text-xs text-gray-400">
+                              <span className="text-xs">{formatDateShort()}</span>
                             </div>
-                            <div>
-                              <Label htmlFor="news-category">카테고리</Label>
-                              <Select
-                                value={newsForm.category}
-                                onValueChange={(value) => setNewsForm((prev) => ({ ...prev, category: value }))}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="일반소식">일반소식</SelectItem>
-                                  <SelectItem value="임원소식">임원소식</SelectItem>
-                                  <SelectItem value="입회소식">입회소식</SelectItem>
-                                  <SelectItem value="개인소식">개인소식</SelectItem>
-                                  <SelectItem value="사업소식">사업소식</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <div>
-                            <Label htmlFor="news-content">내용</Label>
-                            <Textarea
-                              id="news-content"
-                              value={newsForm.content}
-                              onChange={(e) => setNewsForm((prev) => ({ ...prev, content: e.target.value }))}
-                              placeholder="회원소식 내용을 입력하세요"
-                              rows={4}
-                            />
-                          </div>
-                          <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => setIsAddNewsOpen(false)}>
-                              취소
-                            </Button>
-                            <Button onClick={handleSaveNews}>{editingNews ? "수정" : "추가"}</Button>
+                            {isEditMode && (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditDialog(notice)}
+                                  className="h-4 w-4 p-0"
+                                >
+                                  <Edit className="h-2 w-2" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteNotice(notice)}
+                                  className="h-4 w-4 p-0"
+                                >
+                                  <Trash2 className="h-2 w-2" />
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {memberNews.map((news) => (
-                    <Card key={news.id} className="hover:shadow-lg transition-all duration-300">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-3">
-                          <Badge variant="outline" className="text-xs">
-                            {news.category}
-                          </Badge>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEditNews(news)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDeleteNews(news.id)}
-                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                        <h3 className="text-lg font-bold mb-2 text-gray-900">{news.title}</h3>
-                        <p className="text-gray-600 mb-3 line-clamp-3">{news.content}</p>
-                        <p className="text-sm text-gray-500">{formatDate(news.date)}</p>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-
-                {memberNews.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 text-lg">아직 등록된 회원소식이 없습니다.</p>
-                    <p className="text-gray-400 text-sm mt-2">새 회원소식을 추가해보세요.</p>
-                  </div>
+                  ))
+                ) : (
+                  <Card className="border-0 shadow-sm bg-gradient-to-r from-white to-gray-50 col-span-3">
+                    <CardContent className="p-2 text-center">
+                      <p className="text-gray-500 text-xs">등록된 공지사항이 없습니다.</p>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
-            </section>
+            </div>
+          </div>
+        </div>
 
-            <section className="py-24 bg-white" aria-labelledby="about-rotary-heading">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-20">
-                  <h2
-                    id="about-rotary-heading"
-                    className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight"
+        {/* 공지사항 추가 다이얼로그 */}
+        {isAddNoticeOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">새 공지사항 추가</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">제목</label>
+                  <input
+                    type="text"
+                    value={noticeForm.title}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="공지사항 제목을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">내용</label>
+                  <textarea
+                    value={noticeForm.content}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
+                    className="w-full p-2 border rounded-lg h-24"
+                    placeholder="공지사항 내용을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">일시</label>
+                  <input
+                    type="date"
+                    value={noticeForm.date}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, date: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">시간</label>
+                  <input
+                    type="time"
+                    value={noticeForm.time}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, time: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">장소</label>
+                  <input
+                    type="text"
+                    value={noticeForm.location}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, location: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="장소를 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">유형</label>
+                  <select
+                    value={noticeForm.type}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, type: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
                   >
-                    경주중앙로타리클럽이란?
-                  </h2>
-                  <p className="text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
-                    로타리는 전 세계 200여 개국에서 120만 명 이상의 회원이 활동하는 국제적인 봉사단체입니다.
-                    경주중앙로타리클럽은 경주 지역사회 발전과 국제친선을 위해 다양한 봉사활동을 펼치고 있습니다.
-                  </p>
-                </div>
-
-                <div className="mb-16">
-                  <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-amber-50">
-                    <CardHeader className="pb-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-amber-100 rounded-full">
-                          <MapPin className="h-8 w-8 text-amber-600" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold text-gray-900">클럽현황</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-4">
-                        <div className="flex gap-4 items-center">
-                          <span className="font-semibold text-amber-600 min-w-[80px] text-lg">창립:</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">2005년 1월 20일</span>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                          <span className="font-semibold text-amber-600 min-w-[80px] text-lg">회원:</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">68명</span>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                          <span className="font-semibold text-amber-600 min-w-[80px] text-lg">지구:</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">국제로타리3630지구</span>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                          <span className="font-semibold text-amber-600 min-w-[80px] text-lg">지역:</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">경주시</span>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                          <span className="font-semibold text-amber-600 min-w-[80px] text-lg">정기모임:</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">
-                            매월 첫째, 셋째주 목요일 오후 7시
-                          </span>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                          <span className="font-semibold text-amber-600 min-w-[80px] text-lg">장소:</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">본 클럽 회관</span>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                          <span className="font-semibold text-amber-600 min-w-[80px] text-lg">이사회:</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">매월 넷째주 목요일</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="space-y-8">
-                  <article className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-blue-50">
-                    <Card>
-                      <CardHeader className="pb-6">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-blue-100 rounded-full">
-                            <BookOpen className="h-8 w-8 text-blue-600" />
-                          </div>
-                          <CardTitle className="text-2xl font-bold text-gray-900">경주중앙로타리클럽의 목적</CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <ol className="space-y-4">
-                          <li className="flex gap-4">
-                            <span className="font-bold text-blue-600 min-w-[32px] text-lg">1.</span>
-                            <span className="text-gray-700 leading-relaxed text-lg">
-                              친목을 도모하고 봉사의 기회로 삼는다
-                            </span>
-                          </li>
-                          <li className="flex gap-4">
-                            <span className="font-bold text-blue-600 min-w-[32px] text-lg">2.</span>
-                            <span className="text-gray-700 leading-relaxed text-lg">
-                              사업과 전문직업의 높은 윤리적 표준을 장려하고, 모든 유용한 업무의 품위를 인정하며, 각자의
-                              직업을 통하여 사회에 봉사하는 정신을 함양한다
-                            </span>
-                          </li>
-                          <li className="flex gap-4">
-                            <span className="font-bold text-blue-600 min-w-[32px] text-lg">3.</span>
-                            <span className="text-gray-700 leading-relaxed text-lg">
-                              모든 로타리안이 개인적으로나 사업 및 사회생활에 있어서 봉사 이상을 적용하도록 장려한다
-                            </span>
-                          </li>
-                          <li className="flex gap-4">
-                            <span className="font-bold text-blue-600 min-w-[32px] text-lg">4.</span>
-                            <span className="text-gray-700 leading-relaxed text-lg">
-                              봉사 이상으로 결합된 사업인과 전문직업인의 세계적 친목을 통하여 국제간의 이해와 친선과
-                              평화를 증진한다
-                            </span>
-                          </li>
-                        </ol>
-                      </CardContent>
-                    </Card>
-                  </article>
-
-                  <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50">
-                    <CardHeader className="pb-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-indigo-100 rounded-full">
-                          <Award className="h-8 w-8 text-indigo-600" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold text-gray-900">네가지 표준 (Four-Way Test)</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <p className="text-gray-700 mb-6 text-lg leading-relaxed">
-                        우리가 생각하고 말하고 행동하는 모든 것에 대하여:
-                      </p>
-                      <ol className="space-y-4">
-                        <li className="flex gap-4">
-                          <span className="font-bold text-indigo-600 min-w-[32px] text-lg">1.</span>
-                          <span className="text-gray-700 leading-relaxed font-semibold text-lg">진실한가?</span>
-                        </li>
-                        <li className="flex gap-4">
-                          <span className="font-bold text-indigo-600 min-w-[32px] text-lg">2.</span>
-                          <span className="text-gray-700 leading-relaxed font-semibold text-lg">
-                            모든 관계자에게 공정한가?
-                          </span>
-                        </li>
-                        <li className="flex gap-4">
-                          <span className="font-bold text-indigo-600 min-w-[32px] text-lg">3.</span>
-                          <span className="text-gray-700 leading-relaxed font-semibold text-lg">
-                            선의와 우정을 증진하는가?
-                          </span>
-                        </li>
-                        <li className="flex gap-4">
-                          <span className="font-bold text-indigo-600 min-w-[32px] text-lg">4.</span>
-                          <span className="text-gray-700 leading-relaxed font-semibold text-lg">
-                            모든 관계자에게 이익이 되는가?
-                          </span>
-                        </li>
-                      </ol>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-purple-50">
-                    <CardHeader className="pb-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-purple-100 rounded-full">
-                          <Heart className="h-8 w-8 text-purple-600" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold text-gray-900">로타리 핵심가치</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-4">
-                        <div className="flex gap-4">
-                          <span className="text-purple-600 text-xl">•</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">
-                            <span className="font-semibold">봉사 (Service)</span> - 우리의 직업, 지역사회, 그리고 전
-                            세계를 위한 봉사
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="text-purple-600 text-xl">•</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">
-                            <span className="font-semibold">친목 (Fellowship)</span> - 지역적, 국가적, 국제적 차원에서의
-                            지속적인 우정
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="text-purple-600 text-xl">•</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">
-                            <span className="font-semibold">다양성 (Diversity)</span> - 다양한 직업, 문화, 관점을 가진
-                            사람들과의 협력
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="text-purple-600 text-xl">•</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">
-                            <span className="font-semibold">고결성 (Integrity)</span> - 우리의 행동과 관계에서 보여주는
-                            정직함
-                          </span>
-                        </div>
-                        <div className="flex gap-4">
-                          <span className="text-purple-600 text-xl">•</span>
-                          <span className="text-gray-700 leading-relaxed text-lg">
-                            <span className="font-semibold">리더십 (Leadership)</span> - 지역사회와 직장에서의 리더십
-                            개발
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-green-50">
-                    <CardHeader className="pb-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-green-100 rounded-full">
-                          <History className="h-8 w-8 text-green-600" />
-                        </div>
-                        <CardTitle className="text-2xl font-bold text-gray-900">로타리 역사</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-5">
-                        <div className="flex gap-6 items-start">
-                          <Badge
-                            variant="outline"
-                            className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
-                          >
-                            1905년
-                          </Badge>
-                          <span className="text-gray-700 leading-relaxed text-lg">
-                            폴 해리스가 시카고에서 최초의 로타리클럽 창립
-                          </span>
-                        </div>
-                        <div className="flex gap-6 items-start">
-                          <Badge
-                            variant="outline"
-                            className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
-                          >
-                            1910년
-                          </Badge>
-                          <span className="text-gray-700 leading-relaxed text-lg">전국로타리클럽연합회 결성</span>
-                        </div>
-                        <div className="flex gap-6 items-start">
-                          <Badge
-                            variant="outline"
-                            className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
-                          >
-                            1922년
-                          </Badge>
-                          <span className="text-gray-700 leading-relaxed text-lg">국제로타리 명칭 채택</span>
-                        </div>
-                        <div className="flex gap-6 items-start">
-                          <Badge
-                            variant="outline"
-                            className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
-                          >
-                            1947년
-                          </Badge>
-                          <span className="text-gray-700 leading-relaxed text-lg">
-                            한국 최초 로타리클럽(서울로타리클럽) 창립
-                          </span>
-                        </div>
-                        <div className="flex gap-6 items-start">
-                          <Badge
-                            variant="outline"
-                            className="min-w-fit text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-700 border-blue-200"
-                          >
-                            1985년
-                          </Badge>
-                          <span className="text-gray-700 leading-relaxed text-lg">폴리오플러스 프로그램 시작</span>
-                        </div>
-                        <div className="flex gap-6 items-start">
-                          <Badge
-                            variant="outline"
-                            className="min-w-fit text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-700 border-blue-200"
-                          >
-                            2005년
-                          </Badge>
-                          <span className="text-gray-700 leading-relaxed text-lg font-semibold text-blue-700">
-                            경주중앙로타리클럽 창립
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <option value="일반">일반</option>
+                    <option value="긴급">긴급</option>
+                    <option value="모임">모임</option>
+                    <option value="행사">행사</option>
+                  </select>
                 </div>
               </div>
-            </section>
-          </main>
-        </div>
+              <div className="flex gap-2 mt-6">
+                <Button onClick={handleAddNotice} className="flex-1">
+                  추가
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsAddNoticeOpen(false)
+                    setNoticeForm({
+                      title: "",
+                      content: "",
+                      date: "",
+                      time: "",
+                      location: "",
+                      type: "일반",
+                    })
+                  }}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
-        <Footer />
-        <AdminPanel />
-
-        <Dialog open={isAddNoticeOpen} onOpenChange={setIsAddNoticeOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>새 공지사항 추가</DialogTitle>
-            </DialogHeader>
-            <NoticeForm onSubmit={handleAddNotice} onCancel={() => setIsAddNoticeOpen(false)} />
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={!!editingNotice} onOpenChange={() => setEditingNotice(null)}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>공지사항 수정</DialogTitle>
-            </DialogHeader>
-            <NoticeForm notice={editingNotice} onSubmit={handleUpdateNotice} onCancel={() => setEditingNotice(null)} />
-          </DialogContent>
-        </Dialog>
-      </div>
-    </>
-  )
-}
-
-function NoticeForm({ notice, onSubmit, onCancel }) {
-  const [formData, setFormData] = useState({
-    title: notice?.title || "",
-    content: notice?.content || "",
-    type: notice?.type || "일반",
-    details: {
-      date: notice?.details?.date || "",
-      time: notice?.details?.time || "",
-      location: notice?.details?.location || "",
-    },
-  })
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!formData.title.trim() || !formData.content.trim()) {
-      alert("제목과 내용을 입력해주세요.")
-      return
-    }
-    onSubmit(formData)
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="notice-title">제목</Label>
-        <Input
-          id="notice-title"
-          type="text"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="공지사항 제목을 입력하세요"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="notice-content">내용</Label>
-        <Textarea
-          id="notice-content"
-          value={formData.content}
-          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          placeholder="공지사항 내용을 입력하세요"
-          rows={4}
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="notice-type">유형</Label>
-        <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="일반">일반</SelectItem>
-            <SelectItem value="중요">중요</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="notice-date">날짜</Label>
-          <Input
-            id="notice-date"
-            type="text"
-            value={formData.details.date}
-            onChange={(e) => setFormData({ ...formData, details: { ...formData.details, date: e.target.value } })}
-            placeholder="2025.01.15"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="notice-time">시간</Label>
-          <Input
-            id="notice-time"
-            type="text"
-            value={formData.details.time}
-            onChange={(e) => setFormData({ ...formData, details: { ...formData.details, time: e.target.value } })}
-            placeholder="오후 7시"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="notice-location">장소</Label>
-          <Input
-            id="notice-location"
-            type="text"
-            value={formData.details.location}
-            onChange={(e) => setFormData({ ...formData, details: { ...formData.details, location: e.target.value } })}
-            placeholder="클럽회관"
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          취소
-        </Button>
-        <Button type="submit">{notice ? "수정" : "추가"}</Button>
-      </div>
-    </form>
+        {/* 공지사항 수정 다이얼로그 */}
+        {isEditNoticeOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">공지사항 수정</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">제목</label>
+                  <input
+                    type="text"
+                    value={noticeForm.title}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="공지사항 제목을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">내용</label>
+                  <textarea
+                    value={noticeForm.content}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
+                    className="w-full p-2 border rounded-lg h-24"
+                    placeholder="공지사항 내용을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">일시</label>
+                  <input
+                    type="date"
+                    value={noticeForm.date}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, date: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">시간</label>
+                  <input
+                    type="time"
+                    value={noticeForm.time}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, time: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">장소</label>
+                  <input
+                    type="text"
+                    value={noticeForm.location}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, location: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="장소를 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">유형</label>
+                  <select
+                    value={noticeForm.type}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, type: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  >
+                    <option value="일반">일반</option>
+                    <option value="긴급">긴급</option>
+                    <option value="모임">모임</option>
+                    <option value="행사">행사</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-6">
+                <Button onClick={handleEditNotice} className="flex-1">
+                  수정
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditNoticeOpen(false)
+                    setEditingNotice(null)
+                    setNoticeForm({
+                      title: "",
+                      content: "",
+                      date: "",
+                      time: "",
+                      location: "",
+                      type: "일반",
+                    })
+                  }}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+      <Footer />
+      <AdminPanel />
+      <AdminLogin isOpen={showLogin} onClose={() => setShowLogin(false)} onSuccess={handleLoginSuccess} />
+    </div>
   )
 }
