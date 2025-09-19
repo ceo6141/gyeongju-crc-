@@ -11,11 +11,13 @@ export function useAdminAuth() {
     setIsAuthenticated(checkAdminAuth())
   }, [])
 
-  const requireAuth = (callback: () => void) => {
+  const requireAuth = (callback?: () => void): boolean => {
     if (checkAdminAuth()) {
-      callback()
+      if (callback) callback()
+      return true
     } else {
       setShowLogin(true)
+      return false
     }
   }
 

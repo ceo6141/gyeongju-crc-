@@ -69,7 +69,7 @@ export default function HomePage() {
       const allNotices = [...userNotices]
 
       const sortedNotices = allNotices
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 3)
 
       setNotices(sortedNotices)
@@ -99,6 +99,11 @@ export default function HomePage() {
 
   const saveNotices = (userNotices: Notice[]) => {
     try {
+      if (!Array.isArray(userNotices)) {
+        console.error("[v0] 잘못된 공지사항 데이터 형식")
+        return false
+      }
+
       localStorage.setItem("homepage-notices", JSON.stringify(userNotices))
       console.log("[v0] 공지사항 저장 완료:", userNotices.length, "개")
       loadNotices()
@@ -106,6 +111,23 @@ export default function HomePage() {
     } catch (error) {
       console.error("[v0] 공지사항 저장 오류:", error)
       alert("공지사항 저장 중 오류가 발생했습니다.")
+      return false
+    }
+  }
+
+  const saveMemberNews = (data: MemberNews[]) => {
+    try {
+      if (!Array.isArray(data)) {
+        console.error("[v0] 잘못된 회원소식 데이터 형식")
+        return false
+      }
+
+      localStorage.setItem("homepage-news", JSON.stringify(data))
+      console.log("[v0] 홈페이지 회원소식 저장:", data.length, "개")
+      return true
+    } catch (error) {
+      console.error("[v0] 회원소식 저장 오류:", error)
+      alert("회원소식 저장 중 오류가 발생했습니다.")
       return false
     }
   }
@@ -225,7 +247,7 @@ export default function HomePage() {
 
   const [backgroundImage, setBackgroundImage] = useState("/images/club-photo.png")
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("ko-KR", {
       year: "numeric",
@@ -241,7 +263,8 @@ export default function HomePage() {
     category: "일반소식",
   })
 
-  const [editingNews, setEditingNews] = useState(null)
+  const [editingNews, setEditingNews] = useState<MemberNews | null>(null)
+
   const [isAddNewsOpen, setIsAddNewsOpen] = useState(false)
 
   const loadData = () => {
@@ -261,23 +284,14 @@ export default function HomePage() {
     }
   }
 
-  const saveMemberNews = (data) => {
-    try {
-      localStorage.setItem("homepage-news", JSON.stringify(data))
-      console.log("[v0] 홈페이지 회원소식 저장:", data.length, "개")
-    } catch (error) {
-      console.error("[v0] 회원소식 저장 오류:", error)
-    }
-  }
-
   const handleSaveNews = () => {
     if (!newsForm.title.trim() || !newsForm.date.trim()) {
       alert("제목과 날짜를 입력해주세요.")
       return
     }
 
-    const newsData = {
-      id: editingNews ? editingNews.id : Date.now(),
+    const newsData: MemberNews = {
+      id: editingNews ? editingNews.id : `news-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       ...newsForm,
     }
 
@@ -291,25 +305,26 @@ export default function HomePage() {
     }
 
     setMemberNews(updatedNews)
-    saveMemberNews(updatedNews)
-    setIsAddNewsOpen(false)
-    setEditingNews(null)
-    setNewsForm({
-      title: "",
-      date: "",
-      content: "",
-      category: "일반소식",
-    })
+    if (saveMemberNews(updatedNews)) {
+      setIsAddNewsOpen(false)
+      setEditingNews(null)
+      setNewsForm({
+        title: "",
+        date: "",
+        content: "",
+        category: "일반소식",
+      })
+    }
   }
 
-  const handleEditNews = (news) => {
+  const handleEditNews = (news: MemberNews) => {
     if (!requireAuth()) return
     setEditingNews(news)
     setNewsForm(news)
     setIsAddNewsOpen(true)
   }
 
-  const handleDeleteNews = (id) => {
+  const handleDeleteNews = (id: string | number) => {
     if (!requireAuth()) return
     if (confirm("이 회원소식을 삭제하시겠습니까?")) {
       const updatedNews = memberNews.filter((news) => news.id !== id)
@@ -326,7 +341,7 @@ export default function HomePage() {
 
     forceRefresh()
 
-    const handleStorageChange = (e) => {
+    const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "homepage-activities" || e.key === "homepage-news") {
         loadData()
       }
@@ -389,290 +404,27 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* 로타리클럽 소개 섹션 */}
-        <section className="py-24 bg-white" aria-labelledby="about-rotary-heading">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-20">
-              <h2 id="about-rotary-heading" className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight">
-                경주중앙로타리클럽이란?
-              </h2>
-              <p className="text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
-                로타리는 전 세계 200여 개국에서 120만 명 이상의 회원이 활동하는 국제적인 봉사단체입니다.
-                경주중앙로타리클럽은 경주 지역사회 발전과 국제친선을 위해 다양한 봉사활동을 펼치고 있습니다.
-              </p>
-            </div>
-
-            <div className="mb-16">
-              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-amber-50">
-                <CardHeader className="pb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-amber-100 rounded-full">
-                      <Icons.MapPin className="h-8 w-8 text-amber-600" />
-                    </div>
-                    <CardTitle className="text-2xl font-bold text-gray-900">클럽현황</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-4">
-                    <div className="flex gap-4 items-center">
-                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">창립:</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">2005년 1월 20일</span>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">회원:</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">68명</span>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">지구:</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">국제로타리3630지구</span>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">지역:</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">경주시</span>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">정기모임:</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">매월 첫째, 셋째주 목요일 오후 7시</span>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">장소:</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">본 클럽 회관</span>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <span className="font-semibold text-amber-600 min-w-[80px] text-lg">이사회:</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">매월 넷째주 목요일</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-8">
-              <article className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-blue-50">
-                <Card>
-                  <CardHeader className="pb-6">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-100 rounded-full">
-                        <Icons.BookOpen className="h-8 w-8 text-blue-600" />
-                      </div>
-                      <CardTitle className="text-2xl font-bold text-gray-900">경주중앙로타리클럽의 목적</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <ol className="space-y-4">
-                      <li className="flex gap-4">
-                        <span className="font-bold text-blue-600 min-w-[32px] text-lg">1.</span>
-                        <span className="text-gray-700 leading-relaxed text-lg">
-                          친목을 도모하고 봉사의 기회로 삼는다
-                        </span>
-                      </li>
-                      <li className="flex gap-4">
-                        <span className="font-bold text-blue-600 min-w-[32px] text-lg">2.</span>
-                        <span className="text-gray-700 leading-relaxed text-lg">
-                          사업과 전문직업의 높은 윤리적 표준을 장려하고, 모든 유용한 업무의 품위를 인정하며, 각자의
-                          직업을 통하여 사회에 봉사하는 정신을 함양한다
-                        </span>
-                      </li>
-                      <li className="flex gap-4">
-                        <span className="font-bold text-blue-600 min-w-[32px] text-lg">3.</span>
-                        <span className="text-gray-700 leading-relaxed text-lg">
-                          모든 로타리안이 개인적으로나 사업 및 사회생활에 있어서 봉사 이상을 적용하도록 장려한다
-                        </span>
-                      </li>
-                      <li className="flex gap-4">
-                        <span className="font-bold text-blue-600 min-w-[32px] text-lg">4.</span>
-                        <span className="text-gray-700 leading-relaxed text-lg">
-                          봉사 이상으로 결합된 사업인과 전문직업인의 세계적 친목을 통하여 국제간의 이해와 친선과 평화를
-                          증진한다
-                        </span>
-                      </li>
-                    </ol>
-                  </CardContent>
-                </Card>
-              </article>
-
-              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50">
-                <CardHeader className="pb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-indigo-100 rounded-full">
-                      <Icons.Award className="h-8 w-8 text-indigo-600" />
-                    </div>
-                    <CardTitle className="text-2xl font-bold text-gray-900">네가지 표준 (Four-Way Test)</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-gray-700 mb-6 text-lg leading-relaxed">
-                    우리가 생각하고 말하고 행동하는 모든 것에 대하여:
-                  </p>
-                  <ol className="space-y-4">
-                    <li className="flex gap-4">
-                      <span className="font-bold text-indigo-600 min-w-[32px] text-lg">1.</span>
-                      <span className="text-gray-700 leading-relaxed font-semibold text-lg">진실한가?</span>
-                    </li>
-                    <li className="flex gap-4">
-                      <span className="font-bold text-indigo-600 min-w-[32px] text-lg">2.</span>
-                      <span className="text-gray-700 leading-relaxed font-semibold text-lg">
-                        모든 관계자에게 공정한가?
-                      </span>
-                    </li>
-                    <li className="flex gap-4">
-                      <span className="font-bold text-indigo-600 min-w-[32px] text-lg">3.</span>
-                      <span className="text-gray-700 leading-relaxed font-semibold text-lg">
-                        선의와 우정을 증진하는가?
-                      </span>
-                    </li>
-                    <li className="flex gap-4">
-                      <span className="font-bold text-indigo-600 min-w-[32px] text-lg">4.</span>
-                      <span className="text-gray-700 leading-relaxed font-semibold text-lg">
-                        모든 관계자에게 이익이 되는가?
-                      </span>
-                    </li>
-                  </ol>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-purple-50">
-                <CardHeader className="pb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-purple-100 rounded-full">
-                      <Icons.Heart className="h-8 w-8 text-purple-600" />
-                    </div>
-                    <CardTitle className="text-2xl font-bold text-gray-900">로타리 핵심가치</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-4">
-                    <div className="flex gap-4">
-                      <span className="text-purple-600 text-xl">•</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">
-                        <span className="font-semibold">봉사 (Service)</span> - 우리의 직업, 지역사회, 그리고 전 세계를
-                        위한 봉사
-                      </span>
-                    </div>
-                    <div className="flex gap-4">
-                      <span className="text-purple-600 text-xl">•</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">
-                        <span className="font-semibold">친목 (Fellowship)</span> - 지역적, 국가적, 국제적 차원에서의
-                        지속적인 우정
-                      </span>
-                    </div>
-                    <div className="flex gap-4">
-                      <span className="text-purple-600 text-xl">•</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">
-                        <span className="font-semibold">다양성 (Diversity)</span> - 다양한 직업, 문화, 관점을 가진
-                        사람들과의 협력
-                      </span>
-                    </div>
-                    <div className="flex gap-4">
-                      <span className="text-purple-600 text-xl">•</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">
-                        <span className="font-semibold">고결성 (Integrity)</span> - 우리의 행동과 관계에서 보여주는
-                        정직함
-                      </span>
-                    </div>
-                    <div className="flex gap-4">
-                      <span className="text-purple-600 text-xl">•</span>
-                      <span className="text-gray-700 leading-relaxed text-lg">
-                        <span className="font-semibold">리더십 (Leadership)</span> - 지역사회와 직장에서의 리더십 개발
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-green-50">
-                <CardHeader className="pb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-green-100 rounded-full">
-                      <Icons.History className="h-8 w-8 text-green-600" />
-                    </div>
-                    <CardTitle className="text-2xl font-bold text-gray-900">로타리 역사</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-5">
-                    <div className="flex gap-6 items-start">
-                      <Badge
-                        variant="outline"
-                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
-                      >
-                        1905년
-                      </Badge>
-                      <span className="text-gray-700 leading-relaxed text-lg">
-                        폴 해리스가 시카고에서 최초의 로타리클럽 창립
-                      </span>
-                    </div>
-                    <div className="flex gap-6 items-start">
-                      <Badge
-                        variant="outline"
-                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
-                      >
-                        1910년
-                      </Badge>
-                      <span className="text-gray-700 leading-relaxed text-lg">전국로타리클럽연합회 결성</span>
-                    </div>
-                    <div className="flex gap-6 items-start">
-                      <Badge
-                        variant="outline"
-                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
-                      >
-                        1922년
-                      </Badge>
-                      <span className="text-gray-700 leading-relaxed text-lg">국제로타리 명칭 채택</span>
-                    </div>
-                    <div className="flex gap-6 items-start">
-                      <Badge
-                        variant="outline"
-                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
-                      >
-                        1947년
-                      </Badge>
-                      <span className="text-gray-700 leading-relaxed text-lg">
-                        한국 최초 로타리클럽(서울로타리클럽) 창립
-                      </span>
-                    </div>
-                    <div className="flex gap-6 items-start">
-                      <Badge
-                        variant="outline"
-                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-700 border-blue-200"
-                      >
-                        1985년
-                      </Badge>
-                      <span className="text-gray-700 leading-relaxed text-lg">폴리오플러스 프로그램 시작</span>
-                    </div>
-                    <div className="flex gap-6 items-start">
-                      <Badge
-                        variant="outline"
-                        className="min-w-fit text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-700 border-blue-200"
-                      >
-                        2005년
-                      </Badge>
-                      <span className="text-gray-700 leading-relaxed text-lg font-semibold text-blue-700">
-                        경주중앙로타리클럽 창립
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
         {/* 공지사항 섹션 */}
-        <div className="absolute bottom-4 left-0 right-0 z-20 px-4 max-w-6xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl p-2">
+        <div className="absolute bottom-2 left-0 right-0 z-20 px-4 max-w-7xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl p-1.5">
             {/* 편집 모드 컨트롤 */}
-            <div className="text-center mb-2">
-              <Button
-                onClick={handleEditModeToggle}
-                variant={isEditMode ? "destructive" : "default"}
-                className="mb-1 text-xs px-3 py-1"
-              >
-                {isEditMode ? "편집 모드 종료" : "공지사항 관리 (관리자)"}
-              </Button>
+            <div className="text-center mb-1">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <Button
+                  onClick={handleEditModeToggle}
+                  variant={isEditMode ? "destructive" : "default"}
+                  className={`text-sm px-16 py-2 font-semibold rounded-lg transition-all duration-300 ${
+                    !isEditMode
+                      ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-lg hover:shadow-xl"
+                      : "bg-red-600 hover:bg-red-700 text-white"
+                  }`}
+                >
+                  {isEditMode ? "편집 모드 종료" : "공지사항"}
+                </Button>
+              </div>
 
               {isEditMode && (
-                <div className="mb-2 p-1 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
+                <div className="mb-1 p-1 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
                   <p className="text-yellow-800 font-medium text-xs">
                     📝 편집 모드 활성화됨 - 공지사항을 추가, 수정, 삭제할 수 있습니다
                   </p>
@@ -686,50 +438,56 @@ export default function HomePage() {
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5">
               {notices.length > 0 ? (
                 notices.slice(0, 3).map((notice) => (
                   <Card
                     key={notice.id}
                     className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-r from-white to-gray-50"
                   >
-                    <CardContent className="p-1.5">
-                      <div className="flex flex-col h-full space-y-1">
+                    <CardContent className="p-1">
+                      <div className="flex flex-col h-full space-y-0.5">
                         {/* 제목 */}
-                        <h3 className="text-sm font-bold text-blue-700 leading-tight line-clamp-1">{notice.title}</h3>
+                        <h3 className="text-xs font-bold text-blue-700 leading-tight line-clamp-1 text-center">
+                          {notice.title}
+                        </h3>
 
                         {/* 세부 정보를 가로로 배치 */}
                         <div className="space-y-0.5">
                           {notice.details?.date && (
                             <div className="flex items-center gap-1 text-xs">
-                              <span className="font-medium text-gray-600 min-w-[30px]">일시:</span>
+                              <span className="font-medium text-gray-600 min-w-[25px]">일시:</span>
                               <span className="text-blue-600 truncate">{notice.details.date}</span>
                             </div>
                           )}
                           {notice.details?.time && (
                             <div className="flex items-center gap-1 text-xs">
-                              <span className="font-medium text-gray-600 min-w-[30px]">시간:</span>
+                              <span className="font-medium text-gray-600 min-w-[25px]">시간:</span>
                               <span className="text-blue-600 truncate">{notice.details.time}</span>
                             </div>
                           )}
                           {notice.details?.location && (
                             <div className="flex items-center gap-1 text-xs">
-                              <span className="font-medium text-gray-600 min-w-[30px]">장소:</span>
+                              <span className="font-medium text-gray-600 min-w-[25px]">장소:</span>
                               <span className="text-blue-600 truncate">{notice.details.location}</span>
                             </div>
                           )}
                         </div>
 
                         {/* 내용 */}
-                        <p className="text-xs text-gray-700 leading-relaxed line-clamp-2 flex-1">{notice.content}</p>
+                        <p className="text-xs text-gray-700 leading-relaxed line-clamp-1 flex-1">{notice.content}</p>
 
                         {/* 하단 정보 */}
-                        <div className="flex justify-between items-end mt-1">
+                        <div className="flex justify-between items-end mt-0.5">
                           <Badge
                             variant="secondary"
                             className="text-xs font-normal bg-gray-100 text-gray-500 border-0 px-1 py-0.5"
                           >
-                            {notice.date}
+                            {new Date().toLocaleDateString("ko-KR", {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                            })}
                           </Badge>
                           {isEditMode && (
                             <div className="flex gap-0.5">
@@ -737,17 +495,17 @@ export default function HomePage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openEditDialog(notice)}
-                                className="h-5 w-5 p-0"
+                                className="h-4 w-4 p-0"
                               >
-                                <Icons.Edit className="h-2.5 w-2.5" />
+                                <Icons.Edit className="h-2 w-2" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => handleDeleteNotice(notice)}
-                                className="h-5 w-5 p-0"
+                                className="h-4 w-4 p-0"
                               >
-                                <Icons.Trash2 className="h-2.5 w-2.5" />
+                                <Icons.Trash2 className="h-2 w-2" />
                               </Button>
                             </div>
                           )}
@@ -758,7 +516,7 @@ export default function HomePage() {
                 ))
               ) : (
                 <Card className="border-0 shadow-sm bg-gradient-to-r from-white to-gray-50 col-span-3">
-                  <CardContent className="p-2 text-center">
+                  <CardContent className="p-1.5 text-center">
                     <p className="text-gray-500 text-xs">등록된 공지사항이 없습니다.</p>
                     {isEditMode && (
                       <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-1 text-xs px-3 py-1 mt-1">
@@ -959,6 +717,275 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {/* 로타리클럽 소개 섹션 */}
+      <section className="py-24 bg-white" aria-labelledby="about-rotary-heading">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 id="about-rotary-heading" className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight">
+              경주중앙로타리클럽이란?
+            </h2>
+            <p className="text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
+              로타리는 전 세계 200여 개국에서 120만 명 이상의 회원이 활동하는 국제적인 봉사단체입니다.
+              경주중앙로타리클럽은 경주 지역사회 발전과 국제친선을 위해 다양한 봉사활동을 펼치고 있습니다.
+            </p>
+          </div>
+
+          <div className="mb-16">
+            <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-amber-50">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-amber-100 rounded-full">
+                    <Icons.MapPin className="h-8 w-8 text-amber-600" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900">클럽현황</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-4">
+                  <div className="flex gap-4 items-center">
+                    <span className="font-semibold text-amber-600 min-w-[80px] text-lg">창립:</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">2005년 1월 20일</span>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <span className="font-semibold text-amber-600 min-w-[80px] text-lg">회원:</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">68명</span>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <span className="font-semibold text-amber-600 min-w-[80px] text-lg">지구:</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">국제로타리3630지구</span>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <span className="font-semibold text-amber-600 min-w-[80px] text-lg">지역:</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">경주시</span>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <span className="font-semibold text-amber-600 min-w-[80px] text-lg">정기모임:</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">매월 첫째, 셋째주 목요일 오후 7시</span>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <span className="font-semibold text-amber-600 min-w-[80px] text-lg">장소:</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">본 클럽 회관</span>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <span className="font-semibold text-amber-600 min-w-[80px] text-lg">이사회:</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">매월 넷째주 목요일</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-8">
+            <article className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-blue-50">
+              <Card>
+                <CardHeader className="pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-100 rounded-full">
+                      <Icons.BookOpen className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">경주중앙로타리클럽의 목적</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <ol className="space-y-4">
+                    <li className="flex gap-4">
+                      <span className="font-bold text-blue-600 min-w-[32px] text-lg">1.</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        친목을 도모하고 봉사의 기회로 삼는다
+                      </span>
+                    </li>
+                    <li className="flex gap-4">
+                      <span className="font-bold text-blue-600 min-w-[32px] text-lg">2.</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        사업과 전문직업의 높은 윤리적 표준을 장려하고, 모든 유용한 업무의 품위를 인정하며, 각자의 직업을
+                        통하여 사회에 봉사하는 정신을 함양한다
+                      </span>
+                    </li>
+                    <li className="flex gap-4">
+                      <span className="font-bold text-blue-600 min-w-[32px] text-lg">3.</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        모든 로타리안이 개인적으로나 사업 및 사회생활에 있어서 봉사 이상을 적용하도록 장려한다
+                      </span>
+                    </li>
+                    <li className="flex gap-4">
+                      <span className="font-bold text-blue-600 min-w-[32px] text-lg">4.</span>
+                      <span className="text-gray-700 leading-relaxed text-lg">
+                        봉사 이상으로 결합된 사업인과 전문직업인의 세계적 친목을 통하여 국제간의 이해와 친선과 평화를
+                        증진한다
+                      </span>
+                    </li>
+                  </ol>
+                </CardContent>
+              </Card>
+            </article>
+
+            <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-indigo-50">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-indigo-100 rounded-full">
+                    <Icons.Award className="h-8 w-8 text-indigo-600" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900">네가지 표준 (Four-Way Test)</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-gray-700 mb-6 text-lg leading-relaxed">
+                  우리가 생각하고 말하고 행동하는 모든 것에 대하여:
+                </p>
+                <ol className="space-y-4">
+                  <li className="flex gap-4">
+                    <span className="font-bold text-indigo-600 min-w-[32px] text-lg">1.</span>
+                    <span className="text-gray-700 leading-relaxed font-semibold text-lg">진실한가?</span>
+                  </li>
+                  <li className="flex gap-4">
+                    <span className="font-bold text-indigo-600 min-w-[32px] text-lg">2.</span>
+                    <span className="text-gray-700 leading-relaxed font-semibold text-lg">
+                      모든 관계자에게 공정한가?
+                    </span>
+                  </li>
+                  <li className="flex gap-4">
+                    <span className="font-bold text-indigo-600 min-w-[32px] text-lg">3.</span>
+                    <span className="text-gray-700 leading-relaxed font-semibold text-lg">
+                      선의와 우정을 증진하는가?
+                    </span>
+                  </li>
+                  <li className="flex gap-4">
+                    <span className="font-bold text-indigo-600 min-w-[32px] text-lg">4.</span>
+                    <span className="text-gray-700 leading-relaxed font-semibold text-lg">
+                      모든 관계자에게 이익이 되는가?
+                    </span>
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-purple-50">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <Icons.Heart className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900">로타리 핵심가치</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <span className="text-purple-600 text-xl">•</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">
+                      <span className="font-semibold">봉사 (Service)</span> - 우리의 직업, 지역사회, 그리고 전 세계를
+                      위한 봉사
+                    </span>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-purple-600 text-xl">•</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">
+                      <span className="font-semibold">친목 (Fellowship)</span> - 지역적, 국가적, 국제적 차원에서의
+                      지속적인 우정
+                    </span>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-purple-600 text-xl">•</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">
+                      <span className="font-semibold">다양성 (Diversity)</span> - 다양한 직업, 문화, 관점을 가진
+                      사람들과의 협력
+                    </span>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-purple-600 text-xl">•</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">
+                      <span className="font-semibold">고결성 (Integrity)</span> - 우리의 행동과 관계에서 보여주는 정직함
+                    </span>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="text-purple-600 text-xl">•</span>
+                    <span className="text-gray-700 leading-relaxed text-lg">
+                      <span className="font-semibold">리더십 (Leadership)</span> - 지역사회와 직장에서의 리더십 개발
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-gradient-to-br from-white to-green-50">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <Icons.History className="h-8 w-8 text-green-600" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900">로타리 역사</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-5">
+                  <div className="flex gap-6 items-start">
+                    <Badge
+                      variant="outline"
+                      className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
+                    >
+                      1905년
+                    </Badge>
+                    <span className="text-gray-700 leading-relaxed text-lg">
+                      폴 해리스가 시카고에서 최초의 로타리클럽 창립
+                    </span>
+                  </div>
+                  <div className="flex gap-6 items-start">
+                    <Badge
+                      variant="outline"
+                      className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
+                    >
+                      1910년
+                    </Badge>
+                    <span className="text-gray-700 leading-relaxed text-lg">전국로타리클럽연합회 결성</span>
+                  </div>
+                  <div className="flex gap-6 items-start">
+                    <Badge
+                      variant="outline"
+                      className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
+                    >
+                      1922년
+                    </Badge>
+                    <span className="text-gray-700 leading-relaxed text-lg">국제로타리 명칭 채택</span>
+                  </div>
+                  <div className="flex gap-6 items-start">
+                    <Badge
+                      variant="outline"
+                      className="min-w-fit text-sm font-semibold px-3 py-1 bg-green-100 text-green-700 border-green-200"
+                    >
+                      1947년
+                    </Badge>
+                    <span className="text-gray-700 leading-relaxed text-lg">
+                      한국 최초 로타리클럽(서울로타리클럽) 창립
+                    </span>
+                  </div>
+                  <div className="flex gap-6 items-start">
+                    <Badge
+                      variant="outline"
+                      className="min-w-fit text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-700 border-blue-200"
+                    >
+                      1985년
+                    </Badge>
+                    <span className="text-gray-700 leading-relaxed text-lg">폴리오플러스 프로그램 시작</span>
+                  </div>
+                  <div className="flex gap-6 items-start">
+                    <Badge
+                      variant="outline"
+                      className="min-w-fit text-sm font-semibold px-3 py-1 bg-blue-100 text-blue-700 border-blue-200"
+                    >
+                      2005년
+                    </Badge>
+                    <span className="text-gray-700 leading-relaxed text-lg font-semibold text-blue-700">
+                      경주중앙로타리클럽 창립
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <Footer />
       <AdminPanel />
       <AdminLogin isOpen={showLogin} onClose={() => setShowLogin(false)} onSuccess={handleLoginSuccess} />
