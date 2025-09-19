@@ -93,7 +93,7 @@ export class UnifiedDataManager<T extends UnifiedDataItem> {
   }
 
   // 모든 백업에 저장
-  private saveToAllBackups(): boolean {
+  public saveToAllBackups(): boolean {
     if (!this.isClient()) return false
 
     try {
@@ -119,6 +119,15 @@ export class UnifiedDataManager<T extends UnifiedDataItem> {
       console.error(`[v0] ${this.config.storageKey} 저장 실패:`, error)
       return false
     }
+  }
+
+  public setData(data: T[]): boolean {
+    this.data = [...data]
+    return this.saveToAllBackups()
+  }
+
+  public get currentData(): T[] {
+    return [...this.data]
   }
 
   // 이벤트 발생

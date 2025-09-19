@@ -80,23 +80,21 @@ export default function NoticesClient() {
 
   const saveNotices = (updatedNotices: Notice[]) => {
     try {
-      // 통합 매니저는 내부적으로 정렬과 백업을 처리
-      console.log("[v0] 통합 매니저로 공지사항 저장 시작:", updatedNotices.length, "개")
+      console.log("[v0] 공지사항 저장 시작:", updatedNotices.length, "개")
 
-      // 기존 데이터를 모두 삭제하고 새 데이터로 교체
-      const currentNotices = unifiedNoticesManager.getAll()
-      currentNotices.forEach((notice) => {
-        unifiedNoticesManager.delete(notice.id)
-      })
+      // 통합 매니저의 내부 데이터를 직접 업데이트
+      unifiedNoticesManager["data"] = [...updatedNotices]
 
-      // 새 데이터 추가
-      updatedNotices.forEach((notice) => {
-        unifiedNoticesManager.add(notice)
-      })
+      // 모든 백업에 저장
+      const success = unifiedNoticesManager["saveToAllBackups"]()
 
-      const finalNotices = unifiedNoticesManager.getAll()
-      setNotices(finalNotices)
-      console.log("[v0] 통합 매니저로 공지사항 저장 완료:", finalNotices.length, "개")
+      if (success) {
+        const finalNotices = unifiedNoticesManager.getAll()
+        setNotices(finalNotices)
+        console.log("[v0] 공지사항 저장 완료:", finalNotices.length, "개")
+      } else {
+        throw new Error("저장 실패")
+      }
     } catch (error) {
       console.error("[v0] 공지사항 저장 실패:", error)
       alert("데이터 저장에 실패했습니다. 다시 시도해주세요.")
@@ -132,7 +130,8 @@ export default function NoticesClient() {
   const handleAddNotice = () => {
     if (!newNotice.title.trim() || !newNotice.content.trim()) return
 
-    const notice: Omit<Notice, "id"> = {
+    const notice: Notice = {
+      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title: newNotice.title,
       content: newNotice.content,
       location: newNotice.location,
@@ -142,13 +141,18 @@ export default function NoticesClient() {
       important: newNotice.important,
     }
 
-    const success = unifiedNoticesManager.add(notice)
+    const currentNotices = unifiedNoticesManager.getAll()
+    const updatedNotices = [notice, ...currentNotices]
+
+    // 통합 매니저의 내부 데이터 직접 업데이트
+    unifiedNoticesManager["data"] = updatedNotices
+    const success = unifiedNoticesManager["saveToAllBackups"]()
+
     if (success) {
-      const updatedNotices = unifiedNoticesManager.getAll()
       setNotices(updatedNotices)
       setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
       setShowAddForm(false)
-      console.log("[v0] 통합 매니저로 새 공지사항 추가:", notice.title)
+      console.log("[v0] 새 공지사항 추가:", notice.title)
     } else {
       alert("공지사항 추가에 실패했습니다.")
     }
@@ -172,22 +176,30 @@ export default function NoticesClient() {
   const handleUpdateNotice = () => {
     if (!editingNotice || !newNotice.title.trim() || !newNotice.content.trim()) return
 
-    const updates: Partial<Notice> = {
-      title: newNotice.title,
-      content: newNotice.content,
-      location: newNotice.location,
-      eventDate: newNotice.eventDate,
-      important: newNotice.important,
-    }
+    const currentNotices = unifiedNoticesManager.getAll()
+    const updatedNotices = currentNotices.map((notice) =>
+      notice.id === editingNotice.id
+        ? {
+            ...notice,
+            title: newNotice.title,
+            content: newNotice.content,
+            location: newNotice.location,
+            eventDate: newNotice.eventDate,
+            important: newNotice.important,
+          }
+        : notice,
+    )
 
-    const success = unifiedNoticesManager.update(editingNotice.id, updates)
+    // 통합 매니저의 내부 데이터 직접 업데이트
+    unifiedNoticesManager["data"] = updatedNotices
+    const success = unifiedNoticesManager["saveToAllBackups"]()
+
     if (success) {
-      const updatedNotices = unifiedNoticesManager.getAll()
       setNotices(updatedNotices)
       setEditingNotice(null)
       setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
       setShowAddForm(false)
-      console.log("[v0] 통합 매니저로 공지사항 수정 완료:", newNotice.title)
+      console.log("[v0] 공지사항 수정 완료:", newNotice.title)
     } else {
       alert("공지사항 수정에 실패했습니다.")
     }
@@ -201,12 +213,17 @@ export default function NoticesClient() {
 
   const handleDeleteNotice = (id: string) => {
     requireAuth(() => {
-      const noticeToDelete = notices.find((n) => n.id === id)
-      const success = unifiedNoticesManager.delete(id)
+      const currentNotices = unifiedNoticesManager.getAll()
+      const noticeToDelete = currentNotices.find((n) => n.id === id)
+      const updatedNotices = currentNotices.filter((notice) => notice.id !== id)
+
+      // 통합 매니저의 내부 데이터 직접 업데이트
+      unifiedNoticesManager["data"] = updatedNotices
+      const success = unifiedNoticesManager["saveToAllBackups"]()
+
       if (success) {
-        const updatedNotices = unifiedNoticesManager.getAll()
         setNotices(updatedNotices)
-        console.log("[v0] 통합 매니저로 공지사항 삭제 완료:", noticeToDelete?.title)
+        console.log("[v0] 공지사항 삭제 완료:", noticeToDelete?.title)
       } else {
         alert("공지사항 삭제에 실패했습니다.")
       }
