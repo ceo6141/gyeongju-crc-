@@ -740,3 +740,12 @@ export const Icons = {
     </svg>
   ),
 }
+
+export const ExternalLinkIcon = Icons.ExternalLink
+export const GlobeIcon = Icons.Globe
+export const SmartphoneIcon = Icons.Smartphone
+export const UsersIcon = Icons.Users
+export const BookOpenIcon = Icons.BookOpen
+export const AwardIcon = Icons.Award
+export const HeartIcon = Icons.Heart
+export const HistoryIcon = Icons.History
