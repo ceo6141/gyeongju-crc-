@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Edit, Trash2, X, Upload, Download } from "lucide-react"
+import { Icons } from "@/components/icons"
 import Image from "next/image"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
@@ -334,13 +334,13 @@ export default function GalleryPage() {
             {isEditMode && (
               <div className="flex justify-center gap-2 mb-4">
                 <Button onClick={handleBackupDownload} variant="outline" className="gap-2 bg-transparent">
-                  <Download className="h-4 w-4" />
+                  <Icons.Download className="h-4 w-4" />
                   백업 다운로드
                 </Button>
                 <Dialog open={isRestoreDialogOpen} onOpenChange={setIsRestoreDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="gap-2 bg-transparent">
-                      <Upload className="h-4 w-4" />
+                      <Icons.Upload className="h-4 w-4" />
                       백업 복원
                     </Button>
                   </DialogTrigger>
@@ -382,7 +382,7 @@ export default function GalleryPage() {
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="lg" className="gap-2">
-                    <Plus className="h-5 w-5" />
+                    <Icons.Plus className="h-5 w-5" />
                     사진 추가
                   </Button>
                 </DialogTrigger>
@@ -486,10 +486,10 @@ export default function GalleryPage() {
                   {isEditMode && (
                     <div className="absolute top-2 right-2 flex gap-1">
                       <Button size="sm" variant="secondary" onClick={() => openEditDialog(image)}>
-                        <Edit className="h-4 w-4" />
+                        <Icons.Edit className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="destructive" onClick={() => handleDeleteImage(image)}>
-                        <Trash2 className="h-4 w-4" />
+                        <Icons.Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   )}
@@ -584,7 +584,7 @@ export default function GalleryPage() {
                   className="absolute -top-12 right-0 text-white hover:bg-white/20"
                   onClick={() => setZoomedImage(null)}
                 >
-                  <X className="h-6 w-6" />
+                  <Icons.X className="h-6 w-6" />
                 </Button>
                 <Image
                   src={zoomedImage.imageUrl || "/placeholder.svg"}

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { DownloadIcon, UploadIcon, DatabaseIcon } from "@/components/icons"
+import { Icons } from "@/components/icons"
 import { backupData, restoreData, syncAllData } from "@/lib/data-manager"
 
 export function DataBackup() {
@@ -59,14 +59,14 @@ export function DataBackup() {
   return (
     <div className="flex gap-2">
       <Button variant="outline" size="sm" onClick={handleBackup} className="gap-2 bg-transparent">
-        <DownloadIcon className="h-4 w-4" />
+        <Icons.Download />
         백업
       </Button>
 
       <Dialog open={isRestoreOpen} onOpenChange={setIsRestoreOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-            <UploadIcon className="h-4 w-4" />
+            <Icons.Upload />
             복원
           </Button>
         </DialogTrigger>
@@ -97,7 +97,7 @@ export function DataBackup() {
       </Dialog>
 
       <Button variant="outline" size="sm" onClick={handleSync} className="gap-2 bg-transparent">
-        <DatabaseIcon className="h-4 w-4" />
+        <Icons.Database />
         동기화
       </Button>
     </div>

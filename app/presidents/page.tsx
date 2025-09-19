@@ -4,7 +4,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CrownIcon } from "@/components/icons"
+import { Icons } from "@/components/icons"
 import Image from "next/image"
 
 const presidents = [
@@ -178,7 +178,7 @@ export default function PresidentsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <CrownIcon className="h-16 w-16 text-primary mx-auto mb-4" />
+          <Icons.Crown className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-4xl font-bold mb-4">역대 회장</h1>
           <p className="text-lg text-muted-foreground">경주중앙로타리클럽을 이끌어온 역대 회장님들을 소개합니다.</p>
         </div>

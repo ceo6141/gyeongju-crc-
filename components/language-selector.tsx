@@ -1,7 +1,7 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { GlobeIcon } from "@/components/icons"
+import { Icons } from "@/components/icons"
 
 const languages = [
   { code: "ko", name: "한국어", flag: "🇰🇷" },
@@ -22,7 +22,7 @@ export function LanguageSelector({ currentLanguage, onLanguageChange }: Language
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2">
-          <GlobeIcon className="h-4 w-4" />
+          <Icons.Globe className="h-4 w-4" />
           <span className="hidden sm:inline">
             {currentLang.flag} {currentLang.name}
           </span>

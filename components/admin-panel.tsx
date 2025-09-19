@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, Save, X, Shield } from "lucide-react"
+import { Icons } from "@/components/icons"
 import Image from "next/image"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
@@ -90,7 +90,7 @@ export function AdminPanel() {
           className="fixed bottom-4 right-4 bg-blue-600 text-white hover:bg-blue-700"
           onClick={() => setShowLogin(true)}
         >
-          <Shield className="h-4 w-4 mr-2" />
+          <Icons.Shield className="h-4 w-4 mr-2" />
           관리자 로그인
         </Button>
 
@@ -105,11 +105,11 @@ export function AdminPanel() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-600" />
+              <Icons.Shield className="h-5 w-5 text-green-600" />
               관리자 패널
             </CardTitle>
             <Button variant="ghost" size="sm" onClick={logout}>
-              <X className="h-4 w-4" />
+              <Icons.X className="h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
@@ -143,10 +143,10 @@ export function AdminPanel() {
                       />
                       <div className="flex gap-1">
                         <Button size="sm" onClick={handleSaveImageEdit}>
-                          <Save className="h-3 w-3" />
+                          <Icons.Save className="h-3 w-3" />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => setEditingImage(null)}>
-                          <X className="h-3 w-3" />
+                          <Icons.X className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
@@ -174,10 +174,10 @@ export function AdminPanel() {
                           </Button>
                         )}
                         <Button size="sm" variant="ghost" onClick={() => handleEditImage(image)}>
-                          <Edit className="h-3 w-3" />
+                          <Icons.Edit className="h-3 w-3" />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => handleDeleteImage(image.id)}>
-                          <Trash2 className="h-3 w-3" />
+                          <Icons.Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </>

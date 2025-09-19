@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Heart, Award, BookOpen, History, MapPin, Plus, Edit, Trash2 } from "lucide-react"
+import { Icons } from "@/components/icons"
 import Image from "next/image"
 import { CacheBuster } from "@/components/cache-buster"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
@@ -412,7 +412,7 @@ export default function HomePage() {
 
               {isEditMode && (
                 <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-2 text-sm px-4 py-2">
-                  <Plus className="h-4 w-4" />새 공지사항 추가
+                  <Icons.Plus className="h-4 w-4" />새 공지사항 추가
                 </Button>
               )}
             </div>
@@ -470,7 +470,7 @@ export default function HomePage() {
                                 onClick={() => openEditDialog(notice)}
                                 className="h-6 w-6 p-0"
                               >
-                                <Edit className="h-3 w-3" />
+                                <Icons.Edit className="h-3 w-3" />
                               </Button>
                               <Button
                                 size="sm"
@@ -478,7 +478,7 @@ export default function HomePage() {
                                 onClick={() => handleDeleteNotice(notice)}
                                 className="h-6 w-6 p-0"
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Icons.Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
                           )}
@@ -493,7 +493,7 @@ export default function HomePage() {
                     <p className="text-gray-500 text-sm">등록된 공지사항이 없습니다.</p>
                     {isEditMode && (
                       <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-2 text-sm px-4 py-2 mt-2">
-                        <Plus className="h-4 w-4" />첫 공지사항 추가
+                        <Icons.Plus className="h-4 w-4" />첫 공지사항 추가
                       </Button>
                     )}
                   </CardContent>
@@ -708,7 +708,7 @@ export default function HomePage() {
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-amber-100 rounded-full">
-                      <MapPin className="h-8 w-8 text-amber-600" />
+                      <Icons.MapPin className="h-8 w-8 text-amber-600" />
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">클럽현황</CardTitle>
                   </div>
@@ -754,7 +754,7 @@ export default function HomePage() {
                   <CardHeader className="pb-6">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-blue-100 rounded-full">
-                        <BookOpen className="h-8 w-8 text-blue-600" />
+                        <Icons.BookOpen className="h-8 w-8 text-blue-600" />
                       </div>
                       <CardTitle className="text-2xl font-bold text-gray-900">경주중앙로타리클럽의 목적</CardTitle>
                     </div>
@@ -796,7 +796,7 @@ export default function HomePage() {
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-indigo-100 rounded-full">
-                      <Award className="h-8 w-8 text-indigo-600" />
+                      <Icons.Award className="h-8 w-8 text-indigo-600" />
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">네가지 표준 (Four-Way Test)</CardTitle>
                   </div>
@@ -836,7 +836,7 @@ export default function HomePage() {
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-purple-100 rounded-full">
-                      <Heart className="h-8 w-8 text-purple-600" />
+                      <Icons.Heart className="h-8 w-8 text-purple-600" />
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">로타리 핵심가치</CardTitle>
                   </div>
@@ -885,7 +885,7 @@ export default function HomePage() {
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-green-100 rounded-full">
-                      <History className="h-8 w-8 text-green-600" />
+                      <Icons.History className="h-8 w-8 text-green-600" />
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">로타리 역사</CardTitle>
                   </div>
