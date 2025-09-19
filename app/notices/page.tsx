@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Icons } from "@/components/icons"
+import { Bell, Calendar, Clock, MapPin, FileText, Edit, Trash2, Plus, Settings } from "lucide-react"
 import { syncNoticesData, saveNoticesData } from "@/lib/notices-data"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
@@ -230,7 +230,7 @@ export default function NoticesPage() {
         <section className="py-8 bg-amber-50 border-b border-amber-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center space-x-4">
-              <Icons.Bell className="h-6 w-6 text-amber-600" />
+              <Bell className="h-6 w-6 text-amber-600" />
               <div className="text-center">
                 <h3 className="text-lg font-bold text-amber-800 mb-2">중요 공지사항</h3>
                 <div className="space-y-1 text-amber-700">
@@ -241,19 +241,19 @@ export default function NoticesPage() {
                         <div className="flex items-center justify-center space-x-4 text-sm mt-1">
                           {notice.details.date && (
                             <div className="flex items-center space-x-1">
-                              <Icons.Calendar className="h-3 w-3" />
+                              <Calendar className="h-3 w-3" />
                               <span>{notice.details.date}</span>
                             </div>
                           )}
                           {notice.details.time && (
                             <div className="flex items-center space-x-1">
-                              <Icons.Clock className="h-3 w-3" />
+                              <Clock className="h-3 w-3" />
                               <span>{notice.details.time}</span>
                             </div>
                           )}
                           {notice.details.location && (
                             <div className="flex items-center space-x-1">
-                              <Icons.MapPin className="h-3 w-3" />
+                              <MapPin className="h-3 w-3" />
                               <span>{notice.details.location}</span>
                             </div>
                           )}
@@ -286,7 +286,7 @@ export default function NoticesPage() {
                 {notices.length === 0 ? (
                   <Card className="text-center py-12 bg-white shadow-sm">
                     <CardContent>
-                      <Icons.FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-500 text-lg">등록된 공지사항이 없습니다.</p>
                       <p className="text-gray-400 text-sm mt-2">새로운 공지사항을 추가해보세요.</p>
                     </CardContent>
@@ -303,9 +303,9 @@ export default function NoticesPage() {
                         <div className="flex justify-between items-start">
                           <div className="flex items-center space-x-2">
                             {notice.type === "중요" ? (
-                              <Icons.Bell className="h-4 w-4 text-amber-600" />
+                              <Bell className="h-4 w-4 text-amber-600" />
                             ) : (
-                              <Icons.Calendar className="h-4 w-4 text-blue-600" />
+                              <Calendar className="h-4 w-4 text-blue-600" />
                             )}
                             <CardTitle className="text-lg">{notice.title}</CardTitle>
                           </div>
@@ -318,10 +318,10 @@ export default function NoticesPage() {
                             </Badge>
                             <Badge variant="outline">{notice.date}</Badge>
                             <Button size="sm" variant="outline" onClick={() => handleEditNotice(notice)}>
-                              <Icons.Edit className="h-3 w-3" />
+                              <Edit className="h-3 w-3" />
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => handleDeleteNotice(notice.id)}>
-                              <Icons.Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         </div>
@@ -334,7 +334,7 @@ export default function NoticesPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
                               {notice.details.date && (
                                 <div className="flex items-center space-x-2">
-                                  <Icons.Calendar className="h-4 w-4 text-primary" />
+                                  <Calendar className="h-4 w-4 text-primary" />
                                   <span>
                                     <strong>일시:</strong> {notice.details.date}
                                   </span>
@@ -342,7 +342,7 @@ export default function NoticesPage() {
                               )}
                               {notice.details.time && (
                                 <div className="flex items-center space-x-2">
-                                  <Icons.Clock className="h-4 w-4 text-primary" />
+                                  <Clock className="h-4 w-4 text-primary" />
                                   <span>
                                     <strong>시간:</strong> {notice.details.time}
                                   </span>
@@ -350,7 +350,7 @@ export default function NoticesPage() {
                               )}
                               {notice.details.location && (
                                 <div className="flex items-center space-x-2">
-                                  <Icons.MapPin className="h-4 w-4 text-primary" />
+                                  <MapPin className="h-4 w-4 text-primary" />
                                   <span>
                                     <strong>장소:</strong> {notice.details.location}
                                   </span>
@@ -376,7 +376,7 @@ export default function NoticesPage() {
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <DialogTrigger asChild>
                         <Button onClick={handleAddNotice} className="w-full bg-blue-600 hover:bg-blue-700">
-                          <Icons.Plus className="h-4 w-4 mr-2" />새 공지사항 추가
+                          <Plus className="h-4 w-4 mr-2" />새 공지사항 추가
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl">
@@ -468,7 +468,7 @@ export default function NoticesPage() {
                       <div className="space-y-2 max-h-60 overflow-y-auto">
                         {notices.length === 0 ? (
                           <div className="text-center text-gray-500 text-sm py-4">
-                            <Icons.FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                            <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                             <p>공지사항이 없습니다</p>
                           </div>
                         ) : (
@@ -479,9 +479,9 @@ export default function NoticesPage() {
                             >
                               <div className="flex items-center gap-2 mb-1">
                                 {notice.type === "중요" ? (
-                                  <Icons.Bell className="h-4 w-4 text-amber-600" />
+                                  <Bell className="h-4 w-4 text-amber-600" />
                                 ) : (
-                                  <Icons.Calendar className="h-4 w-4 text-blue-600" />
+                                  <Calendar className="h-4 w-4 text-blue-600" />
                                 )}
                                 <Badge variant="outline" className="text-xs">
                                   {notice.type}
@@ -497,7 +497,7 @@ export default function NoticesPage() {
 
                     <div className="border-t pt-4">
                       <div className="bg-blue-50 p-3 rounded-lg text-center">
-                        <Icons.Settings className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                        <Settings className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                         <p className="text-sm text-blue-800 font-medium">관리자 전용</p>
                         <p className="text-xs text-blue-600">공지사항 추가/수정/삭제</p>
                       </div>

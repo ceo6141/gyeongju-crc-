@@ -18,8 +18,17 @@ class DataManager<T extends DataItem> {
     this.loadData()
   }
 
+  private isClient(): boolean {
+    return typeof window !== "undefined"
+  }
+
   // 데이터 로드
   private loadData(): void {
+    if (!this.isClient()) {
+      this.data = this.config.defaultData as T[]
+      return
+    }
+
     try {
       const savedData = localStorage.getItem(this.config.storageKey)
       const backupData = localStorage.getItem(`${this.config.storageKey}-backup`)
@@ -68,6 +77,11 @@ class DataManager<T extends DataItem> {
 
   // 데이터 저장
   private saveData(): boolean {
+    if (!this.isClient()) {
+      console.log(`[v0] ${this.config.storageKey} 서버에서 메모리에만 저장`)
+      return true
+    }
+
     try {
       this.data = this.sortByDate(this.data)
 
@@ -150,6 +164,10 @@ class DataManager<T extends DataItem> {
   }
 
   recover(): boolean {
+    if (!this.isClient()) {
+      return false
+    }
+
     try {
       const backupData = localStorage.getItem(`${this.config.storageKey}-backup`)
       if (backupData) {
@@ -344,6 +362,11 @@ export const syncAllData = () => {
 
 // 데이터 백업 및 복원
 export const backupData = () => {
+  if (typeof window === "undefined") {
+    console.log("[v0] 서버에서는 백업을 수행할 수 없습니다")
+    return
+  }
+
   const backup = {
     notices: noticesManager.getAll(),
     gallery: galleryManager.getAll(),
@@ -410,6 +433,11 @@ export const restoreData = (file: File) => {
 }
 
 export const autoRestoreData = () => {
+  if (typeof window === "undefined") {
+    console.log("[v0] 서버에서는 자동 복원을 수행할 수 없습니다")
+    return false
+  }
+
   try {
     const activitiesData = localStorage.getItem("rotary-activities")
     if (!activitiesData) {
@@ -485,6 +513,11 @@ export const autoRestoreData = () => {
 }
 
 export const recoverAllData = () => {
+  if (typeof window === "undefined") {
+    console.log("[v0] 서버에서는 데이터 복구를 수행할 수 없습니다")
+    return false
+  }
+
   console.log("[v0] 모든 데이터 복구 시도 중...")
 
   let recovered = false
