@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { PlusIcon, CalendarIcon, MapPinIcon, EditIcon } from "lucide-react"
+import { PlusIcon, CalendarIcon, MapPinIcon, EditIcon, SaveIcon } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
@@ -37,28 +37,75 @@ export default function ActivitiesClient() {
   const { isAuthenticated, showLogin, setShowLogin, requireAuth, handleLoginSuccess } = useAdminAuth()
 
   useEffect(() => {
-    // Load activities from localStorage safely
     if (typeof window !== "undefined") {
       const savedActivities = localStorage.getItem("rotary-activities")
+      const backupActivities = localStorage.getItem("rotary-activities-backup")
+
+      let loadedActivities: Activity[] = []
+
       if (savedActivities) {
-        const parsed = JSON.parse(savedActivities)
-        const sortedActivities = parsed.sort((a: Activity, b: Activity) => {
-          return new Date(b.date).getTime() - new Date(a.date).getTime()
-        })
-        setActivities(sortedActivities)
-        console.log("[v0] 봉사활동 로드 완료:", sortedActivities.length, "개")
+        try {
+          loadedActivities = JSON.parse(savedActivities)
+        } catch (error) {
+          console.log("[v0] 메인 봉사활동 데이터 파싱 실패, 백업 데이터 시도")
+          if (backupActivities) {
+            try {
+              loadedActivities = JSON.parse(backupActivities)
+            } catch (backupError) {
+              console.log("[v0] 백업 봉사활동 데이터도 파싱 실패")
+              loadedActivities = getDefaultActivities()
+            }
+          } else {
+            loadedActivities = getDefaultActivities()
+          }
+        }
+      } else if (backupActivities) {
+        try {
+          loadedActivities = JSON.parse(backupActivities)
+        } catch (error) {
+          loadedActivities = getDefaultActivities()
+        }
+      } else {
+        loadedActivities = getDefaultActivities()
       }
+
+      const sortedActivities = loadedActivities.sort((a: Activity, b: Activity) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+      })
+
+      setActivities(sortedActivities)
+      console.log("[v0] 봉사활동 로드 완료:", sortedActivities.length, "개")
     }
   }, [])
+
+  const getDefaultActivities = (): Activity[] => {
+    return [
+      {
+        id: "default-1",
+        title: "지역사회 봉사활동",
+        description: "경주 지역 어려운 이웃을 위한 봉사활동",
+        date: "2025-09-15",
+        location: "경주시 일원",
+        participants: 15,
+        status: "planned",
+      },
+    ]
+  }
 
   const saveActivities = (updatedActivities: Activity[]) => {
     if (typeof window !== "undefined") {
       const sortedActivities = updatedActivities.sort((a, b) => {
         return new Date(b.date).getTime() - new Date(a.date).getTime()
       })
-      localStorage.setItem("rotary-activities", JSON.stringify(sortedActivities))
+
+      const dataString = JSON.stringify(sortedActivities)
+
+      localStorage.setItem("rotary-activities", dataString)
+      localStorage.setItem("rotary-activities-backup", dataString)
+      localStorage.setItem("rotary-activities-timestamp", new Date().toISOString())
+
       setActivities(sortedActivities)
-      console.log("[v0] 봉사활동 저장 완료:", sortedActivities.length, "개")
+      console.log("[v0] 봉사활동 저장 완료 (이중 백업):", sortedActivities.length, "개")
     }
   }
 
@@ -176,6 +223,22 @@ export default function ActivitiesClient() {
     }
   }
 
+  const handleManualBackup = () => {
+    requireAuth(() => {
+      const dataString = JSON.stringify(activities)
+      const blob = new Blob([dataString], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `rotary-activities-backup-${new Date().toISOString().split("T")[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      console.log("[v0] 봉사활동 수동 백업 파일 다운로드 완료")
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100">
       <Navigation />
@@ -192,6 +255,10 @@ export default function ActivitiesClient() {
               <Button onClick={handleAddClick} className="bg-orange-600 hover:bg-orange-700">
                 <PlusIcon className="w-4 h-4 mr-2" />
                 봉사활동 추가
+              </Button>
+              <Button onClick={handleManualBackup} variant="outline" className="ml-2 bg-green-50 hover:bg-green-100">
+                <SaveIcon className="w-4 h-4 mr-2" />
+                백업 다운로드
               </Button>
             </div>
 

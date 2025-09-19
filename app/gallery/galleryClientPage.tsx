@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { PlusIcon, TrashIcon, EditIcon } from "lucide-react"
+import { PlusIcon, TrashIcon, EditIcon, SaveIcon } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
@@ -31,28 +31,73 @@ export default function GalleryClientPage() {
   const { isAuthenticated, showLogin, setShowLogin, requireAuth, handleLoginSuccess } = useAdminAuth()
 
   useEffect(() => {
-    // Load gallery images from localStorage safely
     if (typeof window !== "undefined") {
       const savedImages = localStorage.getItem("rotary-gallery")
+      const backupImages = localStorage.getItem("rotary-gallery-backup")
+
+      let loadedImages: GalleryImage[] = []
+
       if (savedImages) {
-        const parsed = JSON.parse(savedImages)
-        const sortedImages = parsed.sort((a: GalleryImage, b: GalleryImage) => {
-          return new Date(b.date).getTime() - new Date(a.date).getTime()
-        })
-        setImages(sortedImages)
-        console.log("[v0] 클럽갤러리 로드 완료:", sortedImages.length, "개")
+        try {
+          loadedImages = JSON.parse(savedImages)
+        } catch (error) {
+          console.log("[v0] 메인 갤러리 데이터 파싱 실패, 백업 데이터 시도")
+          if (backupImages) {
+            try {
+              loadedImages = JSON.parse(backupImages)
+            } catch (backupError) {
+              console.log("[v0] 백업 갤러리 데이터도 파싱 실패")
+              loadedImages = getDefaultImages()
+            }
+          } else {
+            loadedImages = getDefaultImages()
+          }
+        }
+      } else if (backupImages) {
+        try {
+          loadedImages = JSON.parse(backupImages)
+        } catch (error) {
+          loadedImages = getDefaultImages()
+        }
+      } else {
+        loadedImages = getDefaultImages()
       }
+
+      const sortedImages = loadedImages.sort((a: GalleryImage, b: GalleryImage) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+      })
+
+      setImages(sortedImages)
+      console.log("[v0] 클럽갤러리 로드 완료:", sortedImages.length, "개")
     }
   }, [])
+
+  const getDefaultImages = (): GalleryImage[] => {
+    return [
+      {
+        id: "default-1",
+        title: "로타리클럽 정기모임",
+        imageUrl: "/placeholder.svg?height=300&width=400&text=로타리클럽 정기모임",
+        date: "2025-09-01",
+        description: "경주중앙로타리클럽 정기모임 사진",
+      },
+    ]
+  }
 
   const saveImages = (updatedImages: GalleryImage[]) => {
     if (typeof window !== "undefined") {
       const sortedImages = updatedImages.sort((a, b) => {
         return new Date(b.date).getTime() - new Date(a.date).getTime()
       })
-      localStorage.setItem("rotary-gallery", JSON.stringify(sortedImages))
+
+      const dataString = JSON.stringify(sortedImages)
+
+      localStorage.setItem("rotary-gallery", dataString)
+      localStorage.setItem("rotary-gallery-backup", dataString)
+      localStorage.setItem("rotary-gallery-timestamp", new Date().toISOString())
+
       setImages(sortedImages)
-      console.log("[v0] 클럽갤러리 저장 완료:", sortedImages.length, "개")
+      console.log("[v0] 클럽갤러리 저장 완료 (이중 백업):", sortedImages.length, "개")
     }
   }
 
@@ -126,6 +171,22 @@ export default function GalleryClientPage() {
     setNewImage({ title: "", imageUrl: "", description: "" })
   }
 
+  const handleManualBackup = () => {
+    requireAuth(() => {
+      const dataString = JSON.stringify(images)
+      const blob = new Blob([dataString], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `rotary-gallery-backup-${new Date().toISOString().split("T")[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      console.log("[v0] 갤러리 수동 백업 파일 다운로드 완료")
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <Navigation />
@@ -142,6 +203,10 @@ export default function GalleryClientPage() {
               <Button onClick={handleAddClick} className="bg-green-600 hover:bg-green-700">
                 <PlusIcon className="w-4 h-4 mr-2" />
                 사진 추가
+              </Button>
+              <Button onClick={handleManualBackup} variant="outline" className="ml-2 bg-green-50 hover:bg-green-100">
+                <SaveIcon className="w-4 h-4 mr-2" />
+                백업 다운로드
               </Button>
             </div>
 
