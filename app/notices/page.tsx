@@ -53,7 +53,7 @@ export default function NoticesPage() {
     syncNotices()
 
     const handleStorageChange = (e) => {
-      if (e.key === "rotary-notices") {
+      if (e.key === "homepage-notices") {
         console.log("[v0] 공지사항 페이지 Storage 변경 감지, 재동기화")
         syncNotices()
       }

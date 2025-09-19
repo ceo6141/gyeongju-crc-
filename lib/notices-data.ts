@@ -78,7 +78,7 @@ export function getSharedNoticesData() {
 }
 
 export function syncNoticesData() {
-  const savedNotices = localStorage.getItem("rotary-notices")
+  const savedNotices = localStorage.getItem("homepage-notices")
 
   if (savedNotices) {
     try {
@@ -94,7 +94,7 @@ export function syncNoticesData() {
 
   const baseNotices = getSharedNoticesData()
   console.log("[v0] 기본 공지사항 데이터 사용:", baseNotices.length, "개")
-  localStorage.setItem("rotary-notices", JSON.stringify(baseNotices))
+  localStorage.setItem("homepage-notices", JSON.stringify(baseNotices))
   return baseNotices
 }
 
@@ -105,7 +105,7 @@ export function saveNoticesData(notices: any[]) {
       return false
     }
 
-    localStorage.setItem("rotary-notices", JSON.stringify(notices))
+    localStorage.setItem("homepage-notices", JSON.stringify(notices))
 
     window.dispatchEvent(
       new CustomEvent("noticesUpdated", {
@@ -115,7 +115,7 @@ export function saveNoticesData(notices: any[]) {
 
     window.dispatchEvent(
       new StorageEvent("storage", {
-        key: "rotary-notices",
+        key: "homepage-notices", // 통합된 키 사용
         newValue: JSON.stringify(notices),
       }),
     )

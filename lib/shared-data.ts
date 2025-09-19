@@ -47,10 +47,10 @@ export const getDefaultNotices = (): SharedNotice[] => [
 
 // 데이터 동기화 함수들
 export const syncNoticesData = () => {
-  const savedNotices = localStorage.getItem("notices")
+  const savedNotices = localStorage.getItem("homepage-notices")
   if (!savedNotices) {
     const defaultNotices = getDefaultNotices()
-    localStorage.setItem("notices", JSON.stringify(defaultNotices))
+    localStorage.setItem("homepage-notices", JSON.stringify(defaultNotices))
     return defaultNotices
   }
   return JSON.parse(savedNotices)
