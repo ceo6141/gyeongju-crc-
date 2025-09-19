@@ -4,7 +4,16 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ExternalLink, Globe, Smartphone, Users, BookOpen, Award, Heart, History } from "lucide-react"
+import {
+  ExternalLinkIcon,
+  GlobeIcon,
+  SmartphoneIcon,
+  UsersIcon,
+  BookOpenIcon,
+  AwardIcon,
+  HeartIcon,
+  HistoryIcon,
+} from "@/components/icons"
 import { NaverBandLink } from "@/components/naver-band-link"
 import { Navigation } from "@/components/navigation"
 
@@ -162,7 +171,7 @@ export default function RotaryNewsPage() {
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="text-center">
-                <Globe className="h-12 w-12 text-primary mx-auto mb-2" />
+                <GlobeIcon className="h-12 w-12 text-primary mx-auto mb-2" />
                 <CardTitle>국제로타리 공식 사이트</CardTitle>
                 <CardDescription>Rotary International 공식 홈페이지</CardDescription>
               </CardHeader>
@@ -174,7 +183,7 @@ export default function RotaryNewsPage() {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2"
                   >
-                    방문하기 <ExternalLink className="h-4 w-4" />
+                    방문하기 <ExternalLinkIcon className="h-4 w-4" />
                   </a>
                 </Button>
               </CardContent>
@@ -182,7 +191,7 @@ export default function RotaryNewsPage() {
 
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="text-center">
-                <Smartphone className="h-12 w-12 text-primary mx-auto mb-2" />
+                <SmartphoneIcon className="h-12 w-12 text-primary mx-auto mb-2" />
                 <CardTitle>K로타리 앱</CardTitle>
                 <CardDescription>모바일에서 로타리 정보 확인</CardDescription>
               </CardHeader>
@@ -194,7 +203,7 @@ export default function RotaryNewsPage() {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2"
                   >
-                    Google Play <ExternalLink className="h-4 w-4" />
+                    Google Play <ExternalLinkIcon className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button asChild variant="outline" className="w-full bg-transparent">
@@ -204,7 +213,7 @@ export default function RotaryNewsPage() {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2"
                   >
-                    App Store <ExternalLink className="h-4 w-4" />
+                    App Store <ExternalLinkIcon className="h-4 w-4" />
                   </a>
                 </Button>
               </CardContent>
@@ -212,7 +221,7 @@ export default function RotaryNewsPage() {
 
             <Card className="hover:shadow-lg transition-shadow">
               <CardHeader className="text-center">
-                <Users className="h-12 w-12 text-primary mx-auto mb-2" />
+                <UsersIcon className="h-12 w-12 text-primary mx-auto mb-2" />
                 <CardTitle>경주중앙로타리클럽</CardTitle>
                 <CardDescription className="text-lg font-semibold">네이버밴드로 가기</CardDescription>
               </CardHeader>
@@ -259,7 +268,7 @@ export default function RotaryNewsPage() {
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <BookOpen className="h-6 w-6 text-primary" />
+                      <BookOpenIcon className="h-6 w-6 text-primary" />
                       <CardTitle className="text-xl">로타리의 목적</CardTitle>
                     </div>
                   </CardHeader>
@@ -279,7 +288,7 @@ export default function RotaryNewsPage() {
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <Award className="h-6 w-6 text-primary" />
+                      <AwardIcon className="h-6 w-6 text-primary" />
                       <CardTitle className="text-xl">네가지 표준 (Four-Way Test)</CardTitle>
                     </div>
                   </CardHeader>
@@ -300,7 +309,7 @@ export default function RotaryNewsPage() {
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <Heart className="h-6 w-6 text-primary" />
+                      <HeartIcon className="h-6 w-6 text-primary" />
                       <CardTitle className="text-xl">로타리 핵심가치</CardTitle>
                     </div>
                   </CardHeader>
@@ -320,7 +329,7 @@ export default function RotaryNewsPage() {
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <History className="h-6 w-6 text-primary" />
+                      <HistoryIcon className="h-6 w-6 text-primary" />
                       <CardTitle className="text-xl">로타리 역사</CardTitle>
                     </div>
                   </CardHeader>
@@ -341,7 +350,7 @@ export default function RotaryNewsPage() {
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <Globe className="h-6 w-6 text-primary" />
+                      <GlobeIcon className="h-6 w-6 text-primary" />
                       <CardTitle className="text-xl">2025-26년도 국제로타리 R.I 총재</CardTitle>
                     </div>
                   </CardHeader>
@@ -368,7 +377,7 @@ export default function RotaryNewsPage() {
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <Users className="h-6 w-6 text-primary" />
+                      <UsersIcon className="h-6 w-6 text-primary" />
                       <CardTitle className="text-xl">국제로타리 3630지구 총재</CardTitle>
                     </div>
                   </CardHeader>

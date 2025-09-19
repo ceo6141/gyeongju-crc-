@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Lock, Eye, EyeOff } from "lucide-react"
+import { Icons } from "@/components/icons"
 import { validatePassword, setAdminAuth } from "@/lib/auth"
 
 interface AdminLoginProps {
@@ -54,7 +54,7 @@ export function AdminLogin({ isOpen, onClose, onSuccess }: AdminLoginProps) {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <Lock className="w-6 h-6 text-blue-600" />
+            <Icons.Lock className="w-6 h-6 text-blue-600" />
           </div>
           <CardTitle className="text-xl font-bold">관리자 로그인</CardTitle>
           <p className="text-sm text-gray-600">관리자 권한이 필요한 작업입니다</p>
@@ -80,7 +80,7 @@ export function AdminLogin({ isOpen, onClose, onSuccess }: AdminLoginProps) {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <Icons.EyeOff className="w-4 h-4" /> : <Icons.Eye className="w-4 h-4" />}
                 </button>
               </div>
               {error && <p className="text-sm text-red-600">{error}</p>}

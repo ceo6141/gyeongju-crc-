@@ -2,7 +2,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Target, CheckCircle } from "lucide-react"
+import { TargetIcon, CheckCircleIcon } from "@/components/icons"
 
 export default function PlansPage() {
   return (
@@ -11,7 +11,7 @@ export default function PlansPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <Target className="h-16 w-16 text-primary mx-auto mb-4" />
+          <TargetIcon className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-4xl font-bold mb-4">사업계획</h1>
           <p className="text-lg text-muted-foreground">2025-26년도 경주중앙로타리클럽의 사업계획을 소개합니다.</p>
         </div>
@@ -21,7 +21,7 @@ export default function PlansPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+                  <CheckCircleIcon className="h-5 w-5 mr-2 text-green-600" />
                   지역사회 봉사
                 </CardTitle>
               </CardHeader>
@@ -47,7 +47,7 @@ export default function PlansPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2 text-blue-600" />
+                  <CheckCircleIcon className="h-5 w-5 mr-2 text-blue-600" />
                   청소년 지원
                 </CardTitle>
               </CardHeader>
@@ -73,7 +73,7 @@ export default function PlansPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2 text-purple-600" />
+                  <CheckCircleIcon className="h-5 w-5 mr-2 text-purple-600" />
                   국제봉사
                 </CardTitle>
               </CardHeader>
@@ -99,7 +99,7 @@ export default function PlansPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2 text-orange-600" />
+                  <CheckCircleIcon className="h-5 w-5 mr-2 text-orange-600" />
                   클럽 발전
                 </CardTitle>
               </CardHeader>

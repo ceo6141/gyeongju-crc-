@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ExternalLink, Users, CheckCircle } from "lucide-react"
+import { ExternalLinkIcon, UsersIcon, CheckCircleIcon } from "@/components/icons"
 import Image from "next/image"
 
 interface NaverBandLinkProps {
@@ -73,7 +73,7 @@ export function NaverBandLink({ variant = "button", className = "" }: NaverBandL
           {isLoggedIn ? (
             <div className="text-center space-y-3">
               <div className="flex items-center justify-center gap-2 text-green-600">
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircleIcon className="h-4 w-4" />
                 <span className="text-sm">{userName}님으로 로그인됨</span>
               </div>
               <Button className="w-full" asChild>
@@ -140,15 +140,15 @@ export function NaverBandLink({ variant = "button", className = "" }: NaverBandL
       <div className={`flex items-center gap-2 ${className}`}>
         {isLoggedIn && (
           <span className="text-sm text-green-600 flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
+            <CheckCircleIcon className="h-3 w-3" />
             {userName}님
           </span>
         )}
         <Button size="sm" asChild>
           <a href={getBandUrl()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
+            <UsersIcon className="h-4 w-4" />
             네이버밴드
-            <ExternalLink className="h-3 w-3" />
+            <ExternalLinkIcon className="h-3 w-3" />
           </a>
         </Button>
       </div>
@@ -160,7 +160,7 @@ export function NaverBandLink({ variant = "button", className = "" }: NaverBandL
     <Button className={className} asChild>
       <a href={getBandUrl()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
         네이버밴드
-        <ExternalLink className="h-4 w-4" />
+        <ExternalLinkIcon className="h-4 w-4" />
       </a>
     </Button>
   )

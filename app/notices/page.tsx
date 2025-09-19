@@ -21,7 +21,9 @@ export default function NoticesPage() {
   const { requireAuth, showLogin, setShowLogin, handleLoginSuccess } = useAdminAuth()
 
   const syncNotices = () => {
+    console.log("[v0] 공지사항 동기화 시작")
     const allNotices = syncNoticesData()
+    console.log("[v0] 공지사항 로드 완료:", allNotices.length, "개")
 
     const parseDate = (dateStr) => {
       if (!dateStr) return new Date(0)
@@ -30,7 +32,6 @@ export default function NoticesPage() {
       return new Date(cleanDate.replace(/\./g, "-"))
     }
 
-    // 모든 공지사항을 보존 (필터링 제거)
     const noticesWithIcons = allNotices
       .map((notice) => ({
         ...notice,
@@ -50,17 +51,18 @@ export default function NoticesPage() {
   }
 
   useEffect(() => {
+    console.log("[v0] 공지사항 페이지 마운트, 데이터 동기화 시작")
     syncNotices()
 
     const handleStorageChange = (e) => {
       if (e.key === "homepage-notices") {
-        console.log("[v0] 공지사항 페이지 Storage 변경 감지, 재동기화")
+        console.log("[v0] Storage 변경 감지, 재동기화")
         syncNotices()
       }
     }
 
     const handleNoticesUpdate = (e) => {
-      console.log("[v0] 공지사항 페이지 업데이트 이벤트 감지, 즉시 동기화")
+      console.log("[v0] 공지사항 업데이트 이벤트 감지")
       syncNotices()
     }
 
@@ -138,7 +140,9 @@ export default function NoticesPage() {
   }
 
   const saveNotices = (newNotices) => {
+    console.log("[v0] 공지사항 저장 시작:", newNotices.length, "개")
     const noticesForStorage = newNotices.map(({ icon, ...notice }) => notice)
+
     if (saveNoticesData(noticesForStorage)) {
       setNotices(
         newNotices.map((notice) => ({
@@ -153,7 +157,7 @@ export default function NoticesPage() {
           detail: { notices: noticesForStorage },
         }),
       )
-      console.log("[v0] 공지사항 저장 및 즉시 업데이트 완료:", noticesForStorage.length, "개")
+      console.log("[v0] 공지사항 저장 및 이벤트 발생 완료:", noticesForStorage.length, "개")
     }
   }
 

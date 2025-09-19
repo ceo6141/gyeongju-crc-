@@ -5,7 +5,7 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
-import { Shield } from "lucide-react"
+import { ShieldIcon } from "@/components/icons"
 
 interface ProtectedButtonProps {
   children: React.ReactNode
@@ -39,7 +39,7 @@ export function ProtectedButton({
         onClick={handleClick}
         disabled={disabled}
       >
-        <Shield className="w-3 h-3 mr-1 opacity-60" />
+        <ShieldIcon className="w-3 h-3 mr-1 opacity-60" />
         {children}
       </Button>
 

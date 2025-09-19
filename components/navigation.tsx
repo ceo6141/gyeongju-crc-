@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu, X, ExternalLink, Youtube } from "lucide-react"
+import { Icons } from "@/components/icons"
 import Image from "next/image"
 import { NaverBandLink } from "@/components/naver-band-link"
 
@@ -23,7 +23,7 @@ const Navigation = () => {
       href: "https://www.youtube.com/@gjcrc",
       label: "유튜브",
       external: true,
-      icon: Youtube,
+      icon: Icons.Youtube,
     },
   ]
 
@@ -63,9 +63,9 @@ const Navigation = () => {
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
-                    {item.icon && <item.icon className="h-4 w-4" />}
+                    {item.icon && <item.icon />}
                     <span>{item.label}</span>
-                    <ExternalLink className="h-3 w-3" />
+                    <Icons.ExternalLink />
                   </a>
                 ) : (
                   <Link
@@ -73,7 +73,7 @@ const Navigation = () => {
                     href={item.href}
                     className="flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
-                    {item.icon && <item.icon className="h-4 w-4" />}
+                    {item.icon && <item.icon />}
                     <span>{item.label}</span>
                   </Link>
                 ),
@@ -91,7 +91,7 @@ const Navigation = () => {
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-white hover:bg-blue-700"
               >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isOpen ? <Icons.X /> : <Icons.Menu />}
               </Button>
             </div>
           </div>
@@ -111,9 +111,9 @@ const Navigation = () => {
                     className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
-                    {item.icon && <item.icon className="h-4 w-4" />}
+                    {item.icon && <item.icon />}
                     <span className="flex-1 text-left">{item.label}</span>
-                    <ExternalLink className="h-3 w-3" />
+                    <Icons.ExternalLink />
                   </a>
                 ) : (
                   <Link
@@ -122,7 +122,7 @@ const Navigation = () => {
                     className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
-                    {item.icon && <item.icon className="h-4 w-4" />}
+                    {item.icon && <item.icon />}
                     <span className="flex-1 text-left">{item.label}</span>
                   </Link>
                 ),

@@ -83,8 +83,8 @@ export function syncNoticesData() {
   if (savedNotices) {
     try {
       const parsedNotices = JSON.parse(savedNotices)
-      if (Array.isArray(parsedNotices) && parsedNotices.length > 0) {
-        console.log("[v0] 저장된 공지사항 데이터 사용:", parsedNotices.length, "개")
+      if (Array.isArray(parsedNotices)) {
+        console.log("[v0] 저장된 공지사항 데이터 로드 완료:", parsedNotices.length, "개")
         return parsedNotices
       }
     } catch (error) {
@@ -93,7 +93,7 @@ export function syncNoticesData() {
   }
 
   const baseNotices = getSharedNoticesData()
-  console.log("[v0] 기본 공지사항 데이터 사용:", baseNotices.length, "개")
+  console.log("[v0] 기본 공지사항 데이터 초기화:", baseNotices.length, "개")
   localStorage.setItem("homepage-notices", JSON.stringify(baseNotices))
   return baseNotices
 }

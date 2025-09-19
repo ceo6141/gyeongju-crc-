@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Mail, Phone, MapPin } from "lucide-react"
+import { Icons } from "@/components/icons"
 
 export function Footer() {
   return (
@@ -24,19 +24,19 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4">연락처</h3>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-primary" />
+                <Icons.Phone />
                 <span className="text-muted-foreground">054-773-7676</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-primary" />
+                <Icons.Phone />
                 <span className="text-muted-foreground">FAX: 054-773-7673</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-primary" />
+                <Icons.Mail />
                 <span className="text-muted-foreground">E-MAIL: ceo6141@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4 text-primary" />
+                <Icons.MapPin />
                 <div className="text-muted-foreground">
                   <div>경주시 승삼1길 5-5, 4층(용강동)</div>
                   <div className="text-xs">
@@ -45,7 +45,7 @@ export function Footer() {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4 text-primary" />
+                <Icons.MapPin />
                 <span className="text-muted-foreground">우편번호(ZIP CODE) : 38090</span>
               </div>
             </div>
