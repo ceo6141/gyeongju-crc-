@@ -371,13 +371,13 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="relative h-screen flex flex-col overflow-hidden bg-gray-900">
-        <div className="absolute inset-0 bg-black/30 z-10"></div>
+        <div className="absolute inset-0 bg-black/20 z-10"></div>
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/club-photo.png"
             alt="경주중앙로타리클럽 제21대 22대 회장단 이취임식 - 천상 天翔 최용환 회장"
             fill
-            className="object-cover object-top"
+            className="object-cover object-center"
             priority
             onError={() => setBackgroundImage("/placeholder.svg?height=400&width=600")}
           />
@@ -405,15 +405,15 @@ export default function HomePage() {
         </div>
 
         {/* 공지사항 섹션 */}
-        <div className="absolute bottom-2 left-0 right-0 z-20 px-4 max-w-7xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl p-1.5">
+        <div className="absolute top-1/2 left-0 right-0 z-20 px-4 max-w-6xl mx-auto transform -translate-y-1/2">
+          <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-2xl p-3 border border-white/20">
             {/* 편집 모드 컨트롤 */}
-            <div className="text-center mb-1">
-              <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="text-center mb-2">
+              <div className="flex items-center justify-center gap-2 mb-2">
                 <Button
                   onClick={handleEditModeToggle}
                   variant={isEditMode ? "destructive" : "default"}
-                  className={`text-sm px-16 py-2 font-semibold rounded-lg transition-all duration-300 ${
+                  className={`text-sm px-12 py-2 font-bold rounded-xl transition-all duration-300 ${
                     !isEditMode
                       ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-lg hover:shadow-xl"
                       : "bg-red-600 hover:bg-red-700 text-white"
@@ -424,7 +424,7 @@ export default function HomePage() {
               </div>
 
               {isEditMode && (
-                <div className="mb-1 p-1 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
+                <div className="mb-2 p-2 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
                   <p className="text-yellow-800 font-medium text-xs">
                     📝 편집 모드 활성화됨 - 공지사항을 추가, 수정, 삭제할 수 있습니다
                   </p>
@@ -432,23 +432,23 @@ export default function HomePage() {
               )}
 
               {isEditMode && (
-                <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-1 text-xs px-3 py-1">
+                <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-2 text-xs px-3 py-1">
                   <Icons.Plus className="h-3 w-3" />새 공지사항 추가
                 </Button>
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {notices.length > 0 ? (
                 notices.slice(0, 3).map((notice) => (
                   <Card
                     key={notice.id}
-                    className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-r from-white to-gray-50"
+                    className="hover:shadow-xl transition-all duration-300 border-0 shadow-md bg-gradient-to-br from-white to-blue-50"
                   >
-                    <CardContent className="p-1">
-                      <div className="flex flex-col h-full space-y-0.5">
+                    <CardContent className="p-3">
+                      <div className="flex flex-col h-full space-y-1">
                         {/* 제목 */}
-                        <h3 className="text-xs font-bold text-blue-700 leading-tight line-clamp-1 text-center">
+                        <h3 className="text-xs font-bold text-blue-700 leading-tight line-clamp-2 text-center">
                           {notice.title}
                         </h3>
 
@@ -478,7 +478,7 @@ export default function HomePage() {
                         <p className="text-xs text-gray-700 leading-relaxed line-clamp-1 flex-1">{notice.content}</p>
 
                         {/* 하단 정보 */}
-                        <div className="flex justify-between items-end mt-0.5">
+                        <div className="flex justify-between items-end mt-1">
                           <Badge
                             variant="secondary"
                             className="text-xs font-normal bg-gray-100 text-gray-500 border-0 px-1 py-0.5"
@@ -490,22 +490,22 @@ export default function HomePage() {
                             })}
                           </Badge>
                           {isEditMode && (
-                            <div className="flex gap-0.5">
+                            <div className="flex gap-1">
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openEditDialog(notice)}
-                                className="h-4 w-4 p-0"
+                                className="h-5 w-5 p-0"
                               >
-                                <Icons.Edit className="h-2 w-2" />
+                                <Icons.Edit className="h-2.5 w-2.5" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => handleDeleteNotice(notice)}
-                                className="h-4 w-4 p-0"
+                                className="h-5 w-5 p-0"
                               >
-                                <Icons.Trash2 className="h-2 w-2" />
+                                <Icons.Trash2 className="h-2.5 w-2.5" />
                               </Button>
                             </div>
                           )}
@@ -515,11 +515,11 @@ export default function HomePage() {
                   </Card>
                 ))
               ) : (
-                <Card className="border-0 shadow-sm bg-gradient-to-r from-white to-gray-50 col-span-3">
-                  <CardContent className="p-1.5 text-center">
-                    <p className="text-gray-500 text-xs">등록된 공지사항이 없습니다.</p>
+                <Card className="border-0 shadow-md bg-gradient-to-br from-white to-blue-50 col-span-full">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-gray-500 text-xs mb-2">등록된 공지사항이 없습니다.</p>
                     {isEditMode && (
-                      <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-1 text-xs px-3 py-1 mt-1">
+                      <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-2 text-xs px-3 py-1">
                         <Icons.Plus className="h-3 w-3" />첫 공지사항 추가
                       </Button>
                     )}
