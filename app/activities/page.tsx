@@ -45,29 +45,80 @@ export default function ActivitiesPage() {
     console.log("[v0] 데이터 저장:", { activities: newActivities.length, news: newMemberNews.length })
 
     try {
-      const activitiesData = JSON.stringify(newActivities)
-      const newsData = JSON.stringify(newMemberNews)
+      const existingActivities = JSON.parse(localStorage.getItem("rotary-activities") || "[]")
+      const existingNews = JSON.parse(localStorage.getItem("rotary-member-news") || "[]")
+
+      // 기존 데이터와 새 데이터를 ID 기준으로 병합 (중복 제거)
+      const mergedActivities = [...newActivities]
+      existingActivities.forEach((existing: Activity) => {
+        if (!mergedActivities.find((activity) => activity.id === existing.id)) {
+          mergedActivities.push(existing)
+        }
+      })
+
+      const mergedNews = [...newMemberNews]
+      existingNews.forEach((existing: MemberNews) => {
+        if (!mergedNews.find((news) => news.id === existing.id)) {
+          mergedNews.push(existing)
+        }
+      })
+
+      // 최신순으로 정렬 (날짜 기준)
+      const sortedActivities = mergedActivities.sort((a, b) => {
+        const dateA = new Date(a.date.replace(/\./g, "-")).getTime()
+        const dateB = new Date(b.date.replace(/\./g, "-")).getTime()
+        return dateB - dateA // 최신순
+      })
+
+      const sortedNews = mergedNews.sort((a, b) => {
+        const dateA = new Date(a.date).getTime()
+        const dateB = new Date(b.date).getTime()
+        return dateB - dateA // 최신순
+      })
+
+      const activitiesData = JSON.stringify(sortedActivities)
+      const newsData = JSON.stringify(sortedNews)
 
       localStorage.setItem("rotary-activities", activitiesData)
       localStorage.setItem("rotary-member-news", newsData)
       localStorage.setItem("rotary-lastUpdated", Date.now().toString())
 
-      setActivities([...newActivities])
-      setMemberNews([...newMemberNews])
+      // 백업 저장 (데이터 손실 방지)
+      localStorage.setItem("rotary-activities-backup", activitiesData)
+      localStorage.setItem("rotary-member-news-backup", newsData)
+
+      setActivities([...sortedActivities])
+      setMemberNews([...sortedNews])
 
       console.log("[v0] localStorage 저장 성공:", {
         activitiesSize: `${(activitiesData.length / 1024).toFixed(2)}KB`,
         newsSize: `${(newsData.length / 1024).toFixed(2)}KB`,
+        totalActivities: sortedActivities.length,
+        totalNews: sortedNews.length,
       })
 
-      console.log("[v0] 데이터 저장 완료")
+      console.log("[v0] 데이터 저장 완료 - 백업 포함")
       return true
     } catch (error) {
       console.error("[v0] localStorage 저장 실패:", error)
-      setActivities([...newActivities])
-      setMemberNews([...newMemberNews])
-      console.log("[v0] 메모리 저장소로 폴백")
-      return true
+
+      // 백업에서 복원 시도
+      try {
+        const backupActivities = JSON.parse(localStorage.getItem("rotary-activities-backup") || "[]")
+        const backupNews = JSON.parse(localStorage.getItem("rotary-member-news-backup") || "[]")
+
+        setActivities([...backupActivities, ...newActivities])
+        setMemberNews([...backupNews, ...newMemberNews])
+
+        console.log("[v0] 백업에서 복원 완료")
+        return true
+      } catch (backupError) {
+        console.error("[v0] 백업 복원 실패:", backupError)
+        setActivities([...newActivities])
+        setMemberNews([...newMemberNews])
+        console.log("[v0] 메모리 저장소로 폴백")
+        return true
+      }
     }
   }
 

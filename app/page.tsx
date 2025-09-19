@@ -390,75 +390,75 @@ export default function HomePage() {
         </div>
 
         {/* 공지사항 섹션 */}
-        <div className="absolute bottom-12 left-0 right-0 z-20 px-4 max-w-6xl mx-auto">
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-2">
+        <div className="absolute bottom-8 left-0 right-0 z-20 px-4 max-w-6xl mx-auto">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-3">
             {/* 편집 모드 컨트롤 */}
-            <div className="text-center mb-2">
+            <div className="text-center mb-3">
               <Button
                 onClick={handleEditModeToggle}
                 variant={isEditMode ? "destructive" : "default"}
-                className="mb-1 text-xs px-3 py-1"
+                className="mb-2 text-sm px-4 py-2"
               >
                 {isEditMode ? "편집 모드 종료" : "공지사항 관리 (관리자)"}
               </Button>
 
               {isEditMode && (
-                <div className="mb-2 p-1 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
-                  <p className="text-yellow-800 font-medium text-xs">
+                <div className="mb-3 p-2 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
+                  <p className="text-yellow-800 font-medium text-sm">
                     📝 편집 모드 활성화됨 - 공지사항을 추가, 수정, 삭제할 수 있습니다
                   </p>
                 </div>
               )}
 
               {isEditMode && (
-                <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-1 text-xs px-3 py-1">
-                  <Plus className="h-3 w-3" />새 공지사항 추가
+                <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-2 text-sm px-4 py-2">
+                  <Plus className="h-4 w-4" />새 공지사항 추가
                 </Button>
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {notices.length > 0 ? (
                 notices.slice(0, 3).map((notice) => (
                   <Card
                     key={notice.id}
                     className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-r from-white to-gray-50"
                   >
-                    <CardContent className="p-1">
-                      <div className="flex flex-col h-full space-y-1">
+                    <CardContent className="p-2">
+                      <div className="flex flex-col h-full space-y-2">
                         {/* 제목 */}
-                        <h3 className="text-sm font-bold text-blue-700 leading-tight line-clamp-1">{notice.title}</h3>
+                        <h3 className="text-base font-bold text-blue-700 leading-tight line-clamp-1">{notice.title}</h3>
 
                         {/* 세부 정보를 가로로 배치 */}
-                        <div className="space-y-0.5">
+                        <div className="space-y-1">
                           {notice.details?.date && (
-                            <div className="flex items-center gap-1 text-xs">
-                              <span className="font-medium text-gray-600 min-w-[30px]">일시:</span>
+                            <div className="flex items-center gap-1 text-sm">
+                              <span className="font-medium text-gray-600 min-w-[35px]">일시:</span>
                               <span className="text-blue-600 truncate">{notice.details.date}</span>
                             </div>
                           )}
                           {notice.details?.time && (
-                            <div className="flex items-center gap-1 text-xs">
-                              <span className="font-medium text-gray-600 min-w-[30px]">시간:</span>
+                            <div className="flex items-center gap-1 text-sm">
+                              <span className="font-medium text-gray-600 min-w-[35px]">시간:</span>
                               <span className="text-blue-600 truncate">{notice.details.time}</span>
                             </div>
                           )}
                           {notice.details?.location && (
-                            <div className="flex items-center gap-1 text-xs">
-                              <span className="font-medium text-gray-600 min-w-[30px]">장소:</span>
+                            <div className="flex items-center gap-1 text-sm">
+                              <span className="font-medium text-gray-600 min-w-[35px]">장소:</span>
                               <span className="text-blue-600 truncate">{notice.details.location}</span>
                             </div>
                           )}
                         </div>
 
                         {/* 내용 */}
-                        <p className="text-xs text-gray-700 leading-relaxed line-clamp-2 flex-1">{notice.content}</p>
+                        <p className="text-sm text-gray-700 leading-relaxed line-clamp-2 flex-1">{notice.content}</p>
 
                         {/* 하단 정보 */}
-                        <div className="flex justify-between items-end mt-1">
+                        <div className="flex justify-between items-end mt-2">
                           <Badge
                             variant="secondary"
-                            className="text-xs font-normal bg-gray-100 text-gray-500 border-0 px-1 py-0"
+                            className="text-sm font-normal bg-gray-100 text-gray-500 border-0 px-2 py-1"
                           >
                             {notice.date}
                           </Badge>
@@ -468,17 +468,17 @@ export default function HomePage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openEditDialog(notice)}
-                                className="h-4 w-4 p-0"
+                                className="h-6 w-6 p-0"
                               >
-                                <Edit className="h-2 w-2" />
+                                <Edit className="h-3 w-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => handleDeleteNotice(notice)}
-                                className="h-4 w-4 p-0"
+                                className="h-6 w-6 p-0"
                               >
-                                <Trash2 className="h-2 w-2" />
+                                <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
                           )}
@@ -489,8 +489,13 @@ export default function HomePage() {
                 ))
               ) : (
                 <Card className="border-0 shadow-sm bg-gradient-to-r from-white to-gray-50 col-span-3">
-                  <CardContent className="p-2 text-center">
-                    <p className="text-gray-500 text-xs">등록된 공지사항이 없습니다.</p>
+                  <CardContent className="p-3 text-center">
+                    <p className="text-gray-500 text-sm">등록된 공지사항이 없습니다.</p>
+                    {isEditMode && (
+                      <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-2 text-sm px-4 py-2 mt-2">
+                        <Plus className="h-4 w-4" />첫 공지사항 추가
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               )}

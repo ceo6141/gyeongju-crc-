@@ -1,4 +1,4 @@
-const CACHE_NAME = "gyeongju-rotary-v2"
+const CACHE_NAME = "gyeongju-rotary-v3"
 const urlsToCache = [
   "/",
   "/about",
@@ -39,6 +39,12 @@ self.addEventListener("activate", (event) => {
 })
 
 self.addEventListener("fetch", (event) => {
+  // Skip caching for Next.js chunks to prevent loading errors
+  if (event.request.url.includes("/_next/static/chunks/")) {
+    event.respondWith(fetch(event.request))
+    return
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {

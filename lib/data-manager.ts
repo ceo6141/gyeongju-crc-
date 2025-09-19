@@ -22,24 +22,62 @@ class DataManager<T extends DataItem> {
   private loadData(): void {
     try {
       const savedData = localStorage.getItem(this.config.storageKey)
+      const backupData = localStorage.getItem(`${this.config.storageKey}-backup`)
+
       if (savedData) {
         const parsed = JSON.parse(savedData)
         this.data = Array.isArray(parsed) ? parsed : (this.config.defaultData as T[])
+      } else if (backupData) {
+        console.log(`[v0] ${this.config.storageKey} 백업에서 복원 중...`)
+        const parsed = JSON.parse(backupData)
+        this.data = Array.isArray(parsed) ? parsed : (this.config.defaultData as T[])
+        // 복원된 데이터를 메인 저장소에 저장
+        localStorage.setItem(this.config.storageKey, JSON.stringify(this.data))
       } else {
         this.data = this.config.defaultData as T[]
       }
+
+      this.data = this.sortByDate(this.data)
+
       console.log(`[v0] ${this.config.storageKey} 데이터 로드:`, this.data.length, "개")
     } catch (error) {
       console.error(`[v0] ${this.config.storageKey} 로드 오류:`, error)
-      this.data = this.config.defaultData as T[]
+      try {
+        const backupData = localStorage.getItem(`${this.config.storageKey}-backup`)
+        if (backupData) {
+          const parsed = JSON.parse(backupData)
+          this.data = Array.isArray(parsed) ? parsed : (this.config.defaultData as T[])
+          console.log(`[v0] ${this.config.storageKey} 백업에서 복원 성공`)
+        } else {
+          this.data = this.config.defaultData as T[]
+        }
+      } catch (backupError) {
+        console.error(`[v0] ${this.config.storageKey} 백업 복원 실패:`, backupError)
+        this.data = this.config.defaultData as T[]
+      }
     }
+  }
+
+  private sortByDate(data: T[]): T[] {
+    return data.sort((a, b) => {
+      const dateA = new Date(a.date || "1970-01-01").getTime()
+      const dateB = new Date(b.date || "1970-01-01").getTime()
+      return dateB - dateA // 최신순
+    })
   }
 
   // 데이터 저장
   private saveData(): boolean {
     try {
-      localStorage.setItem(this.config.storageKey, JSON.stringify(this.data))
-      console.log(`[v0] ${this.config.storageKey} 저장 완료:`, this.data.length, "개")
+      this.data = this.sortByDate(this.data)
+
+      const dataString = JSON.stringify(this.data)
+      localStorage.setItem(this.config.storageKey, dataString)
+
+      localStorage.setItem(`${this.config.storageKey}-backup`, dataString)
+      localStorage.setItem(`${this.config.storageKey}-lastSaved`, Date.now().toString())
+
+      console.log(`[v0] ${this.config.storageKey} 저장 완료:`, this.data.length, "개 (백업 포함)")
 
       // 이벤트 발생
       if (this.config.eventName) {
@@ -53,13 +91,15 @@ class DataManager<T extends DataItem> {
       return true
     } catch (error) {
       console.error(`[v0] ${this.config.storageKey} 저장 오류:`, error)
+
+      console.log(`[v0] ${this.config.storageKey} 메모리에서 데이터 유지 중`)
       return false
     }
   }
 
   // 모든 데이터 조회
   getAll(): T[] {
-    return [...this.data]
+    return this.sortByDate([...this.data])
   }
 
   // ID로 데이터 조회
@@ -107,6 +147,23 @@ class DataManager<T extends DataItem> {
   reset(): boolean {
     this.data = this.config.defaultData as T[]
     return this.saveData()
+  }
+
+  recover(): boolean {
+    try {
+      const backupData = localStorage.getItem(`${this.config.storageKey}-backup`)
+      if (backupData) {
+        const parsed = JSON.parse(backupData)
+        this.data = Array.isArray(parsed) ? parsed : (this.config.defaultData as T[])
+        localStorage.setItem(this.config.storageKey, JSON.stringify(this.data))
+        console.log(`[v0] ${this.config.storageKey} 백업에서 복구 완료`)
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error(`[v0] ${this.config.storageKey} 복구 실패:`, error)
+      return false
+    }
   }
 }
 
@@ -247,7 +304,6 @@ export const memberNewsManager = new DataManager<MemberNews>({
   eventName: "memberNewsUpdated",
 })
 
-// 데이터 동기화 유틸리티
 export const syncAllData = () => {
   // 기존 데이터 백업
   const currentNotices = noticesManager.getAll()
@@ -267,6 +323,22 @@ export const syncAllData = () => {
     })
   }
 
+  // 데이터 손실 방지를 위한 추가 백업
+  try {
+    localStorage.setItem(
+      "rotary-emergency-backup",
+      JSON.stringify({
+        notices: currentNotices,
+        gallery: currentGallery,
+        news: currentNews,
+        timestamp: Date.now(),
+      }),
+    )
+    console.log("[v0] 비상 백업 저장 완료")
+  } catch (error) {
+    console.error("[v0] 비상 백업 저장 실패:", error)
+  }
+
   console.log("[v0] 모든 데이터 동기화 완료")
 }
 
@@ -277,6 +349,7 @@ export const backupData = () => {
     gallery: galleryManager.getAll(),
     memberNews: memberNewsManager.getAll(),
     timestamp: new Date().toISOString(),
+    version: "2.0", // 백업 버전 추가
   }
 
   const dataStr = JSON.stringify(backup, null, 2)
@@ -304,15 +377,27 @@ export const restoreData = (file: File) => {
           throw new Error("잘못된 백업 파일 형식입니다.")
         }
 
+        const emergencyBackup = {
+          notices: noticesManager.getAll(),
+          gallery: galleryManager.getAll(),
+          memberNews: memberNewsManager.getAll(),
+          timestamp: Date.now(),
+        }
+        localStorage.setItem("rotary-pre-restore-backup", JSON.stringify(emergencyBackup))
+
         // 데이터 복원
         localStorage.setItem("homepage-notices", JSON.stringify(backup.notices))
         localStorage.setItem("gallery-images", JSON.stringify(backup.gallery))
         localStorage.setItem("homepage-news", JSON.stringify(backup.memberNews))
 
+        localStorage.setItem("homepage-notices-backup", JSON.stringify(backup.notices))
+        localStorage.setItem("gallery-images-backup", JSON.stringify(backup.gallery))
+        localStorage.setItem("homepage-news-backup", JSON.stringify(backup.memberNews))
+
         // 메모리 데이터 새로고침
         syncAllData()
 
-        console.log("[v0] 데이터 복원 완료")
+        console.log("[v0] 데이터 복원 완료 (백업 포함)")
         resolve(backup)
       } catch (error) {
         console.error("[v0] 데이터 복원 오류:", error)
@@ -353,6 +438,7 @@ export const autoRestoreData = () => {
         },
       ]
       localStorage.setItem("rotary-activities", JSON.stringify(defaultActivities))
+      localStorage.setItem("rotary-activities-backup", JSON.stringify(defaultActivities))
       console.log("[v0] 봉사활동 기본 데이터 복원 완료")
     }
 
@@ -375,6 +461,7 @@ export const autoRestoreData = () => {
         },
       ]
       localStorage.setItem("rotary-member-news", JSON.stringify(defaultMemberNews))
+      localStorage.setItem("rotary-member-news-backup", JSON.stringify(defaultMemberNews))
       console.log("[v0] 회원소식 기본 데이터 복원 완료")
     }
 
@@ -382,16 +469,61 @@ export const autoRestoreData = () => {
     const galleryData = localStorage.getItem("gallery-images")
     if (!galleryData) {
       localStorage.setItem("gallery-images", JSON.stringify(defaultImages))
+      localStorage.setItem("gallery-images-backup", JSON.stringify(defaultImages))
       console.log("[v0] 갤러리 기본 데이터 복원 완료")
     }
 
     // 데이터 동기화
     syncAllData()
 
-    console.log("[v0] 자동 데이터 복원 완료")
+    console.log("[v0] 자동 데이터 복원 완료 (백업 강화)")
     return true
   } catch (error) {
     console.error("[v0] 자동 데이터 복원 실패:", error)
+    return false
+  }
+}
+
+export const recoverAllData = () => {
+  console.log("[v0] 모든 데이터 복구 시도 중...")
+
+  let recovered = false
+
+  // 각 데이터 매니저의 복구 시도
+  if (noticesManager.recover()) recovered = true
+  if (galleryManager.recover()) recovered = true
+  if (memberNewsManager.recover()) recovered = true
+
+  // 비상 백업에서 복구 시도
+  try {
+    const emergencyBackup = localStorage.getItem("rotary-emergency-backup")
+    if (emergencyBackup) {
+      const backup = JSON.parse(emergencyBackup)
+      console.log("[v0] 비상 백업에서 데이터 복구 중...")
+
+      if (backup.notices && backup.notices.length > 0) {
+        localStorage.setItem("homepage-notices", JSON.stringify(backup.notices))
+        recovered = true
+      }
+      if (backup.gallery && backup.gallery.length > 0) {
+        localStorage.setItem("gallery-images", JSON.stringify(backup.gallery))
+        recovered = true
+      }
+      if (backup.news && backup.news.length > 0) {
+        localStorage.setItem("homepage-news", JSON.stringify(backup.news))
+        recovered = true
+      }
+    }
+  } catch (error) {
+    console.error("[v0] 비상 백업 복구 실패:", error)
+  }
+
+  if (recovered) {
+    syncAllData()
+    console.log("[v0] 데이터 복구 완료")
+    return true
+  } else {
+    console.log("[v0] 복구할 백업 데이터가 없습니다")
     return false
   }
 }
