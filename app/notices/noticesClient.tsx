@@ -38,47 +38,126 @@ export default function NoticesClient() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // 메인 데이터 로드
-      const savedNotices = localStorage.getItem("rotary-notices")
-      // 백업 데이터 로드
-      const backupNotices = localStorage.getItem("rotary-notices-backup")
+      const loadData = () => {
+        // 메인 데이터 로드
+        const savedNotices = localStorage.getItem("rotary-notices")
+        // 백업 데이터 로드
+        const backupNotices = localStorage.getItem("rotary-notices-backup")
+        // 세션 스토리지에서도 확인
+        const sessionNotices = sessionStorage.getItem("rotary-notices-session")
 
-      let loadedNotices: Notice[] = []
+        let loadedNotices: Notice[] = []
 
-      if (savedNotices) {
-        try {
-          loadedNotices = JSON.parse(savedNotices)
-        } catch (error) {
-          console.log("[v0] 메인 데이터 파싱 실패, 백업 데이터 시도")
-          if (backupNotices) {
-            try {
-              loadedNotices = JSON.parse(backupNotices)
-            } catch (backupError) {
-              console.log("[v0] 백업 데이터도 파싱 실패")
+        // 1차: 메인 localStorage 시도
+        if (savedNotices) {
+          try {
+            loadedNotices = JSON.parse(savedNotices)
+            console.log("[v0] 메인 데이터 로드 성공:", loadedNotices.length, "개")
+          } catch (error) {
+            console.log("[v0] 메인 데이터 파싱 실패, 백업 데이터 시도")
+
+            // 2차: 백업 localStorage 시도
+            if (backupNotices) {
+              try {
+                loadedNotices = JSON.parse(backupNotices)
+                console.log("[v0] 백업 데이터 로드 성공:", loadedNotices.length, "개")
+              } catch (backupError) {
+                console.log("[v0] 백업 데이터도 파싱 실패, 세션 데이터 시도")
+
+                // 3차: 세션 스토리지 시도
+                if (sessionNotices) {
+                  try {
+                    loadedNotices = JSON.parse(sessionNotices)
+                    console.log("[v0] 세션 데이터 로드 성공:", loadedNotices.length, "개")
+                  } catch (sessionError) {
+                    console.log("[v0] 모든 데이터 복구 실패, 기본값 사용")
+                    loadedNotices = getDefaultNotices()
+                  }
+                } else {
+                  loadedNotices = getDefaultNotices()
+                }
+              }
+            } else if (sessionNotices) {
+              try {
+                loadedNotices = JSON.parse(sessionNotices)
+                console.log("[v0] 세션 데이터 로드 성공:", loadedNotices.length, "개")
+              } catch (sessionError) {
+                loadedNotices = getDefaultNotices()
+              }
+            } else {
               loadedNotices = getDefaultNotices()
             }
-          } else {
+          }
+        } else if (backupNotices) {
+          try {
+            loadedNotices = JSON.parse(backupNotices)
+            console.log("[v0] 백업 데이터 로드 성공:", loadedNotices.length, "개")
+          } catch (error) {
+            if (sessionNotices) {
+              try {
+                loadedNotices = JSON.parse(sessionNotices)
+                console.log("[v0] 세션 데이터 로드 성공:", loadedNotices.length, "개")
+              } catch (sessionError) {
+                loadedNotices = getDefaultNotices()
+              }
+            } else {
+              loadedNotices = getDefaultNotices()
+            }
+          }
+        } else if (sessionNotices) {
+          try {
+            loadedNotices = JSON.parse(sessionNotices)
+            console.log("[v0] 세션 데이터 로드 성공:", loadedNotices.length, "개")
+          } catch (error) {
             loadedNotices = getDefaultNotices()
           }
-        }
-      } else if (backupNotices) {
-        try {
-          loadedNotices = JSON.parse(backupNotices)
-        } catch (error) {
+        } else {
           loadedNotices = getDefaultNotices()
         }
-      } else {
-        loadedNotices = getDefaultNotices()
+
+        const sortedNotices = loadedNotices.sort((a: Notice, b: Notice) => {
+          return new Date(b.date).getTime() - new Date(a.date).getTime()
+        })
+
+        setNotices(sortedNotices)
+        console.log("[v0] 공지사항 로드 완료:", sortedNotices.length, "개")
+
+        // 로드된 데이터를 모든 저장소에 백업
+        if (sortedNotices.length > 0) {
+          const dataString = JSON.stringify(sortedNotices)
+          localStorage.setItem("rotary-notices", dataString)
+          localStorage.setItem("rotary-notices-backup", dataString)
+          sessionStorage.setItem("rotary-notices-session", dataString)
+        }
       }
 
-      const sortedNotices = loadedNotices.sort((a: Notice, b: Notice) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
-      })
+      loadData()
 
-      setNotices(sortedNotices)
-      console.log("[v0] 공지사항 로드 완료:", sortedNotices.length, "개")
+      // 페이지 포커스 시 데이터 재확인
+      const handleFocus = () => {
+        console.log("[v0] 페이지 포커스 - 데이터 재확인")
+        loadData()
+      }
+
+      window.addEventListener("focus", handleFocus)
+      return () => window.removeEventListener("focus", handleFocus)
     }
   }, [])
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (notices.length > 0) {
+        const dataString = JSON.stringify(notices)
+        localStorage.setItem("rotary-notices", dataString)
+        localStorage.setItem("rotary-notices-backup", dataString)
+        sessionStorage.setItem("rotary-notices-session", dataString)
+        console.log("[v0] 페이지 언마운트 시 데이터 보호 완료")
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [notices])
 
   const getDefaultNotices = (): Notice[] => {
     return [
@@ -103,15 +182,35 @@ export default function NoticesClient() {
 
       const dataString = JSON.stringify(sortedNotices)
 
-      // 메인 저장
-      localStorage.setItem("rotary-notices", dataString)
-      // 백업 저장
-      localStorage.setItem("rotary-notices-backup", dataString)
-      // 타임스탬프 저장
-      localStorage.setItem("rotary-notices-timestamp", new Date().toISOString())
+      try {
+        // 메인 저장
+        localStorage.setItem("rotary-notices", dataString)
+        // 백업 저장
+        localStorage.setItem("rotary-notices-backup", dataString)
+        // 세션 저장 (추가 보호)
+        sessionStorage.setItem("rotary-notices-session", dataString)
+        // 타임스탬프 저장
+        localStorage.setItem("rotary-notices-timestamp", new Date().toISOString())
 
-      setNotices(sortedNotices)
-      console.log("[v0] 공지사항 저장 완료 (이중 백업):", sortedNotices.length, "개")
+        setNotices(sortedNotices)
+        console.log("[v0] 공지사항 저장 완료 (삼중 백업):", sortedNotices.length, "개")
+
+        // 저장 성공 확인
+        setTimeout(() => {
+          const verification = localStorage.getItem("rotary-notices")
+          if (verification) {
+            console.log("[v0] 데이터 저장 검증 성공")
+          } else {
+            console.log("[v0] 데이터 저장 검증 실패 - 재시도")
+            localStorage.setItem("rotary-notices", dataString)
+            localStorage.setItem("rotary-notices-backup", dataString)
+          }
+        }, 100)
+      } catch (error) {
+        console.error("[v0] 데이터 저장 실패:", error)
+        // 저장 실패 시 알림
+        alert("데이터 저장에 실패했습니다. 브라우저 저장소를 확인해주세요.")
+      }
     }
   }
 

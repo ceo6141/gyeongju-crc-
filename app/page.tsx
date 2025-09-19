@@ -383,7 +383,7 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="relative z-20 text-center text-white px-4 max-w-4xl mx-auto pt-32 pb-8">
+        <div className="relative z-20 text-center text-white px-4 max-w-4xl mx-auto pt-16 pb-8">
           <h1
             className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-balance text-white"
             style={{
@@ -405,7 +405,7 @@ export default function HomePage() {
         </div>
 
         {/* 공지사항 섹션 */}
-        <div className="absolute top-1/3 left-0 right-0 z-20 px-4 max-w-6xl mx-auto transform -translate-y-1/2">
+        <div className="absolute top-1/4 left-0 right-0 z-20 px-4 max-w-6xl mx-auto transform -translate-y-1/2">
           <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-2xl p-3 border border-white/20">
             {/* 편집 모드 컨트롤 */}
             <div className="text-center mb-2">
