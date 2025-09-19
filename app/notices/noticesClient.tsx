@@ -10,17 +10,7 @@ import { useState, useEffect } from "react"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
 import { Navigation } from "@/components/navigation"
-
-interface Notice {
-  id: string
-  title: string
-  content: string
-  date: string
-  location?: string
-  eventDate?: string
-  author: string
-  important: boolean
-}
+import { unifiedNoticesManager, type Notice, setupUnifiedDataSync } from "@/lib/unified-data-manager"
 
 export default function NoticesClient() {
   const [notices, setNotices] = useState<Notice[]>([])
@@ -37,196 +27,101 @@ export default function NoticesClient() {
   const { isAuthenticated, showLogin, setShowLogin, requireAuth, handleLoginSuccess } = useAdminAuth()
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const loadData = () => {
-        // 메인 데이터 로드
-        const savedNotices = localStorage.getItem("rotary-notices")
-        // 백업 데이터 로드
-        const backupNotices = localStorage.getItem("rotary-notices-backup")
-        // 세션 스토리지에서도 확인
-        const sessionNotices = sessionStorage.getItem("rotary-notices-session")
+    // 통합 데이터 동기화 시스템 초기화
+    setupUnifiedDataSync()
 
-        let loadedNotices: Notice[] = []
-
-        // 1차: 메인 localStorage 시도
-        if (savedNotices) {
-          try {
-            loadedNotices = JSON.parse(savedNotices)
-            console.log("[v0] 메인 데이터 로드 성공:", loadedNotices.length, "개")
-          } catch (error) {
-            console.log("[v0] 메인 데이터 파싱 실패, 백업 데이터 시도")
-
-            // 2차: 백업 localStorage 시도
-            if (backupNotices) {
-              try {
-                loadedNotices = JSON.parse(backupNotices)
-                console.log("[v0] 백업 데이터 로드 성공:", loadedNotices.length, "개")
-              } catch (backupError) {
-                console.log("[v0] 백업 데이터도 파싱 실패, 세션 데이터 시도")
-
-                // 3차: 세션 스토리지 시도
-                if (sessionNotices) {
-                  try {
-                    loadedNotices = JSON.parse(sessionNotices)
-                    console.log("[v0] 세션 데이터 로드 성공:", loadedNotices.length, "개")
-                  } catch (sessionError) {
-                    console.log("[v0] 모든 데이터 복구 실패, 기본값 사용")
-                    loadedNotices = getDefaultNotices()
-                  }
-                } else {
-                  loadedNotices = getDefaultNotices()
-                }
-              }
-            } else if (sessionNotices) {
-              try {
-                loadedNotices = JSON.parse(sessionNotices)
-                console.log("[v0] 세션 데이터 로드 성공:", loadedNotices.length, "개")
-              } catch (sessionError) {
-                loadedNotices = getDefaultNotices()
-              }
-            } else {
-              loadedNotices = getDefaultNotices()
-            }
-          }
-        } else if (backupNotices) {
-          try {
-            loadedNotices = JSON.parse(backupNotices)
-            console.log("[v0] 백업 데이터 로드 성공:", loadedNotices.length, "개")
-          } catch (error) {
-            if (sessionNotices) {
-              try {
-                loadedNotices = JSON.parse(sessionNotices)
-                console.log("[v0] 세션 데이터 로드 성공:", loadedNotices.length, "개")
-              } catch (sessionError) {
-                loadedNotices = getDefaultNotices()
-              }
-            } else {
-              loadedNotices = getDefaultNotices()
-            }
-          }
-        } else if (sessionNotices) {
-          try {
-            loadedNotices = JSON.parse(sessionNotices)
-            console.log("[v0] 세션 데이터 로드 성공:", loadedNotices.length, "개")
-          } catch (error) {
-            loadedNotices = getDefaultNotices()
-          }
-        } else {
-          loadedNotices = getDefaultNotices()
-        }
-
-        const sortedNotices = loadedNotices.sort((a: Notice, b: Notice) => {
-          return new Date(b.date).getTime() - new Date(a.date).getTime()
-        })
-
-        setNotices(sortedNotices)
-        console.log("[v0] 공지사항 로드 완료:", sortedNotices.length, "개")
-
-        // 로드된 데이터를 모든 저장소에 백업
-        if (sortedNotices.length > 0) {
-          const dataString = JSON.stringify(sortedNotices)
-          localStorage.setItem("rotary-notices", dataString)
-          localStorage.setItem("rotary-notices-backup", dataString)
-          sessionStorage.setItem("rotary-notices-session", dataString)
-        }
+    const loadData = () => {
+      try {
+        const loadedNotices = unifiedNoticesManager.getAll()
+        setNotices(loadedNotices)
+        console.log("[v0] 통합 매니저로 공지사항 로드 완료:", loadedNotices.length, "개")
+      } catch (error) {
+        console.error("[v0] 공지사항 로드 오류:", error)
+        // 오류 시 강제 복구 시도
+        unifiedNoticesManager.forceRecover()
+        const recoveredNotices = unifiedNoticesManager.getAll()
+        setNotices(recoveredNotices)
+        console.log("[v0] 공지사항 강제 복구 완료:", recoveredNotices.length, "개")
       }
+    }
 
-      loadData()
+    loadData()
 
-      // 페이지 포커스 시 데이터 재확인
-      const handleFocus = () => {
-        console.log("[v0] 페이지 포커스 - 데이터 재확인")
+    // 데이터 변경 이벤트 리스너
+    const handleNoticesUpdate = (event: CustomEvent) => {
+      console.log("[v0] 공지사항 업데이트 이벤트 수신")
+      setNotices(event.detail.data)
+    }
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "rotary-notices") {
+        console.log("[v0] 스토리지 변경 감지 - 공지사항 새로고침")
         loadData()
       }
+    }
 
-      window.addEventListener("focus", handleFocus)
-      return () => window.removeEventListener("focus", handleFocus)
+    const handleDataSync = (event: CustomEvent) => {
+      if (event.detail.key === "rotary-notices") {
+        console.log("[v0] 데이터 동기화 이벤트 수신")
+        setNotices(event.detail.data)
+      }
+    }
+
+    window.addEventListener("noticesUpdated", handleNoticesUpdate as EventListener)
+    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("rotaryDataSync", handleDataSync as EventListener)
+
+    return () => {
+      window.removeEventListener("noticesUpdated", handleNoticesUpdate as EventListener)
+      window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("rotaryDataSync", handleDataSync as EventListener)
     }
   }, [])
 
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (notices.length > 0) {
-        const dataString = JSON.stringify(notices)
-        localStorage.setItem("rotary-notices", dataString)
-        localStorage.setItem("rotary-notices-backup", dataString)
-        sessionStorage.setItem("rotary-notices-session", dataString)
-        console.log("[v0] 페이지 언마운트 시 데이터 보호 완료")
-      }
-    }
-
-    window.addEventListener("beforeunload", handleBeforeUnload)
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
-  }, [notices])
-
-  const getDefaultNotices = (): Notice[] => {
-    return [
-      {
-        id: "default-1",
-        title: "2025-26년 9월 이사회 개최",
-        content: "이사회",
-        date: "2025-09-19",
-        location: "장수만세국수 (권덕용 회원)",
-        eventDate: "2025.09.26.금요일",
-        author: "관리자",
-        important: true,
-      },
-    ]
-  }
-
   const saveNotices = (updatedNotices: Notice[]) => {
-    if (typeof window !== "undefined") {
-      const sortedNotices = updatedNotices.sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
+    try {
+      // 통합 매니저는 내부적으로 정렬과 백업을 처리
+      console.log("[v0] 통합 매니저로 공지사항 저장 시작:", updatedNotices.length, "개")
+
+      // 기존 데이터를 모두 삭제하고 새 데이터로 교체
+      const currentNotices = unifiedNoticesManager.getAll()
+      currentNotices.forEach((notice) => {
+        unifiedNoticesManager.delete(notice.id)
       })
 
-      const dataString = JSON.stringify(sortedNotices)
+      // 새 데이터 추가
+      updatedNotices.forEach((notice) => {
+        unifiedNoticesManager.add(notice)
+      })
 
-      try {
-        // 메인 저장
-        localStorage.setItem("rotary-notices", dataString)
-        // 백업 저장
-        localStorage.setItem("rotary-notices-backup", dataString)
-        // 세션 저장 (추가 보호)
-        sessionStorage.setItem("rotary-notices-session", dataString)
-        // 타임스탬프 저장
-        localStorage.setItem("rotary-notices-timestamp", new Date().toISOString())
-
-        setNotices(sortedNotices)
-        console.log("[v0] 공지사항 저장 완료 (삼중 백업):", sortedNotices.length, "개")
-
-        // 저장 성공 확인
-        setTimeout(() => {
-          const verification = localStorage.getItem("rotary-notices")
-          if (verification) {
-            console.log("[v0] 데이터 저장 검증 성공")
-          } else {
-            console.log("[v0] 데이터 저장 검증 실패 - 재시도")
-            localStorage.setItem("rotary-notices", dataString)
-            localStorage.setItem("rotary-notices-backup", dataString)
-          }
-        }, 100)
-      } catch (error) {
-        console.error("[v0] 데이터 저장 실패:", error)
-        // 저장 실패 시 알림
-        alert("데이터 저장에 실패했습니다. 브라우저 저장소를 확인해주세요.")
-      }
+      const finalNotices = unifiedNoticesManager.getAll()
+      setNotices(finalNotices)
+      console.log("[v0] 통합 매니저로 공지사항 저장 완료:", finalNotices.length, "개")
+    } catch (error) {
+      console.error("[v0] 공지사항 저장 실패:", error)
+      alert("데이터 저장에 실패했습니다. 다시 시도해주세요.")
     }
   }
 
   const handleManualBackup = () => {
     requireAuth(() => {
-      const dataString = JSON.stringify(notices)
-      const blob = new Blob([dataString], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `rotary-notices-backup-${new Date().toISOString().split("T")[0]}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      console.log("[v0] 수동 백업 파일 다운로드 완료")
+      try {
+        const allNotices = unifiedNoticesManager.getAll()
+        const dataString = JSON.stringify(allNotices, null, 2)
+        const blob = new Blob([dataString], { type: "application/json" })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `rotary-notices-backup-${new Date().toISOString().split("T")[0]}.json`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        console.log("[v0] 통합 매니저 백업 파일 다운로드 완료")
+      } catch (error) {
+        console.error("[v0] 백업 다운로드 실패:", error)
+        alert("백업 다운로드에 실패했습니다.")
+      }
     })
   }
 
@@ -237,8 +132,7 @@ export default function NoticesClient() {
   const handleAddNotice = () => {
     if (!newNotice.title.trim() || !newNotice.content.trim()) return
 
-    const notice: Notice = {
-      id: Date.now().toString(),
+    const notice: Omit<Notice, "id"> = {
       title: newNotice.title,
       content: newNotice.content,
       location: newNotice.location,
@@ -248,12 +142,16 @@ export default function NoticesClient() {
       important: newNotice.important,
     }
 
-    const updatedNotices = [notice, ...notices]
-    saveNotices(updatedNotices)
-
-    setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
-    setShowAddForm(false)
-    console.log("[v0] 새 공지사항 추가:", notice.title)
+    const success = unifiedNoticesManager.add(notice)
+    if (success) {
+      const updatedNotices = unifiedNoticesManager.getAll()
+      setNotices(updatedNotices)
+      setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
+      setShowAddForm(false)
+      console.log("[v0] 통합 매니저로 새 공지사항 추가:", notice.title)
+    } else {
+      alert("공지사항 추가에 실패했습니다.")
+    }
   }
 
   const handleEditNotice = (notice: Notice) => {
@@ -264,7 +162,7 @@ export default function NoticesClient() {
         content: notice.content,
         location: notice.location || "",
         eventDate: notice.eventDate || "",
-        important: notice.important,
+        important: notice.important || false,
       })
       setShowAddForm(true)
       console.log("[v0] 공지사항 편집 모드 활성화:", notice.title)
@@ -274,24 +172,25 @@ export default function NoticesClient() {
   const handleUpdateNotice = () => {
     if (!editingNotice || !newNotice.title.trim() || !newNotice.content.trim()) return
 
-    const updatedNotices = notices.map((notice) =>
-      notice.id === editingNotice.id
-        ? {
-            ...notice,
-            title: newNotice.title,
-            content: newNotice.content,
-            location: newNotice.location,
-            eventDate: newNotice.eventDate,
-            important: newNotice.important,
-          }
-        : notice,
-    )
+    const updates: Partial<Notice> = {
+      title: newNotice.title,
+      content: newNotice.content,
+      location: newNotice.location,
+      eventDate: newNotice.eventDate,
+      important: newNotice.important,
+    }
 
-    saveNotices(updatedNotices)
-    setEditingNotice(null)
-    setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
-    setShowAddForm(false)
-    console.log("[v0] 공지사항 수정 완료:", newNotice.title)
+    const success = unifiedNoticesManager.update(editingNotice.id, updates)
+    if (success) {
+      const updatedNotices = unifiedNoticesManager.getAll()
+      setNotices(updatedNotices)
+      setEditingNotice(null)
+      setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
+      setShowAddForm(false)
+      console.log("[v0] 통합 매니저로 공지사항 수정 완료:", newNotice.title)
+    } else {
+      alert("공지사항 수정에 실패했습니다.")
+    }
   }
 
   const handleCancelEdit = () => {
@@ -303,9 +202,14 @@ export default function NoticesClient() {
   const handleDeleteNotice = (id: string) => {
     requireAuth(() => {
       const noticeToDelete = notices.find((n) => n.id === id)
-      const updatedNotices = notices.filter((notice) => notice.id !== id)
-      saveNotices(updatedNotices)
-      console.log("[v0] 공지사항 삭제 완료:", noticeToDelete?.title)
+      const success = unifiedNoticesManager.delete(id)
+      if (success) {
+        const updatedNotices = unifiedNoticesManager.getAll()
+        setNotices(updatedNotices)
+        console.log("[v0] 통합 매니저로 공지사항 삭제 완료:", noticeToDelete?.title)
+      } else {
+        alert("공지사항 삭제에 실패했습니다.")
+      }
     })
   }
 

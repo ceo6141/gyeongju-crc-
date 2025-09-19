@@ -10,16 +10,7 @@ import { useState, useEffect } from "react"
 import { Navigation } from "@/components/navigation"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
-
-interface Activity {
-  id: string
-  title: string
-  description: string
-  date: string
-  location: string
-  participants: number
-  status: "planned" | "ongoing" | "completed"
-}
+import { unifiedActivitiesManager, type Activity, setupUnifiedDataSync } from "@/lib/unified-data-manager"
 
 export default function ActivitiesClient() {
   const [activities, setActivities] = useState<Activity[]>([])
@@ -30,84 +21,64 @@ export default function ActivitiesClient() {
     description: "",
     date: "",
     location: "",
-    participants: 0,
+    participants: "",
     status: "planned" as const,
+    type: "봉사활동",
+    amount: "",
+    image: "",
   })
 
   const { isAuthenticated, showLogin, setShowLogin, requireAuth, handleLoginSuccess } = useAdminAuth()
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedActivities = localStorage.getItem("rotary-activities")
-      const backupActivities = localStorage.getItem("rotary-activities-backup")
+    setupUnifiedDataSync()
 
-      let loadedActivities: Activity[] = []
-
-      if (savedActivities) {
-        try {
-          loadedActivities = JSON.parse(savedActivities)
-        } catch (error) {
-          console.log("[v0] 메인 봉사활동 데이터 파싱 실패, 백업 데이터 시도")
-          if (backupActivities) {
-            try {
-              loadedActivities = JSON.parse(backupActivities)
-            } catch (backupError) {
-              console.log("[v0] 백업 봉사활동 데이터도 파싱 실패")
-              loadedActivities = getDefaultActivities()
-            }
-          } else {
-            loadedActivities = getDefaultActivities()
-          }
-        }
-      } else if (backupActivities) {
-        try {
-          loadedActivities = JSON.parse(backupActivities)
-        } catch (error) {
-          loadedActivities = getDefaultActivities()
-        }
-      } else {
-        loadedActivities = getDefaultActivities()
+    const loadData = () => {
+      try {
+        const loadedActivities = unifiedActivitiesManager.getAll()
+        setActivities(loadedActivities)
+        console.log("[v0] 통합 매니저로 봉사활동 로드 완료:", loadedActivities.length, "개")
+      } catch (error) {
+        console.error("[v0] 봉사활동 로드 오류:", error)
+        // 오류 시 강제 복구 시도
+        unifiedActivitiesManager.forceRecover()
+        const recoveredActivities = unifiedActivitiesManager.getAll()
+        setActivities(recoveredActivities)
+        console.log("[v0] 봉사활동 강제 복구 완료:", recoveredActivities.length, "개")
       }
+    }
 
-      const sortedActivities = loadedActivities.sort((a: Activity, b: Activity) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
-      })
+    loadData()
 
-      setActivities(sortedActivities)
-      console.log("[v0] 봉사활동 로드 완료:", sortedActivities.length, "개")
+    const handleActivitiesUpdate = (event: CustomEvent) => {
+      console.log("[v0] 봉사활동 업데이트 이벤트 수신")
+      setActivities(event.detail.data)
+    }
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "rotary-activities") {
+        console.log("[v0] 스토리지 변경 감지 - 봉사활동 새로고침")
+        loadData()
+      }
+    }
+
+    const handleDataSync = (event: CustomEvent) => {
+      if (event.detail.key === "rotary-activities") {
+        console.log("[v0] 데이터 동기화 이벤트 수신")
+        setActivities(event.detail.data)
+      }
+    }
+
+    window.addEventListener("activitiesUpdated", handleActivitiesUpdate as EventListener)
+    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("rotaryDataSync", handleDataSync as EventListener)
+
+    return () => {
+      window.removeEventListener("activitiesUpdated", handleActivitiesUpdate as EventListener)
+      window.removeEventListener("storage", handleStorageChange)
+      window.removeEventListener("rotaryDataSync", handleDataSync as EventListener)
     }
   }, [])
-
-  const getDefaultActivities = (): Activity[] => {
-    return [
-      {
-        id: "default-1",
-        title: "지역사회 봉사활동",
-        description: "경주 지역 어려운 이웃을 위한 봉사활동",
-        date: "2025-09-15",
-        location: "경주시 일원",
-        participants: 15,
-        status: "planned",
-      },
-    ]
-  }
-
-  const saveActivities = (updatedActivities: Activity[]) => {
-    if (typeof window !== "undefined") {
-      const sortedActivities = updatedActivities.sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
-      })
-
-      const dataString = JSON.stringify(sortedActivities)
-
-      localStorage.setItem("rotary-activities", dataString)
-      localStorage.setItem("rotary-activities-backup", dataString)
-      localStorage.setItem("rotary-activities-timestamp", new Date().toISOString())
-
-      setActivities(sortedActivities)
-      console.log("[v0] 봉사활동 저장 완료 (이중 백업):", sortedActivities.length, "개")
-    }
-  }
 
   const handleAddClick = () => {
     requireAuth(() => setShowAddForm(!showAddForm))
@@ -116,29 +87,37 @@ export default function ActivitiesClient() {
   const handleAddActivity = () => {
     if (!newActivity.title.trim() || !newActivity.description.trim()) return
 
-    const activity: Activity = {
-      id: Date.now().toString(),
+    const activity: Omit<Activity, "id"> = {
       title: newActivity.title,
       description: newActivity.description,
       date: newActivity.date,
       location: newActivity.location,
       participants: newActivity.participants,
-      status: newActivity.status,
+      type: newActivity.type,
+      amount: newActivity.amount,
+      image: newActivity.image,
     }
 
-    const updatedActivities = [activity, ...activities]
-    saveActivities(updatedActivities)
-
-    setNewActivity({
-      title: "",
-      description: "",
-      date: "",
-      location: "",
-      participants: 0,
-      status: "planned",
-    })
-    setShowAddForm(false)
-    console.log("[v0] 새 봉사활동 추가:", activity.title)
+    const success = unifiedActivitiesManager.add(activity)
+    if (success) {
+      const updatedActivities = unifiedActivitiesManager.getAll()
+      setActivities(updatedActivities)
+      setNewActivity({
+        title: "",
+        description: "",
+        date: "",
+        location: "",
+        participants: "",
+        status: "planned",
+        type: "봉사활동",
+        amount: "",
+        image: "",
+      })
+      setShowAddForm(false)
+      console.log("[v0] 통합 매니저로 새 봉사활동 추가:", activity.title)
+    } else {
+      alert("봉사활동 추가에 실패했습니다.")
+    }
   }
 
   const handleEditActivity = (activity: Activity) => {
@@ -146,11 +125,14 @@ export default function ActivitiesClient() {
       setEditingActivity(activity)
       setNewActivity({
         title: activity.title,
-        description: activity.description,
+        description: activity.description || "",
         date: activity.date,
-        location: activity.location,
-        participants: activity.participants,
-        status: activity.status,
+        location: activity.location || "",
+        participants: activity.participants || "",
+        status: "planned",
+        type: activity.type,
+        amount: activity.amount || "",
+        image: activity.image || "",
       })
       setShowAddForm(true)
       console.log("[v0] 봉사활동 편집 모드 활성화:", activity.title)
@@ -160,40 +142,51 @@ export default function ActivitiesClient() {
   const handleUpdateActivity = () => {
     if (!editingActivity || !newActivity.title.trim() || !newActivity.description.trim()) return
 
-    const updatedActivity: Activity = {
-      ...editingActivity,
+    const updates: Partial<Activity> = {
       title: newActivity.title,
       description: newActivity.description,
       date: newActivity.date,
       location: newActivity.location,
       participants: newActivity.participants,
-      status: newActivity.status,
+      type: newActivity.type,
+      amount: newActivity.amount,
+      image: newActivity.image,
     }
 
-    const updatedActivities = activities.map((activity) =>
-      activity.id === editingActivity.id ? updatedActivity : activity,
-    )
-    saveActivities(updatedActivities)
-
-    setNewActivity({
-      title: "",
-      description: "",
-      date: "",
-      location: "",
-      participants: 0,
-      status: "planned",
-    })
-    setShowAddForm(false)
-    setEditingActivity(null)
-    console.log("[v0] 봉사활동 수정 완료:", updatedActivity.title)
+    const success = unifiedActivitiesManager.update(editingActivity.id, updates)
+    if (success) {
+      const updatedActivities = unifiedActivitiesManager.getAll()
+      setActivities(updatedActivities)
+      setNewActivity({
+        title: "",
+        description: "",
+        date: "",
+        location: "",
+        participants: "",
+        status: "planned",
+        type: "봉사활동",
+        amount: "",
+        image: "",
+      })
+      setShowAddForm(false)
+      setEditingActivity(null)
+      console.log("[v0] 통합 매니저로 봉사활동 수정 완료:", newActivity.title)
+    } else {
+      alert("봉사활동 수정에 실패했습니다.")
+    }
   }
 
   const handleDeleteActivity = (id: string) => {
     requireAuth(() => {
       const activityToDelete = activities.find((a) => a.id === id)
-      const updatedActivities = activities.filter((activity) => activity.id !== id)
-      saveActivities(updatedActivities)
-      console.log("[v0] 봉사활동 삭제:", activityToDelete?.title)
+      const success = unifiedActivitiesManager.delete(id)
+      if (success) {
+        const updatedActivities = unifiedActivitiesManager.getAll()
+        setActivities(updatedActivities)
+        console.log("[v0] 통합 매니저로 봉사활동 삭제 완료:", activityToDelete?.title)
+      } else {
+        alert("봉사활동 삭제에 실패했습니다.")
+      }
     })
   }
 
@@ -205,37 +198,70 @@ export default function ActivitiesClient() {
       description: "",
       date: "",
       location: "",
-      participants: 0,
+      participants: "",
       status: "planned",
+      type: "봉사활동",
+      amount: "",
+      image: "",
     })
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "planned":
-        return <Badge variant="secondary">예정</Badge>
-      case "ongoing":
-        return <Badge variant="default">진행중</Badge>
-      case "completed":
-        return <Badge variant="outline">완료</Badge>
+  const getStatusBadge = (type: string) => {
+    switch (type) {
+      case "기부활동":
+        return (
+          <Badge variant="default" className="bg-blue-100 text-blue-800">
+            기부활동
+          </Badge>
+        )
+      case "봉사활동":
+        return (
+          <Badge variant="secondary" className="bg-green-100 text-green-800">
+            봉사활동
+          </Badge>
+        )
+      case "교육지원":
+        return (
+          <Badge variant="outline" className="bg-purple-100 text-purple-800">
+            교육지원
+          </Badge>
+        )
+      case "의료봉사":
+        return (
+          <Badge variant="destructive" className="bg-red-100 text-red-800">
+            의료봉사
+          </Badge>
+        )
+      case "아동지원":
+        return (
+          <Badge variant="default" className="bg-yellow-100 text-yellow-800">
+            아동지원
+          </Badge>
+        )
       default:
-        return <Badge variant="secondary">예정</Badge>
+        return <Badge variant="secondary">봉사활동</Badge>
     }
   }
 
   const handleManualBackup = () => {
     requireAuth(() => {
-      const dataString = JSON.stringify(activities)
-      const blob = new Blob([dataString], { type: "application/json" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `rotary-activities-backup-${new Date().toISOString().split("T")[0]}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      console.log("[v0] 봉사활동 수동 백업 파일 다운로드 완료")
+      try {
+        const allActivities = unifiedActivitiesManager.getAll()
+        const dataString = JSON.stringify(allActivities, null, 2)
+        const blob = new Blob([dataString], { type: "application/json" })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `rotary-activities-backup-${new Date().toISOString().split("T")[0]}.json`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        console.log("[v0] 통합 매니저 봉사활동 백업 파일 다운로드 완료")
+      } catch (error) {
+        console.error("[v0] 백업 다운로드 실패:", error)
+        alert("백업 다운로드에 실패했습니다.")
+      }
     })
   }
 
@@ -290,21 +316,25 @@ export default function ActivitiesClient() {
                     onChange={(e) => setNewActivity({ ...newActivity, location: e.target.value })}
                   />
                   <Input
-                    type="number"
-                    placeholder="참가 인원"
+                    placeholder="참가 인원 (예: 15명)"
                     value={newActivity.participants}
-                    onChange={(e) =>
-                      setNewActivity({ ...newActivity, participants: Number.parseInt(e.target.value) || 0 })
-                    }
+                    onChange={(e) => setNewActivity({ ...newActivity, participants: e.target.value })}
+                  />
+                  <Input
+                    placeholder="기부 금액 (선택사항, 예: 200만원)"
+                    value={newActivity.amount}
+                    onChange={(e) => setNewActivity({ ...newActivity, amount: e.target.value })}
                   />
                   <select
-                    value={newActivity.status}
-                    onChange={(e) => setNewActivity({ ...newActivity, status: e.target.value as any })}
+                    value={newActivity.type}
+                    onChange={(e) => setNewActivity({ ...newActivity, type: e.target.value })}
                     className="w-full p-2 border rounded-md"
                   >
-                    <option value="planned">예정</option>
-                    <option value="ongoing">진행중</option>
-                    <option value="completed">완료</option>
+                    <option value="봉사활동">봉사활동</option>
+                    <option value="기부활동">기부활동</option>
+                    <option value="교육지원">교육지원</option>
+                    <option value="의료봉사">의료봉사</option>
+                    <option value="아동지원">아동지원</option>
                   </select>
                   <div className="flex space-x-2">
                     <Button onClick={editingActivity ? handleUpdateActivity : handleAddActivity}>
@@ -333,7 +363,7 @@ export default function ActivitiesClient() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <CardTitle className="text-xl">{activity.title}</CardTitle>
-                            {getStatusBadge(activity.status)}
+                            {getStatusBadge(activity.type)}
                           </div>
                           <div className="flex items-center text-sm text-gray-500 space-x-4">
                             <div className="flex items-center">
@@ -361,9 +391,10 @@ export default function ActivitiesClient() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-700 mb-3 whitespace-pre-wrap">{activity.description}</p>
-                      {activity.participants > 0 && (
-                        <p className="text-sm text-gray-600">참가 인원: {activity.participants}명</p>
-                      )}
+                      <div className="flex gap-4 text-sm text-gray-600">
+                        {activity.participants && <span>참가 인원: {activity.participants}</span>}
+                        {activity.amount && <span>기부 금액: {activity.amount}</span>}
+                      </div>
                     </CardContent>
                   </Card>
                 ))
