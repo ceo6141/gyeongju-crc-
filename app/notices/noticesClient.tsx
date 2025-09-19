@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { PlusIcon, CalendarIcon, EditIcon, MapPinIcon, FileTextIcon } from "lucide-react"
+import { PlusIcon, CalendarIcon, EditIcon, MapPinIcon, FileTextIcon, SaveIcon } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
@@ -37,29 +37,98 @@ export default function NoticesClient() {
   const { isAuthenticated, showLogin, setShowLogin, requireAuth, handleLoginSuccess } = useAdminAuth()
 
   useEffect(() => {
-    // Load notices from localStorage safely
     if (typeof window !== "undefined") {
+      // 메인 데이터 로드
       const savedNotices = localStorage.getItem("rotary-notices")
+      // 백업 데이터 로드
+      const backupNotices = localStorage.getItem("rotary-notices-backup")
+
+      let loadedNotices: Notice[] = []
+
       if (savedNotices) {
-        const parsed = JSON.parse(savedNotices)
-        const sortedNotices = parsed.sort((a: Notice, b: Notice) => {
-          return new Date(b.date).getTime() - new Date(a.date).getTime()
-        })
-        setNotices(sortedNotices)
-        console.log("[v0] 공지사항 로드 완료:", sortedNotices.length, "개")
+        try {
+          loadedNotices = JSON.parse(savedNotices)
+        } catch (error) {
+          console.log("[v0] 메인 데이터 파싱 실패, 백업 데이터 시도")
+          if (backupNotices) {
+            try {
+              loadedNotices = JSON.parse(backupNotices)
+            } catch (backupError) {
+              console.log("[v0] 백업 데이터도 파싱 실패")
+              loadedNotices = getDefaultNotices()
+            }
+          } else {
+            loadedNotices = getDefaultNotices()
+          }
+        }
+      } else if (backupNotices) {
+        try {
+          loadedNotices = JSON.parse(backupNotices)
+        } catch (error) {
+          loadedNotices = getDefaultNotices()
+        }
+      } else {
+        loadedNotices = getDefaultNotices()
       }
+
+      const sortedNotices = loadedNotices.sort((a: Notice, b: Notice) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime()
+      })
+
+      setNotices(sortedNotices)
+      console.log("[v0] 공지사항 로드 완료:", sortedNotices.length, "개")
     }
   }, [])
+
+  const getDefaultNotices = (): Notice[] => {
+    return [
+      {
+        id: "default-1",
+        title: "2025-26년 9월 이사회 개최",
+        content: "이사회",
+        date: "2025-09-19",
+        location: "장수만세국수 (권덕용 회원)",
+        eventDate: "2025.09.26.금요일",
+        author: "관리자",
+        important: true,
+      },
+    ]
+  }
 
   const saveNotices = (updatedNotices: Notice[]) => {
     if (typeof window !== "undefined") {
       const sortedNotices = updatedNotices.sort((a, b) => {
         return new Date(b.date).getTime() - new Date(a.date).getTime()
       })
-      localStorage.setItem("rotary-notices", JSON.stringify(sortedNotices))
+
+      const dataString = JSON.stringify(sortedNotices)
+
+      // 메인 저장
+      localStorage.setItem("rotary-notices", dataString)
+      // 백업 저장
+      localStorage.setItem("rotary-notices-backup", dataString)
+      // 타임스탬프 저장
+      localStorage.setItem("rotary-notices-timestamp", new Date().toISOString())
+
       setNotices(sortedNotices)
-      console.log("[v0] 공지사항 저장 완료:", sortedNotices.length, "개")
+      console.log("[v0] 공지사항 저장 완료 (이중 백업):", sortedNotices.length, "개")
     }
+  }
+
+  const handleManualBackup = () => {
+    requireAuth(() => {
+      const dataString = JSON.stringify(notices)
+      const blob = new Blob([dataString], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `rotary-notices-backup-${new Date().toISOString().split("T")[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      console.log("[v0] 수동 백업 파일 다운로드 완료")
+    })
   }
 
   const handleAddClick = () => {
@@ -137,7 +206,7 @@ export default function NoticesClient() {
       const noticeToDelete = notices.find((n) => n.id === id)
       const updatedNotices = notices.filter((notice) => notice.id !== id)
       saveNotices(updatedNotices)
-      console.log("[v0] 공지사항 삭제:", noticeToDelete?.title)
+      console.log("[v0] 공지사항 삭제 완료:", noticeToDelete?.title)
     })
   }
 
@@ -145,32 +214,37 @@ export default function NoticesClient() {
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat relative"
       style={{
-        backgroundImage: "url('/placeholder.svg?height=800&width=1200')",
-        backgroundPosition: "center 20%",
+        backgroundImage: "url('/images/rotary-background.jpg')",
+        backgroundPosition: "center 5%",
+        backgroundSize: "cover",
       }}
     >
-      <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px]"></div>
+      <div className="absolute inset-0 bg-white/85 backdrop-blur-[1px]"></div>
 
       <div className="relative z-10">
         <Navigation />
 
-        <div className="pt-12">
-          <div className="container mx-auto px-4 py-6">
+        <div className="pt-0">
+          <div className="container mx-auto px-4 py-0">
             <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">공지사항</h1>
-                <p className="text-base text-gray-700">경주중앙로타리클럽의 중요한 소식을 확인하세요</p>
+              <div className="text-center mb-1 mt-2">
+                <h1 className="text-xl font-bold text-gray-900 mb-0">공지사항</h1>
+                <p className="text-xs text-gray-700">경주중앙로타리클럽의 중요한 소식을 확인하세요</p>
               </div>
 
-              <div className="mb-6">
+              <div className="mb-1 flex gap-2">
                 <Button onClick={handleAddClick} className="bg-blue-600 hover:bg-blue-700">
                   <PlusIcon className="w-4 h-4 mr-2" />
                   공지사항 추가
                 </Button>
+                <Button onClick={handleManualBackup} variant="outline" className="bg-green-50 hover:bg-green-100">
+                  <SaveIcon className="w-4 h-4 mr-2" />
+                  백업 다운로드
+                </Button>
               </div>
 
               {showAddForm && isAuthenticated && (
-                <Card className="mb-6">
+                <Card className="mb-4 bg-white/95 backdrop-blur-sm">
                   <CardHeader>
                     <CardTitle>{editingNotice ? "공지사항 수정" : "새 공지사항 작성"}</CardTitle>
                   </CardHeader>
@@ -221,7 +295,7 @@ export default function NoticesClient() {
 
               <div className="space-y-2">
                 {notices.length === 0 ? (
-                  <Card className="bg-white/90 backdrop-blur-sm">
+                  <Card className="bg-white/95 backdrop-blur-sm">
                     <CardContent className="text-center py-8">
                       <p className="text-gray-500">등록된 공지사항이 없습니다.</p>
                     </CardContent>
@@ -230,7 +304,7 @@ export default function NoticesClient() {
                   notices.map((notice) => (
                     <Card
                       key={notice.id}
-                      className="hover:shadow-lg transition-shadow bg-white/90 backdrop-blur-sm border border-gray-200"
+                      className="hover:shadow-lg transition-shadow bg-white/95 backdrop-blur-sm border border-gray-200"
                     >
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between">
