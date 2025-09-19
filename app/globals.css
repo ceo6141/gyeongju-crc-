@@ -127,17 +127,3 @@
     font-feature-settings: "kern" 1;
   }
 }
-
-@layer utilities {
-  .writing-mode-vertical-rl {
-    writing-mode: vertical-rl;
-  }
-
-  .text-orientation-mixed {
-    text-orientation: mixed;
-  }
-
-  .text-orientation-upright {
-    text-orientation: upright;
-  }
-}
