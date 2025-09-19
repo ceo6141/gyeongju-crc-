@@ -362,7 +362,7 @@ export default function HomePage() {
             src="/images/club-photo.png"
             alt="경주중앙로타리클럽 제21대 22대 회장단 이취임식 - 천상 天翔 최용환 회장"
             fill
-            className="object-cover"
+            className="object-cover object-top"
             priority
             onError={() => setBackgroundImage("/placeholder.svg?height=400&width=600")}
           />
@@ -388,307 +388,6 @@ export default function HomePage() {
             천상 天翔 최용환 회장과 함께하는 봉사의 여정
           </p>
         </div>
-
-        {/* 공지사항 섹션 */}
-        <div className="absolute bottom-8 left-0 right-0 z-20 px-4 max-w-6xl mx-auto">
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-xl p-3">
-            {/* 편집 모드 컨트롤 */}
-            <div className="text-center mb-3">
-              <Button
-                onClick={handleEditModeToggle}
-                variant={isEditMode ? "destructive" : "default"}
-                className="mb-2 text-sm px-4 py-2"
-              >
-                {isEditMode ? "편집 모드 종료" : "공지사항 관리 (관리자)"}
-              </Button>
-
-              {isEditMode && (
-                <div className="mb-3 p-2 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
-                  <p className="text-yellow-800 font-medium text-sm">
-                    📝 편집 모드 활성화됨 - 공지사항을 추가, 수정, 삭제할 수 있습니다
-                  </p>
-                </div>
-              )}
-
-              {isEditMode && (
-                <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-2 text-sm px-4 py-2">
-                  <Icons.Plus className="h-4 w-4" />새 공지사항 추가
-                </Button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {notices.length > 0 ? (
-                notices.slice(0, 3).map((notice) => (
-                  <Card
-                    key={notice.id}
-                    className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-r from-white to-gray-50"
-                  >
-                    <CardContent className="p-2">
-                      <div className="flex flex-col h-full space-y-2">
-                        {/* 제목 */}
-                        <h3 className="text-base font-bold text-blue-700 leading-tight line-clamp-1">{notice.title}</h3>
-
-                        {/* 세부 정보를 가로로 배치 */}
-                        <div className="space-y-1">
-                          {notice.details?.date && (
-                            <div className="flex items-center gap-1 text-sm">
-                              <span className="font-medium text-gray-600 min-w-[35px]">일시:</span>
-                              <span className="text-blue-600 truncate">{notice.details.date}</span>
-                            </div>
-                          )}
-                          {notice.details?.time && (
-                            <div className="flex items-center gap-1 text-sm">
-                              <span className="font-medium text-gray-600 min-w-[35px]">시간:</span>
-                              <span className="text-blue-600 truncate">{notice.details.time}</span>
-                            </div>
-                          )}
-                          {notice.details?.location && (
-                            <div className="flex items-center gap-1 text-sm">
-                              <span className="font-medium text-gray-600 min-w-[35px]">장소:</span>
-                              <span className="text-blue-600 truncate">{notice.details.location}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* 내용 */}
-                        <p className="text-sm text-gray-700 leading-relaxed line-clamp-2 flex-1">{notice.content}</p>
-
-                        {/* 하단 정보 */}
-                        <div className="flex justify-between items-end mt-2">
-                          <Badge
-                            variant="secondary"
-                            className="text-sm font-normal bg-gray-100 text-gray-500 border-0 px-2 py-1"
-                          >
-                            {notice.date}
-                          </Badge>
-                          {isEditMode && (
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openEditDialog(notice)}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Icons.Edit className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteNotice(notice)}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Icons.Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <Card className="border-0 shadow-sm bg-gradient-to-r from-white to-gray-50 col-span-3">
-                  <CardContent className="p-3 text-center">
-                    <p className="text-gray-500 text-sm">등록된 공지사항이 없습니다.</p>
-                    {isEditMode && (
-                      <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-2 text-sm px-4 py-2 mt-2">
-                        <Icons.Plus className="h-4 w-4" />첫 공지사항 추가
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 공지사항 추가 다이얼로그 */}
-        {isAddNoticeOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-bold mb-4">새 공지사항 추가</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">제목</label>
-                  <input
-                    type="text"
-                    value={noticeForm.title}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="공지사항 제목을 입력하세요"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">내용</label>
-                  <textarea
-                    value={noticeForm.content}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
-                    className="w-full p-2 border rounded-lg h-24"
-                    placeholder="공지사항 내용을 입력하세요"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">일시</label>
-                  <input
-                    type="date"
-                    value={noticeForm.date}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, date: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">시간</label>
-                  <input
-                    type="time"
-                    value={noticeForm.time}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, time: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">장소</label>
-                  <input
-                    type="text"
-                    value={noticeForm.location}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, location: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="장소를 입력하세요"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">유형</label>
-                  <select
-                    value={noticeForm.type}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, type: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                  >
-                    <option value="일반">일반</option>
-                    <option value="긴급">긴급</option>
-                    <option value="모임">모임</option>
-                    <option value="행사">행사</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-2 mt-6">
-                <Button onClick={handleAddNotice} className="flex-1">
-                  추가
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsAddNoticeOpen(false)
-                    setNoticeForm({
-                      title: "",
-                      content: "",
-                      date: "",
-                      time: "",
-                      location: "",
-                      type: "일반",
-                    })
-                  }}
-                  className="flex-1"
-                >
-                  취소
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 공지사항 수정 다이얼로그 */}
-        {isEditNoticeOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-bold mb-4">공지사항 수정</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">제목</label>
-                  <input
-                    type="text"
-                    value={noticeForm.title}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="공지사항 제목을 입력하세요"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">내용</label>
-                  <textarea
-                    value={noticeForm.content}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
-                    className="w-full p-2 border rounded-lg h-24"
-                    placeholder="공지사항 내용을 입력하세요"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">일시</label>
-                  <input
-                    type="date"
-                    value={noticeForm.date}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, date: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">시간</label>
-                  <input
-                    type="time"
-                    value={noticeForm.time}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, time: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">장소</label>
-                  <input
-                    type="text"
-                    value={noticeForm.location}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, location: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                    placeholder="장소를 입력하세요"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">유형</label>
-                  <select
-                    value={noticeForm.type}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, type: e.target.value })}
-                    className="w-full p-2 border rounded-lg"
-                  >
-                    <option value="일반">일반</option>
-                    <option value="긴급">긴급</option>
-                    <option value="모임">모임</option>
-                    <option value="행사">행사</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex gap-2 mt-6">
-                <Button onClick={handleEditNotice} className="flex-1">
-                  수정
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditNoticeOpen(false)
-                    setEditingNotice(null)
-                    setNoticeForm({
-                      title: "",
-                      content: "",
-                      date: "",
-                      time: "",
-                      location: "",
-                      type: "일반",
-                    })
-                  }}
-                  className="flex-1"
-                >
-                  취소
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* 로타리클럽 소개 섹션 */}
         <section className="py-24 bg-white" aria-labelledby="about-rotary-heading">
@@ -958,6 +657,307 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* 공지사항 섹션 */}
+        <div className="absolute bottom-4 left-0 right-0 z-20 px-4 max-w-6xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl p-2">
+            {/* 편집 모드 컨트롤 */}
+            <div className="text-center mb-2">
+              <Button
+                onClick={handleEditModeToggle}
+                variant={isEditMode ? "destructive" : "default"}
+                className="mb-1 text-xs px-3 py-1"
+              >
+                {isEditMode ? "편집 모드 종료" : "공지사항 관리 (관리자)"}
+              </Button>
+
+              {isEditMode && (
+                <div className="mb-2 p-1 bg-yellow-100 border border-yellow-400 rounded-lg max-w-md mx-auto">
+                  <p className="text-yellow-800 font-medium text-xs">
+                    📝 편집 모드 활성화됨 - 공지사항을 추가, 수정, 삭제할 수 있습니다
+                  </p>
+                </div>
+              )}
+
+              {isEditMode && (
+                <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-1 text-xs px-3 py-1">
+                  <Icons.Plus className="h-3 w-3" />새 공지사항 추가
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {notices.length > 0 ? (
+                notices.slice(0, 3).map((notice) => (
+                  <Card
+                    key={notice.id}
+                    className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-r from-white to-gray-50"
+                  >
+                    <CardContent className="p-1.5">
+                      <div className="flex flex-col h-full space-y-1">
+                        {/* 제목 */}
+                        <h3 className="text-sm font-bold text-blue-700 leading-tight line-clamp-1">{notice.title}</h3>
+
+                        {/* 세부 정보를 가로로 배치 */}
+                        <div className="space-y-0.5">
+                          {notice.details?.date && (
+                            <div className="flex items-center gap-1 text-xs">
+                              <span className="font-medium text-gray-600 min-w-[30px]">일시:</span>
+                              <span className="text-blue-600 truncate">{notice.details.date}</span>
+                            </div>
+                          )}
+                          {notice.details?.time && (
+                            <div className="flex items-center gap-1 text-xs">
+                              <span className="font-medium text-gray-600 min-w-[30px]">시간:</span>
+                              <span className="text-blue-600 truncate">{notice.details.time}</span>
+                            </div>
+                          )}
+                          {notice.details?.location && (
+                            <div className="flex items-center gap-1 text-xs">
+                              <span className="font-medium text-gray-600 min-w-[30px]">장소:</span>
+                              <span className="text-blue-600 truncate">{notice.details.location}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 내용 */}
+                        <p className="text-xs text-gray-700 leading-relaxed line-clamp-2 flex-1">{notice.content}</p>
+
+                        {/* 하단 정보 */}
+                        <div className="flex justify-between items-end mt-1">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs font-normal bg-gray-100 text-gray-500 border-0 px-1 py-0.5"
+                          >
+                            {notice.date}
+                          </Badge>
+                          {isEditMode && (
+                            <div className="flex gap-0.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openEditDialog(notice)}
+                                className="h-5 w-5 p-0"
+                              >
+                                <Icons.Edit className="h-2.5 w-2.5" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteNotice(notice)}
+                                className="h-5 w-5 p-0"
+                              >
+                                <Icons.Trash2 className="h-2.5 w-2.5" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <Card className="border-0 shadow-sm bg-gradient-to-r from-white to-gray-50 col-span-3">
+                  <CardContent className="p-2 text-center">
+                    <p className="text-gray-500 text-xs">등록된 공지사항이 없습니다.</p>
+                    {isEditMode && (
+                      <Button onClick={() => setIsAddNoticeOpen(true)} className="gap-1 text-xs px-3 py-1 mt-1">
+                        <Icons.Plus className="h-3 w-3" />첫 공지사항 추가
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 공지사항 추가 다이얼로그 */}
+        {isAddNoticeOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">새 공지사항 추가</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">제목</label>
+                  <input
+                    type="text"
+                    value={noticeForm.title}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="공지사항 제목을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">내용</label>
+                  <textarea
+                    value={noticeForm.content}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
+                    className="w-full p-2 border rounded-lg h-24"
+                    placeholder="공지사항 내용을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">일시</label>
+                  <input
+                    type="date"
+                    value={noticeForm.date}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, date: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">시간</label>
+                  <input
+                    type="time"
+                    value={noticeForm.time}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, time: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">장소</label>
+                  <input
+                    type="text"
+                    value={noticeForm.location}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, location: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="장소를 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">유형</label>
+                  <select
+                    value={noticeForm.type}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, type: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  >
+                    <option value="일반">일반</option>
+                    <option value="긴급">긴급</option>
+                    <option value="모임">모임</option>
+                    <option value="행사">행사</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-6">
+                <Button onClick={handleAddNotice} className="flex-1">
+                  추가
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsAddNoticeOpen(false)
+                    setNoticeForm({
+                      title: "",
+                      content: "",
+                      date: "",
+                      time: "",
+                      location: "",
+                      type: "일반",
+                    })
+                  }}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 공지사항 수정 다이얼로그 */}
+        {isEditNoticeOpen && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">공지사항 수정</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">제목</label>
+                  <input
+                    type="text"
+                    value={noticeForm.title}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="공지사항 제목을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">내용</label>
+                  <textarea
+                    value={noticeForm.content}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
+                    className="w-full p-2 border rounded-lg h-24"
+                    placeholder="공지사항 내용을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">일시</label>
+                  <input
+                    type="date"
+                    value={noticeForm.date}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, date: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">시간</label>
+                  <input
+                    type="time"
+                    value={noticeForm.time}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, time: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">장소</label>
+                  <input
+                    type="text"
+                    value={noticeForm.location}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, location: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                    placeholder="장소를 입력하세요"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">유형</label>
+                  <select
+                    value={noticeForm.type}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, type: e.target.value })}
+                    className="w-full p-2 border rounded-lg"
+                  >
+                    <option value="일반">일반</option>
+                    <option value="긴급">긴급</option>
+                    <option value="모임">모임</option>
+                    <option value="행사">행사</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-6">
+                <Button onClick={handleEditNotice} className="flex-1">
+                  수정
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditNoticeOpen(false)
+                    setEditingNotice(null)
+                    setNoticeForm({
+                      title: "",
+                      content: "",
+                      date: "",
+                      time: "",
+                      location: "",
+                      type: "일반",
+                    })
+                  }}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
       <Footer />
       <AdminPanel />
