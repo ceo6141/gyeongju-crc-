@@ -1,16 +1,18 @@
 "use client"
 
+import type React from "react"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { PlusIcon, CalendarIcon, EditIcon, MapPinIcon, FileTextIcon, SaveIcon } from "lucide-react"
-import { useState, useEffect } from "react"
+import { PlusIcon, EditIcon, SaveIcon, ImageIcon, TrashIcon } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { AdminLogin } from "@/components/admin-login"
 import { Navigation } from "@/components/navigation"
-import { unifiedNoticesManager, type Notice, setupUnifiedDataSync } from "@/lib/unified-data-manager"
+import { dataManager, type Notice } from "@/lib/simple-data-manager"
+import { uploadFile, validateImageFile } from "@/lib/file-upload"
 
 export default function NoticesClient() {
   const [notices, setNotices] = useState<Notice[]>([])
@@ -19,108 +21,68 @@ export default function NoticesClient() {
   const [newNotice, setNewNotice] = useState({
     title: "",
     content: "",
-    location: "",
-    eventDate: "",
-    important: false,
+    author: "관리자",
+    image: "",
   })
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { isAuthenticated, showLogin, setShowLogin, requireAuth, handleLoginSuccess } = useAdminAuth()
 
   useEffect(() => {
-    // 통합 데이터 동기화 시스템 초기화
-    setupUnifiedDataSync()
-
-    const loadData = () => {
+    const loadNotices = () => {
       try {
-        const loadedNotices = unifiedNoticesManager.getAll()
+        const loadedNotices = dataManager.getNotices()
         setNotices(loadedNotices)
-        console.log("[v0] 통합 매니저로 공지사항 로드 완료:", loadedNotices.length, "개")
+        console.log("[v0] 공지사항 로드 완료:", loadedNotices.length, "개")
       } catch (error) {
-        console.error("[v0] 공지사항 로드 오류:", error)
-        // 오류 시 강제 복구 시도
-        unifiedNoticesManager.forceRecover()
-        const recoveredNotices = unifiedNoticesManager.getAll()
-        setNotices(recoveredNotices)
-        console.log("[v0] 공지사항 강제 복구 완료:", recoveredNotices.length, "개")
+        console.error("[v0] 공지사항 로드 실패:", error)
+        setNotices([])
       }
     }
 
-    loadData()
+    loadNotices()
 
-    // 데이터 변경 이벤트 리스너
-    const handleNoticesUpdate = (event: CustomEvent) => {
-      console.log("[v0] 공지사항 업데이트 이벤트 수신")
-      setNotices(event.detail.data)
-    }
-
+    // 스토리지 변경 감지
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === "rotary-notices") {
         console.log("[v0] 스토리지 변경 감지 - 공지사항 새로고침")
-        loadData()
+        loadNotices()
       }
     }
 
-    const handleDataSync = (event: CustomEvent) => {
-      if (event.detail.key === "rotary-notices") {
-        console.log("[v0] 데이터 동기화 이벤트 수신")
-        setNotices(event.detail.data)
-      }
-    }
-
-    window.addEventListener("noticesUpdated", handleNoticesUpdate as EventListener)
     window.addEventListener("storage", handleStorageChange)
-    window.addEventListener("rotaryDataSync", handleDataSync as EventListener)
-
-    return () => {
-      window.removeEventListener("noticesUpdated", handleNoticesUpdate as EventListener)
-      window.removeEventListener("storage", handleStorageChange)
-      window.removeEventListener("rotaryDataSync", handleDataSync as EventListener)
-    }
+    return () => window.removeEventListener("storage", handleStorageChange)
   }, [])
 
-  const saveNotices = (updatedNotices: Notice[]) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const validationError = validateImageFile(file)
+    if (validationError) {
+      alert(validationError)
+      return
+    }
+
+    setIsUploading(true)
     try {
-      console.log("[v0] 공지사항 저장 시작:", updatedNotices.length, "개")
-
-      // 통합 매니저의 내부 데이터를 직접 업데이트
-      unifiedNoticesManager["data"] = [...updatedNotices]
-
-      // 모든 백업에 저장
-      const success = unifiedNoticesManager["saveToAllBackups"]()
-
-      if (success) {
-        const finalNotices = unifiedNoticesManager.getAll()
-        setNotices(finalNotices)
-        console.log("[v0] 공지사항 저장 완료:", finalNotices.length, "개")
-      } else {
-        throw new Error("저장 실패")
-      }
+      const imageData = await uploadFile(file)
+      setNewNotice({ ...newNotice, image: imageData })
+      console.log("[v0] 이미지 업로드 성공")
     } catch (error) {
-      console.error("[v0] 공지사항 저장 실패:", error)
-      alert("데이터 저장에 실패했습니다. 다시 시도해주세요.")
+      console.error("[v0] 이미지 업로드 실패:", error)
+      alert("이미지 업로드에 실패했습니다: " + (error as Error).message)
+    } finally {
+      setIsUploading(false)
     }
   }
 
-  const handleManualBackup = () => {
-    requireAuth(() => {
-      try {
-        const allNotices = unifiedNoticesManager.getAll()
-        const dataString = JSON.stringify(allNotices, null, 2)
-        const blob = new Blob([dataString], { type: "application/json" })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = `rotary-notices-backup-${new Date().toISOString().split("T")[0]}.json`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-        console.log("[v0] 통합 매니저 백업 파일 다운로드 완료")
-      } catch (error) {
-        console.error("[v0] 백업 다운로드 실패:", error)
-        alert("백업 다운로드에 실패했습니다.")
-      }
-    })
+  const handleRemoveImage = () => {
+    setNewNotice({ ...newNotice, image: "" })
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
   }
 
   const handleAddClick = () => {
@@ -128,31 +90,26 @@ export default function NoticesClient() {
   }
 
   const handleAddNotice = () => {
-    if (!newNotice.title.trim() || !newNotice.content.trim()) return
-
-    const notice: Notice = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      title: newNotice.title,
-      content: newNotice.content,
-      location: newNotice.location,
-      eventDate: newNotice.eventDate,
-      date: new Date().toISOString().split("T")[0],
-      author: "관리자",
-      important: newNotice.important,
+    if (!newNotice.title.trim() || !newNotice.content.trim()) {
+      alert("제목과 내용을 입력해주세요.")
+      return
     }
 
-    const currentNotices = unifiedNoticesManager.getAll()
-    const updatedNotices = [notice, ...currentNotices]
-
-    // 통합 매니저의 내부 데이터 직접 업데이트
-    unifiedNoticesManager["data"] = updatedNotices
-    const success = unifiedNoticesManager["saveToAllBackups"]()
+    const success = dataManager.addNotice({
+      title: newNotice.title,
+      content: newNotice.content,
+      date: new Date().toISOString().split("T")[0],
+      author: newNotice.author,
+      image: newNotice.image,
+    })
 
     if (success) {
+      const updatedNotices = dataManager.getNotices()
       setNotices(updatedNotices)
-      setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
+      setNewNotice({ title: "", content: "", author: "관리자", image: "" })
       setShowAddForm(false)
-      console.log("[v0] 새 공지사항 추가:", notice.title)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+      console.log("[v0] 새 공지사항 추가 성공")
     } else {
       alert("공지사항 추가에 실패했습니다.")
     }
@@ -164,9 +121,8 @@ export default function NoticesClient() {
       setNewNotice({
         title: notice.title,
         content: notice.content,
-        location: notice.location || "",
-        eventDate: notice.eventDate || "",
-        important: notice.important || false,
+        author: notice.author,
+        image: notice.image || "",
       })
       setShowAddForm(true)
       console.log("[v0] 공지사항 편집 모드 활성화:", notice.title)
@@ -174,32 +130,26 @@ export default function NoticesClient() {
   }
 
   const handleUpdateNotice = () => {
-    if (!editingNotice || !newNotice.title.trim() || !newNotice.content.trim()) return
+    if (!editingNotice || !newNotice.title.trim() || !newNotice.content.trim()) {
+      alert("제목과 내용을 입력해주세요.")
+      return
+    }
 
-    const currentNotices = unifiedNoticesManager.getAll()
-    const updatedNotices = currentNotices.map((notice) =>
-      notice.id === editingNotice.id
-        ? {
-            ...notice,
-            title: newNotice.title,
-            content: newNotice.content,
-            location: newNotice.location,
-            eventDate: newNotice.eventDate,
-            important: newNotice.important,
-          }
-        : notice,
-    )
-
-    // 통합 매니저의 내부 데이터 직접 업데이트
-    unifiedNoticesManager["data"] = updatedNotices
-    const success = unifiedNoticesManager["saveToAllBackups"]()
+    const success = dataManager.updateNotice(editingNotice.id, {
+      title: newNotice.title,
+      content: newNotice.content,
+      author: newNotice.author,
+      image: newNotice.image,
+    })
 
     if (success) {
+      const updatedNotices = dataManager.getNotices()
       setNotices(updatedNotices)
       setEditingNotice(null)
-      setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
+      setNewNotice({ title: "", content: "", author: "관리자", image: "" })
       setShowAddForm(false)
-      console.log("[v0] 공지사항 수정 완료:", newNotice.title)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+      console.log("[v0] 공지사항 수정 완료")
     } else {
       alert("공지사항 수정에 실패했습니다.")
     }
@@ -207,25 +157,44 @@ export default function NoticesClient() {
 
   const handleCancelEdit = () => {
     setEditingNotice(null)
-    setNewNotice({ title: "", content: "", location: "", eventDate: "", important: false })
+    setNewNotice({ title: "", content: "", author: "관리자", image: "" })
     setShowAddForm(false)
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   const handleDeleteNotice = (id: string) => {
     requireAuth(() => {
-      const currentNotices = unifiedNoticesManager.getAll()
-      const noticeToDelete = currentNotices.find((n) => n.id === id)
-      const updatedNotices = currentNotices.filter((notice) => notice.id !== id)
+      if (confirm("정말로 이 공지사항을 삭제하시겠습니까?")) {
+        const success = dataManager.deleteNotice(id)
+        if (success) {
+          const updatedNotices = dataManager.getNotices()
+          setNotices(updatedNotices)
+          console.log("[v0] 공지사항 삭제 완료")
+        } else {
+          alert("공지사항 삭제에 실패했습니다.")
+        }
+      }
+    })
+  }
 
-      // 통합 매니저의 내부 데이터 직접 업데이트
-      unifiedNoticesManager["data"] = updatedNotices
-      const success = unifiedNoticesManager["saveToAllBackups"]()
-
-      if (success) {
-        setNotices(updatedNotices)
-        console.log("[v0] 공지사항 삭제 완료:", noticeToDelete?.title)
-      } else {
-        alert("공지사항 삭제에 실패했습니다.")
+  const handleManualBackup = () => {
+    requireAuth(() => {
+      try {
+        const allNotices = dataManager.getNotices()
+        const dataString = JSON.stringify(allNotices, null, 2)
+        const blob = new Blob([dataString], { type: "application/json" })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `rotary-notices-backup-${new Date().toISOString().split("T")[0]}.json`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        console.log("[v0] 백업 파일 다운로드 완료")
+      } catch (error) {
+        console.error("[v0] 백업 다운로드 실패:", error)
+        alert("백업 다운로드에 실패했습니다.")
       }
     })
   }
@@ -274,33 +243,55 @@ export default function NoticesClient() {
                       value={newNotice.title}
                       onChange={(e) => setNewNotice({ ...newNotice, title: e.target.value })}
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Input
-                        placeholder="일시 (예: 2025.09.26.금요일)"
-                        value={newNotice.eventDate}
-                        onChange={(e) => setNewNotice({ ...newNotice, eventDate: e.target.value })}
-                      />
-                      <Input
-                        placeholder="장소 (예: 장수만세국수 (권덕용 회원))"
-                        value={newNotice.location}
-                        onChange={(e) => setNewNotice({ ...newNotice, location: e.target.value })}
-                      />
-                    </div>
+                    <Input
+                      placeholder="작성자"
+                      value={newNotice.author}
+                      onChange={(e) => setNewNotice({ ...newNotice, author: e.target.value })}
+                    />
                     <Textarea
                       placeholder="내용을 입력하세요"
                       value={newNotice.content}
                       onChange={(e) => setNewNotice({ ...newNotice, content: e.target.value })}
                       rows={4}
                     />
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="important"
-                        checked={newNotice.important}
-                        onChange={(e) => setNewNotice({ ...newNotice, important: e.target.checked })}
-                      />
-                      <label htmlFor="important">중요 공지</label>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">이미지 첨부</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          <ImageIcon className="w-4 h-4 mr-2" />
+                          {isUploading ? "업로드 중..." : "이미지 선택"}
+                        </Button>
+                        {newNotice.image && (
+                          <Button type="button" variant="outline" size="sm" onClick={handleRemoveImage}>
+                            <TrashIcon className="w-4 h-4 mr-1" />
+                            이미지 제거
+                          </Button>
+                        )}
+                      </div>
+                      {newNotice.image && (
+                        <div className="mt-2">
+                          <img
+                            src={newNotice.image || "/placeholder.svg"}
+                            alt="미리보기"
+                            className="max-w-xs max-h-48 object-cover rounded border"
+                          />
+                        </div>
+                      )}
                     </div>
+
                     <div className="flex space-x-2">
                       <Button onClick={editingNotice ? handleUpdateNotice : handleAddNotice}>
                         {editingNotice ? "수정" : "등록"}
@@ -326,47 +317,33 @@ export default function NoticesClient() {
                       key={notice.id}
                       className="hover:shadow-lg transition-shadow bg-white/95 backdrop-blur-sm border border-gray-200"
                     >
-                      <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 grid grid-cols-1 md:grid-cols-6 gap-3 items-center">
-                            {/* 제목 */}
-                            <div className="md:col-span-2 flex items-center gap-2">
-                              <span className="font-semibold text-gray-900 text-sm">제목: {notice.title}</span>
-                              {notice.important && (
-                                <Badge variant="destructive" className="text-xs">
-                                  중요
-                                </Badge>
-                              )}
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-gray-900">{notice.title}</h3>
                             </div>
 
-                            {/* 일시 */}
-                            <div className="flex items-center gap-1 text-sm text-gray-700">
-                              <CalendarIcon className="w-4 h-4 text-blue-600" />
-                              <span>일시: {notice.eventDate || "미정"}</span>
+                            <div className="text-sm text-gray-700 mb-2">
+                              <p>{notice.content}</p>
                             </div>
 
-                            {/* 장소 */}
-                            <div className="flex items-center gap-1 text-sm text-gray-700">
-                              <MapPinIcon className="w-4 h-4 text-green-600" />
-                              <span>장소: {notice.location || "미정"}</span>
-                            </div>
+                            {notice.image && (
+                              <div className="mb-2">
+                                <img
+                                  src={notice.image || "/placeholder.svg"}
+                                  alt={notice.title}
+                                  className="max-w-md max-h-64 object-cover rounded border"
+                                />
+                              </div>
+                            )}
 
-                            {/* 내용 */}
-                            <div className="flex items-center gap-1 text-sm text-gray-700">
-                              <FileTextIcon className="w-4 h-4 text-purple-600" />
-                              <span>
-                                내용:{" "}
-                                {notice.content.length > 15 ? notice.content.substring(0, 15) + "..." : notice.content}
-                              </span>
-                            </div>
-
-                            {/* 작성일 */}
-                            <div className="text-sm text-gray-600">
-                              작성일: {new Date(notice.date).toLocaleDateString("ko-KR")}
+                            <div className="flex items-center gap-4 text-xs text-gray-600">
+                              <span>작성자: {notice.author}</span>
+                              <span>작성일: {new Date(notice.date).toLocaleDateString("ko-KR")}</span>
                             </div>
                           </div>
 
-                          {/* 관리 버튼 */}
                           <div className="flex space-x-2 ml-4">
                             <Button
                               variant="outline"
@@ -381,8 +358,9 @@ export default function NoticesClient() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleDeleteNotice(notice.id)}
-                              className="text-xs"
+                              className="text-xs text-red-600 hover:text-red-700"
                             >
+                              <TrashIcon className="w-3 h-3 mr-1" />
                               삭제
                             </Button>
                           </div>
